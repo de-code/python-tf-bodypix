@@ -2,4 +2,5 @@
 disable=
     missing-docstring,
     no-self-use,
-    too-few-public-methods
+    too-few-public-methods,
+    too-many-arguments
