@@ -5,6 +5,11 @@ PYTHON = $(VENV)/bin/python
 ARGS =
 
 
+IMAGE_URL = https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Person_Of_Interest_-_Panel_%289353656298%29.jpg/640px-Person_Of_Interest_-_Panel_%289353656298%29.jpg
+OUTPUT_MASK_PATH = data/example-mask.jpg
+MASK_THRESHOLD = 0.75
+
+
 venv-clean:
 	@if [ -d "$(VENV)" ]; then \
 		rm -rf "$(VENV)"; \
@@ -48,3 +53,14 @@ dev-test: dev-lint dev-pytest
 
 run:
 	$(PYTHON) -m tf_bodypix $(ARGS)
+
+
+convert-example-image-to-mask:
+	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+		image-to-mask \
+		--image \
+		"$(IMAGE_URL)" \
+		--output-mask \
+		"$(OUTPUT_MASK_PATH)" \
+		--threshold=$(MASK_THRESHOLD) \
+		$(ARGS)

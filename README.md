@@ -4,6 +4,39 @@ A Python implementation of [body-pix](https://github.com/tensorflow/tfjs-models/
 
 (still under development)
 
+## CLI
+
+```bash
+TF_CPP_MIN_LOG_LEVEL=3 \
+python -m tf_bodypix \
+    image-to-mask \
+    --image /path/to/input-image.jpg \
+    --output-mask /path/to/output-mask.jpg \
+    --threshold=0.75
+```
+
+## API
+
+```python
+import tensorflow as tf
+from tf_bodypix import download_model, load_model, BodyPixModelPaths
+
+bodypix_model = load_model(download_model(
+    BodyPixModelPaths.MOBILENET_FLOAT_50_STRIDE_16
+))
+
+image = tf.keras.preprocessing.image.load_img(
+    '/path/to/input-image.jpg'
+)
+image_array = tf.keras.preprocessing.image.img_to_array(image)
+result = bodypix_model.predict_single(image_array)
+mask = result.get_mask(threshold=0.75)
+tf.keras.preprocessing.image.save_img(
+    '/path/to/output-mask.jpg',
+    mask
+)
+```
+
 ## Acknowledgements
 
 * [Original TensorFlow JS Implementation of BodyPix](https://github.com/tensorflow/tfjs-models/tree/body-pix-v2.0.4/body-pix)
