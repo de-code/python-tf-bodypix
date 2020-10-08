@@ -33,3 +33,9 @@ jobs:
       if: matrix.python-version == '3.8'
       run: |
         make dev-build-dist
+    - name: Publish distribution to Test PyPI
+      if: matrix.python-version == '3.8'
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        password: ${{ secrets.test_pypi_password }}
+        repository_url: https://test.pypi.org/legacy/
