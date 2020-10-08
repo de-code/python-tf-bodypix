@@ -30,6 +30,6 @@ jobs:
       run: |
         make dev-pytest
     - name: Build dist
-      if: ${{ matrix.python-version == "3.8" }}
+      if: ${{ matrix.python-version }} == '3.8'
       run: |
         make dev-build-dist
