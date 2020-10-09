@@ -24,6 +24,16 @@ python -m tf_bodypix \
     --threshold=0.75
 ```
 
+```bash
+TF_CPP_MIN_LOG_LEVEL=3 \
+python -m tf_bodypix \
+    image-to-mask \
+    --image /path/to/input-image.jpg \
+    --output-mask /path/to/output-colored-mask.jpg \
+    --threshold=0.75 \
+    --colored
+```
+
 ## API
 
 ```python
