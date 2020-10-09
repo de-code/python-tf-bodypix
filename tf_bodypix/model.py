@@ -101,6 +101,33 @@ class ResNet50BodyPixPredictWrapper(BodyPixArchitecture):
         return predictions
 
 
+def get_colored_part_mask_for_segmentation(
+    part_segmentation: np.ndarray,
+    part_colors: List[tuple] = None,
+    default_color: tuple = None
+):
+    if part_colors is None:
+        part_colors = RAINBOW_PART_COLORS
+    part_colors_array = np.asarray(part_colors)
+    if default_color is None:
+        default_color = (0, 0, 0)
+    # np.take will take the last value if the index is -1
+    part_colors_with_default_array = np.append(
+        part_colors_array,
+        np.asarray([default_color]),
+        axis=-2
+    )
+    LOGGER.debug('part_colors_with_default_array.shape: %s', part_colors_with_default_array.shape)
+    LOGGER.debug('part_segmentation.shape: %s', part_segmentation.shape)
+    part_segmentation_colored = np.take(
+        part_colors_with_default_array,
+        part_segmentation,
+        axis=-2
+    )
+    LOGGER.debug('part_segmentation_colored.shape: %s', part_segmentation_colored.shape)
+    return part_segmentation_colored
+
+
 class BodyPixResultWrapper:
     def __init__(
             self,
@@ -132,6 +159,25 @@ class BodyPixResultWrapper:
     def get_scaled_part_heatmap_scores(self) -> np.ndarray:
         return self._get_scaled_scores(self.part_heatmap_logits)
 
+    def get_scaled_part_segmentation(
+        self,
+        mask: np.ndarray = None,
+        outside_mask_value: int = -1
+    ) -> np.ndarray:
+        scaled_part_heatmap_argmax = np.argmax(
+            self.get_scaled_part_heatmap_scores(),
+            -1
+        )
+        LOGGER.debug('scaled_part_heatmap_argmax.shape: %s', scaled_part_heatmap_argmax.shape)
+        if mask is not None:
+            LOGGER.debug('mask.shape: %s', mask.shape)
+            return np.where(
+                np.squeeze(mask, axis=-1),
+                scaled_part_heatmap_argmax,
+                np.asarray([outside_mask_value])
+            )
+        return scaled_part_heatmap_argmax
+
     def get_mask(self, threshold: float) -> np.ndarray:
         return to_mask_tensor(
             self.get_scaled_segment_scores(),
@@ -143,30 +189,11 @@ class BodyPixResultWrapper:
         mask: np.ndarray,
         part_colors: List[tuple] = None
     ) -> np.ndarray:
-        if part_colors is None:
-            part_colors = RAINBOW_PART_COLORS
-        part_colors_array = np.asarray(part_colors)
-        scaled_part_heatmap_argmax = np.argmax(
-            self.get_scaled_part_heatmap_scores(),
-            -1
+        part_segmentation = self.get_scaled_part_segmentation(mask)
+        return get_colored_part_mask_for_segmentation(
+            part_segmentation,
+            part_colors=part_colors
         )
-        LOGGER.debug('scaled_part_heatmap_argmax.shape: %s', scaled_part_heatmap_argmax.shape)
-        scaled_part_heatmap_colored = np.take(
-            part_colors_array,
-            scaled_part_heatmap_argmax,
-            axis=-2
-        )
-        LOGGER.debug('scaled_part_heatmap_colored.shape: %s', scaled_part_heatmap_colored.shape)
-        scaled_part_heatmap_colored_masked = np.where(
-            mask,
-            scaled_part_heatmap_colored,
-            np.asarray([0, 0, 0])
-        )
-        LOGGER.debug(
-            'scaled_part_heatmap_colored_masked.shape: %s',
-            scaled_part_heatmap_colored_masked.shape
-        )
-        return scaled_part_heatmap_colored_masked
 
 
 class BodyPixModelWrapper:
