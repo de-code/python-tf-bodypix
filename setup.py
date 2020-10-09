@@ -1,3 +1,5 @@
+from time import time
+
 from setuptools import find_packages, setup
 
 
@@ -10,7 +12,7 @@ with open('README.md', 'r') as f:
 
 
 def local_scheme(*_, **__):
-    return ""
+    return str(int(time()))
 
 
 packages = find_packages()
