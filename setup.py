@@ -12,7 +12,9 @@ with open('README.md', 'r') as f:
 packages = find_packages()
 setup(
     name="tf-bodypix",
-    use_scm_version=True,
+    use_scm_version={
+        "version_scheme": "python-simplified-semver"
+    },
     setup_requires=['setuptools_scm'],
     author="Daniel Ecer",
     url="https://github.com/de-code/python-tf-bodypix",
