@@ -9,11 +9,15 @@ with open('README.md', 'r') as f:
     long_description = f.read()
 
 
+def local_scheme(*_, **__):
+    return ""
+
+
 packages = find_packages()
 setup(
     name="tf-bodypix",
     use_scm_version={
-        "version_scheme": "python-simplified-semver"
+        "local_scheme": local_scheme
     },
     setup_requires=['setuptools_scm'],
     author="Daniel Ecer",
