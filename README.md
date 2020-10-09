@@ -7,6 +7,12 @@ A Python implementation of [body-pix](https://github.com/tensorflow/tfjs-models/
 
 (still under development)
 
+## Install
+
+```bash
+pip install tf-bodypix
+```
+
 ## CLI
 
 ```bash
