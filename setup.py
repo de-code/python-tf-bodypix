@@ -21,6 +21,28 @@ def local_scheme(version):
     return str(int(time()))
 
 
+def get_requirement_groups(requirement):
+    if 'tensorflow' in requirement:
+        return ['tf']
+    if 'tfjs' in requirement:
+        return ['tfjs']
+    return [None]
+
+
+def get_required_and_extras(all_required_packages):
+    grouped_extras = {}
+    for requirement in all_required_packages:
+        for group in get_requirement_groups(requirement):
+            grouped_extras.setdefault(group, []).append(requirement)
+    return (
+        grouped_extras[None],
+        {key: value for key, value in grouped_extras.items() if key}
+    )
+
+
+DEFAULT_REQUIRED_PACKAGES, EXTRAS = get_required_and_extras(REQUIRED_PACKAGES)
+
+
 packages = find_packages()
 setup(
     name="tf-bodypix",
@@ -30,7 +52,8 @@ setup(
     setup_requires=['setuptools_scm'],
     author="Daniel Ecer",
     url="https://github.com/de-code/python-tf-bodypix",
-    install_requires=REQUIRED_PACKAGES,
+    install_requires=DEFAULT_REQUIRED_PACKAGES,
+    extras_require=EXTRAS,
     packages=packages,
     include_package_data=True,
     description='Python implemention of the TensorFlow BodyPix model.',
