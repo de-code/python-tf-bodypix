@@ -5,8 +5,6 @@
 
 A Python implementation of [body-pix](https://github.com/tensorflow/tfjs-models/tree/body-pix-v2.0.4/body-pix).
 
-(still under development)
-
 ## Install
 
 ```bash
