@@ -9,7 +9,7 @@ with open('requirements.txt', 'r') as f:
 
 with open('README.md', 'r') as f:
     LONG_DESCRIPTION = '\n'.join([
-        line
+        line.rstrip()
         for line in f
         if not line.startswith('[![')
     ])
