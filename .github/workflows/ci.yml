@@ -3,6 +3,8 @@ name: Python package
 on:
   push:
     branches: [ develop ]
+    tags:
+      - 'v*'  # Push events to matching v*, i.e. v1.0, v20.15.10
   pull_request:
     branches: [ develop ]
 
@@ -15,32 +17,32 @@ jobs:
         python-version: [3.6, 3.7, 3.8]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        make dev-venv
-    - name: Lint
-      run: |
-        make dev-lint
-    - name: Test with pytest
-      run: |
-        make dev-pytest
-    - name: Build dist
-      if: matrix.python-version == '3.8'
-      run: |
-        make dev-build-dist
-    - name: Publish distribution to Test PyPI
-      if: matrix.python-version == '3.8'
-      uses: pypa/gh-action-pypi-publish@master
-      with:
-        password: ${{ secrets.test_pypi_password }}
-        repository_url: https://test.pypi.org/legacy/
-    - name: Publish distribution to PyPI
-      if: matrix.python-version == '3.8' && startsWith(github.ref, 'refs/tags')
-      uses: pypa/gh-action-pypi-publish@master
-      with:
-        password: ${{ secrets.pypi_password }}
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          make dev-venv
+      - name: Lint
+        run: |
+          make dev-lint
+      - name: Test with pytest
+        run: |
+          make dev-pytest
+      - name: Build dist
+        if: matrix.python-version == '3.8'
+        run: |
+          make dev-build-dist
+      - name: Publish distribution to Test PyPI
+        if: matrix.python-version == '3.8'
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.test_pypi_password }}
+          repository_url: https://test.pypi.org/legacy/
+      - name: Publish distribution to PyPI
+        if: matrix.python-version == '3.8' && startsWith(github.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.pypi_password }}
