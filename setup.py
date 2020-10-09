@@ -8,7 +8,11 @@ with open('requirements.txt', 'r') as f:
 
 
 with open('README.md', 'r') as f:
-    long_description = f.read()
+    LONG_DESCRIPTION = '\n'.join([
+        line.rstrip()
+        for line in f
+        if not line.startswith('[![')
+    ])
 
 
 def local_scheme(version):
@@ -30,7 +34,7 @@ setup(
     packages=packages,
     include_package_data=True,
     description='Python implemention of the TensorFlow BodyPix model.',
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
     classifiers=[
         "Programming Language :: Python :: 3",
