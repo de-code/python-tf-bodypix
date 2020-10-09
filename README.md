@@ -7,9 +7,27 @@ A Python implementation of [body-pix](https://github.com/tensorflow/tfjs-models/
 
 ## Install
 
+Install with all dependencies:
+
+```bash
+pip install tf-bodypix[all]
+```
+
+Install with minimal or no dependencies:
+
 ```bash
 pip install tf-bodypix
 ```
+
+Extras are provided to make it easier to provide or exclude dependencies
+when using this project as a library:
+
+| extra name | description
+| ---------- | -----------
+| tf         | TensorFlow (required). But you may use your own build.
+| tfjs       | TensorFlow JS Model support
+| image      | Image loading via Pillow, required by the CLI.
+| all        | All of the libraries
 
 ## CLI
 
