@@ -11,7 +11,9 @@ with open('README.md', 'r') as f:
     long_description = f.read()
 
 
-def local_scheme(*_, **__):
+def local_scheme(version):
+    if not version.distance and not version.dirty:
+        return ""
     return str(int(time()))
 
 
