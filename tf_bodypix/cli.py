@@ -105,6 +105,8 @@ class ImageToMaskSubCommand(SubCommand):
         mask = result.get_mask(args.threshold)
         if args.colored:
             mask = result.get_colored_part_mask(mask, part_names=args.parts)
+        elif args.parts:
+            mask = result.get_part_mask(mask, part_names=args.parts)
         LOGGER.info('writing mask to: %r', args.output_mask)
         os.makedirs(os.path.dirname(args.output_mask), exist_ok=True)
         tf.keras.preprocessing.image.save_img(

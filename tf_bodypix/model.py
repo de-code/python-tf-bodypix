@@ -136,15 +136,22 @@ def get_colored_part_mask_for_segmentation(
     return part_segmentation_colored
 
 
+def is_all_part_names(part_names: List[str]) -> bool:
+    if not part_names:
+        return True
+    part_names_set = set(part_names)
+    if len(part_names_set) == len(PART_CHANNELS):
+        return True
+    return False
+
+
 def get_filtered_part_segmentation(
     part_segmentation: np.ndarray,
     part_names: List[str] = None
 ):
-    if not part_names:
+    if is_all_part_names(part_names):
         return part_segmentation
     part_names_set = set(part_names)
-    if len(part_names_set) == len(PART_CHANNELS):
-        return part_segmentation
     part_filter_mask = np.asarray([
         (
             part_index
@@ -222,6 +229,22 @@ class BodyPixResultWrapper:
             self.get_scaled_segment_scores(),
             threshold
         )
+
+    def get_part_mask(
+        self,
+        mask: np.ndarray,
+        part_names: List[str] = None
+    ) -> np.ndarray:
+        if is_all_part_names(part_names):
+            return mask
+        part_segmentation = self.get_scaled_part_segmentation(mask, part_names=part_names)
+        part_mask = np.where(
+            np.expand_dims(part_segmentation, -1) >= 0,
+            mask,
+            0
+        )
+        LOGGER.debug('part_mask.shape: %s', part_mask.shape)
+        return part_mask
 
     def get_colored_part_mask(
         self,

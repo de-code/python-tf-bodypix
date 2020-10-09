@@ -7,6 +7,7 @@ ARGS =
 
 IMAGE_URL = https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Person_Of_Interest_-_Panel_%289353656298%29.jpg/640px-Person_Of_Interest_-_Panel_%289353656298%29.jpg
 OUTPUT_MASK_PATH = data/example-mask.jpg
+OUTPUT_SELECTED_MASK_PATH = data/example-selected-mask.jpg
 OUTPUT_COLORED_MASK_PATH = data/example-colored-mask.jpg
 OUTPUT_SELECTED_COLORED_MASK_PATH = data/example-selected-colored-mask.jpg
 MASK_THRESHOLD = 0.75
@@ -75,6 +76,18 @@ convert-example-image-to-mask:
 		--output-mask \
 		"$(OUTPUT_MASK_PATH)" \
 		--threshold=$(MASK_THRESHOLD) \
+		$(ARGS)
+
+
+convert-example-image-to-selected-mask:
+	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+		image-to-mask \
+		--image \
+		"$(IMAGE_URL)" \
+		--output-mask \
+		"$(OUTPUT_SELECTED_MASK_PATH)" \
+		--threshold=$(MASK_THRESHOLD) \
+		--parts $(SELECTED_PARTS) \
 		$(ARGS)
 
 
