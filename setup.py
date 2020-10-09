@@ -2,6 +2,11 @@ from time import time
 
 from setuptools import find_packages, setup
 
+from tf_bodypix.utils.dist import (
+    get_requirements_with_groups,
+    get_required_and_extras
+)
+
 
 with open('requirements.txt', 'r') as f:
     REQUIRED_PACKAGES = f.readlines()
@@ -21,26 +26,9 @@ def local_scheme(version):
     return str(int(time()))
 
 
-def get_requirement_groups(requirement):
-    if 'tensorflow' in requirement:
-        return ['tf']
-    if 'tfjs' in requirement:
-        return ['tfjs']
-    return [None]
-
-
-def get_required_and_extras(all_required_packages):
-    grouped_extras = {}
-    for requirement in all_required_packages:
-        for group in get_requirement_groups(requirement):
-            grouped_extras.setdefault(group, []).append(requirement)
-    return (
-        grouped_extras[None],
-        {key: value for key, value in grouped_extras.items() if key}
-    )
-
-
-DEFAULT_REQUIRED_PACKAGES, EXTRAS = get_required_and_extras(REQUIRED_PACKAGES)
+DEFAULT_REQUIRED_PACKAGES, EXTRAS = get_required_and_extras(
+    get_requirements_with_groups(REQUIRED_PACKAGES)
+)
 
 
 packages = find_packages(exclude=["tests", "tests.*"])
