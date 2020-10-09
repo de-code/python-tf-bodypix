@@ -16,6 +16,10 @@ from tf_bodypix.bodypix_js_utils.decode_part_map import (
     to_mask_tensor
 )
 
+from tf_bodypix.bodypix_js_utils.output_rendering_util import (
+    RAINBOW_PART_COLORS
+)
+
 from tf_bodypix.bodypix_js_utils.util import (
     get_bodypix_input_resolution_height_and_width,
     pad_and_resize_to,
@@ -101,17 +105,19 @@ class BodyPixResultWrapper:
     def __init__(
             self,
             segments_logits: np.ndarray,
+            part_heatmap_logits: np.ndarray,
             original_size: ImageSize,
             model_input_size: ImageSize,
             padding: Padding):
         self.segments_logits = segments_logits
+        self.part_heatmap_logits = part_heatmap_logits
         self.original_size = original_size
         self.model_input_size = model_input_size
         self.padding = padding
 
-    def get_scaled_segment_scores(self) -> np.ndarray:
+    def _get_scaled_scores(self, logits: np.ndarray) -> np.ndarray:
         return scale_and_crop_to_input_tensor_shape(
-            self.segments_logits,
+            logits,
             self.original_size.height,
             self.original_size.width,
             self.model_input_size.height,
@@ -120,11 +126,47 @@ class BodyPixResultWrapper:
             apply_sigmoid_activation=True
         )
 
+    def get_scaled_segment_scores(self) -> np.ndarray:
+        return self._get_scaled_scores(self.segments_logits)
+
+    def get_scaled_part_heatmap_scores(self) -> np.ndarray:
+        return self._get_scaled_scores(self.part_heatmap_logits)
+
     def get_mask(self, threshold: float) -> np.ndarray:
         return to_mask_tensor(
             self.get_scaled_segment_scores(),
             threshold
         )
+
+    def get_colored_part_mask(
+        self,
+        mask: np.ndarray,
+        part_colors: List[tuple] = None
+    ) -> np.ndarray:
+        if part_colors is None:
+            part_colors = RAINBOW_PART_COLORS
+        part_colors_array = np.asarray(part_colors)
+        scaled_part_heatmap_argmax = np.argmax(
+            self.get_scaled_part_heatmap_scores(),
+            -1
+        )
+        LOGGER.debug('scaled_part_heatmap_argmax.shape: %s', scaled_part_heatmap_argmax.shape)
+        scaled_part_heatmap_colored = np.take(
+            part_colors_array,
+            scaled_part_heatmap_argmax,
+            axis=-2
+        )
+        LOGGER.debug('scaled_part_heatmap_colored.shape: %s', scaled_part_heatmap_colored.shape)
+        scaled_part_heatmap_colored_masked = np.where(
+            mask,
+            scaled_part_heatmap_colored,
+            np.asarray([0, 0, 0])
+        )
+        LOGGER.debug(
+            'scaled_part_heatmap_colored_masked.shape: %s',
+            scaled_part_heatmap_colored_masked.shape
+        )
+        return scaled_part_heatmap_colored_masked
 
 
 class BodyPixModelWrapper:
@@ -159,9 +201,14 @@ class BodyPixModelWrapper:
 
         LOGGER.debug('tensor_map type: %s', type(tensor_map))
         LOGGER.debug('tensor_map keys: %s', tensor_map.keys())
+        LOGGER.debug('tensor_map shapes: %s', {
+            k: t.shape
+            for k, t in tensor_map.items()
+        })
 
         return BodyPixResultWrapper(
             segments_logits=tensor_map['float_segments'],
+            part_heatmap_logits=tensor_map['float_part_heatmaps'],
             original_size=original_size,
             model_input_size=model_input_size,
             padding=padding

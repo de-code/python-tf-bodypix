@@ -79,6 +79,11 @@ class ImageToMaskSubCommand(SubCommand):
             default=0.75,
             help="The mask threshold."
         )
+        parser.add_argument(
+            "--colored",
+            action="store_true",
+            help="Enable generating the colored part mask"
+        )
 
     def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
         local_image_path = get_file(args.image)
@@ -92,6 +97,8 @@ class ImageToMaskSubCommand(SubCommand):
         image_array = tf.keras.preprocessing.image.img_to_array(image)
         result = bodypix_model.predict_single(image_array)
         mask = result.get_mask(args.threshold)
+        if args.colored:
+            mask = result.get_colored_part_mask(mask)
         LOGGER.info('writing mask to: %r', args.output_mask)
         os.makedirs(os.path.dirname(args.output_mask), exist_ok=True)
         tf.keras.preprocessing.image.save_img(
