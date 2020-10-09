@@ -8,7 +8,7 @@ from typing import Dict, List
 import tensorflow as tf
 
 from tf_bodypix.download import download_model
-from tf_bodypix.model import load_model
+from tf_bodypix.model import load_model, PART_CHANNELS
 
 
 LOGGER = logging.getLogger(__name__)
@@ -84,6 +84,12 @@ class ImageToMaskSubCommand(SubCommand):
             action="store_true",
             help="Enable generating the colored part mask"
         )
+        parser.add_argument(
+            "--parts",
+            nargs="*",
+            choices=PART_CHANNELS,
+            help="Select the parts to output"
+        )
 
     def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
         local_image_path = get_file(args.image)
@@ -98,7 +104,9 @@ class ImageToMaskSubCommand(SubCommand):
         result = bodypix_model.predict_single(image_array)
         mask = result.get_mask(args.threshold)
         if args.colored:
-            mask = result.get_colored_part_mask(mask)
+            mask = result.get_colored_part_mask(mask, part_names=args.parts)
+        elif args.parts:
+            mask = result.get_part_mask(mask, part_names=args.parts)
         LOGGER.info('writing mask to: %r', args.output_mask)
         os.makedirs(os.path.dirname(args.output_mask), exist_ok=True)
         tf.keras.preprocessing.image.save_img(
