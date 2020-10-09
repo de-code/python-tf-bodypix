@@ -27,3 +27,13 @@ class TestMain:
             '--output-mask=%s' % output_mask_path,
             '--colored'
         ])
+
+    def test_should_not_fail_converting_to_selected_colored_mask(self, temp_dir: Path):
+        output_mask_path = temp_dir / 'mask.jpg'
+        main([
+            'image-to-mask',
+            '--image=%s' % EXAMPLE_IMAGE_URL,
+            '--output-mask=%s' % output_mask_path,
+            '--parts', 'left_face', 'right_face',
+            '--colored'
+        ])

@@ -16,6 +16,8 @@ from tf_bodypix.bodypix_js_utils.decode_part_map import (
     to_mask_tensor
 )
 
+from tf_bodypix.bodypix_js_utils.part_channels import PART_CHANNELS
+
 from tf_bodypix.bodypix_js_utils.output_rendering_util import (
     RAINBOW_PART_COLORS
 )
@@ -29,6 +31,12 @@ from tf_bodypix.bodypix_js_utils.util import (
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+PART_CHANNEL_INDEX_BY_NAME = {
+    name: index
+    for index, name in enumerate(PART_CHANNELS)
+}
 
 
 ImageSize = namedtuple('ImageSize', ('height', 'width'))
@@ -128,6 +136,27 @@ def get_colored_part_mask_for_segmentation(
     return part_segmentation_colored
 
 
+def get_filtered_part_segmentation(
+    part_segmentation: np.ndarray,
+    part_names: List[str] = None
+):
+    if not part_names:
+        return part_segmentation
+    part_names_set = set(part_names)
+    if len(part_names_set) == len(PART_CHANNELS):
+        return part_segmentation
+    part_filter_mask = np.asarray([
+        (
+            part_index
+            if part_name in part_names_set
+            else -1
+        )
+        for part_index, part_name in enumerate(PART_CHANNELS)
+    ])
+    LOGGER.debug('part_filter_mask: %s', part_filter_mask)
+    return part_filter_mask[part_segmentation]
+
+
 class BodyPixResultWrapper:
     def __init__(
             self,
@@ -162,6 +191,7 @@ class BodyPixResultWrapper:
     def get_scaled_part_segmentation(
         self,
         mask: np.ndarray = None,
+        part_names: List[str] = None,
         outside_mask_value: int = -1
     ) -> np.ndarray:
         scaled_part_heatmap_argmax = np.argmax(
@@ -169,6 +199,15 @@ class BodyPixResultWrapper:
             -1
         )
         LOGGER.debug('scaled_part_heatmap_argmax.shape: %s', scaled_part_heatmap_argmax.shape)
+        if part_names:
+            scaled_part_heatmap_argmax = get_filtered_part_segmentation(
+                scaled_part_heatmap_argmax,
+                part_names
+            )
+            LOGGER.debug(
+                'scaled_part_heatmap_argmax.shape (filtered): %s',
+                scaled_part_heatmap_argmax.shape
+            )
         if mask is not None:
             LOGGER.debug('mask.shape: %s', mask.shape)
             return np.where(
@@ -187,9 +226,10 @@ class BodyPixResultWrapper:
     def get_colored_part_mask(
         self,
         mask: np.ndarray,
-        part_colors: List[tuple] = None
+        part_colors: List[tuple] = None,
+        part_names: List[str] = None
     ) -> np.ndarray:
-        part_segmentation = self.get_scaled_part_segmentation(mask)
+        part_segmentation = self.get_scaled_part_segmentation(mask, part_names=part_names)
         return get_colored_part_mask_for_segmentation(
             part_segmentation,
             part_colors=part_colors
