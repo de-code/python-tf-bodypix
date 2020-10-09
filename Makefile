@@ -51,6 +51,14 @@ dev-watch:
 dev-test: dev-lint dev-pytest
 
 
+dev-build-dist:
+	$(PYTHON) setup.py sdist
+
+
+dev-get-version:
+	$(PYTHON) setup.py --version
+
+
 run:
 	$(PYTHON) -m tf_bodypix $(ARGS)
 
