@@ -1,5 +1,8 @@
 # TensorFlow BodyPix (TF BodyPix)
 
+[![PyPi version](https://pypip.in/v/tf-bodypix/badge.png)](https://pypi.org/project/tf-bodypix/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A Python implementation of [body-pix](https://github.com/tensorflow/tfjs-models/tree/body-pix-v2.0.4/body-pix).
 
 (still under development)
