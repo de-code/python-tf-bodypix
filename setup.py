@@ -43,7 +43,8 @@ def get_required_and_extras(all_required_packages):
 DEFAULT_REQUIRED_PACKAGES, EXTRAS = get_required_and_extras(REQUIRED_PACKAGES)
 
 
-packages = find_packages()
+packages = find_packages(exclude=["tests", "tests.*"])
+
 setup(
     name="tf-bodypix",
     use_scm_version={
