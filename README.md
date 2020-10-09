@@ -15,6 +15,8 @@ pip install tf-bodypix
 
 ## CLI
 
+### Creating a simple body mask
+
 ```bash
 TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
@@ -24,6 +26,8 @@ python -m tf_bodypix \
     --threshold=0.75
 ```
 
+### Colorize the body mask depending on the body part
+
 ```bash
 TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
@@ -31,6 +35,19 @@ python -m tf_bodypix \
     --image /path/to/input-image.jpg \
     --output-mask /path/to/output-colored-mask.jpg \
     --threshold=0.75 \
+    --colored
+```
+
+### Additionally select the body parts
+
+```bash
+TF_CPP_MIN_LOG_LEVEL=3 \
+python -m tf_bodypix \
+    image-to-mask \
+    --image /path/to/input-image.jpg \
+    --output-mask /path/to/output-colored-mask.jpg \
+    --threshold=0.75 \
+    --parts left_face right_face \
     --colored
 ```
 
