@@ -11,10 +11,19 @@ EXAMPLE_IMAGE_URL = (
 
 
 class TestMain:
-    def test_should_not_fail(self, temp_dir: Path):
+    def test_should_not_fail_converting_to_mask(self, temp_dir: Path):
         output_mask_path = temp_dir / 'mask.jpg'
         main([
             'image-to-mask',
             '--image=%s' % EXAMPLE_IMAGE_URL,
             '--output-mask=%s' % output_mask_path
+        ])
+
+    def test_should_not_fail_converting_to_colored_mask(self, temp_dir: Path):
+        output_mask_path = temp_dir / 'mask.jpg'
+        main([
+            'image-to-mask',
+            '--image=%s' % EXAMPLE_IMAGE_URL,
+            '--output-mask=%s' % output_mask_path,
+            '--colored'
         ])

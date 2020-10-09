@@ -7,6 +7,12 @@ A Python implementation of [body-pix](https://github.com/tensorflow/tfjs-models/
 
 (still under development)
 
+## Install
+
+```bash
+pip install tf-bodypix
+```
+
 ## CLI
 
 ```bash
@@ -16,6 +22,16 @@ python -m tf_bodypix \
     --image /path/to/input-image.jpg \
     --output-mask /path/to/output-mask.jpg \
     --threshold=0.75
+```
+
+```bash
+TF_CPP_MIN_LOG_LEVEL=3 \
+python -m tf_bodypix \
+    image-to-mask \
+    --image /path/to/input-image.jpg \
+    --output-mask /path/to/output-colored-mask.jpg \
+    --threshold=0.75 \
+    --colored
 ```
 
 ## API
@@ -37,6 +53,12 @@ mask = result.get_mask(threshold=0.75)
 tf.keras.preprocessing.image.save_img(
     '/path/to/output-mask.jpg',
     mask
+)
+
+colored_mask = result.get_colored_mask(mask)
+tf.keras.preprocessing.image.save_img(
+    '/path/to/output-colored-mask.jpg',
+    colored_mask
 )
 ```
 
