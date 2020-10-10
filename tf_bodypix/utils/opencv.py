@@ -20,6 +20,9 @@ class ShowImageSink:
         cv2.destroyAllWindows()
 
     def __call__(self, image_array: np.ndarray):
+        if cv2.getWindowProperty(self.window_name, cv2.WND_PROP_VISIBLE) <= 0:
+            LOGGER.info('window closed')
+            raise KeyboardInterrupt('window closed')
         image_array = np.asarray(image_array).astype(np.uint8)
         cv2.imshow(self.window_name, image_array)
         cv2.waitKey(1)

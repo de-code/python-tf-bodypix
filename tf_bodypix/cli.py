@@ -139,7 +139,7 @@ class ImageToMaskSubCommand(SubCommand):
                     )
                     output_sink(output_image)
         except KeyboardInterrupt:
-            pass
+            LOGGER.info('exiting')
 
 
 SUB_COMMANDS: List[SubCommand] = [
