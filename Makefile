@@ -14,6 +14,7 @@ OUTPUT_COLORED_MASK_PATH = data/example-colored-mask.jpg
 OUTPUT_SELECTED_COLORED_MASK_PATH = data/example-selected-colored-mask.jpg
 OUTPUT_WEBCAM_MASK_PATH = data/webcam-mask.jpg
 MASK_THRESHOLD = 0.75
+ADD_OVERLAY_ALPHA = 0.5
 
 SELECTED_PARTS = left_face right_face
 
@@ -143,5 +144,6 @@ webcam:
 		"$(WEBCAM_PATH)" \
 		--show-output \
 		--threshold=$(MASK_THRESHOLD) \
+		--add-overlay-alpha=$(ADD_OVERLAY_ALPHA) \
 		--colored \
 		$(ARGS)

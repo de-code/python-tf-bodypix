@@ -81,6 +81,11 @@ class ImageToMaskSubCommand(SubCommand):
             help="The mask threshold."
         )
         parser.add_argument(
+            "--add-overlay-alpha",
+            type=float,
+            help="The opacity of mask overlay to add."
+        )
+        parser.add_argument(
             "--colored",
             action="store_true",
             help="Enable generating the colored part mask"
@@ -111,6 +116,13 @@ class ImageToMaskSubCommand(SubCommand):
             mask = result.get_colored_part_mask(mask, part_names=args.parts)
         elif args.parts:
             mask = result.get_part_mask(mask, part_names=args.parts)
+        if args.add_overlay_alpha is not None:
+            alpha = args.add_overlay_alpha
+            output = np.clip(
+                image_array + mask * alpha,
+                0.0, 255.0
+            )
+            return output
         return mask
 
     def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
