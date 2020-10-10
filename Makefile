@@ -19,6 +19,7 @@ ADD_OVERLAY_ALPHA = 0.5
 SELECTED_PARTS = left_face right_face
 
 WEBCAM_PATH = webcam:0
+VIRTUAL_VIDEO_DEVICE = /dev/video2
 
 
 venv-clean:
@@ -143,6 +144,18 @@ webcam:
 		--image \
 		"$(WEBCAM_PATH)" \
 		--show-output \
+		--threshold=$(MASK_THRESHOLD) \
+		--add-overlay-alpha=$(ADD_OVERLAY_ALPHA) \
+		--colored \
+		$(ARGS)
+
+
+webcam-v4l2:
+	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+		image-to-mask \
+		--image \
+		"$(WEBCAM_PATH)" \
+		--output-mask=$(VIRTUAL_VIDEO_DEVICE) \
 		--threshold=$(MASK_THRESHOLD) \
 		--add-overlay-alpha=$(ADD_OVERLAY_ALPHA) \
 		--colored \

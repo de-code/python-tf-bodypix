@@ -7,6 +7,8 @@ from typing import Callable
 import numpy as np
 import tensorflow as tf
 
+# pylint: disable=import-outside-toplevel
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -20,11 +22,22 @@ def write_image_to(image_array: np.ndarray, path: str):
     tf.keras.preprocessing.image.save_img(path, image_array)
 
 
+def get_v4l2_output_sink(device_name: str) -> T_OutputSink:
+    from tf_bodypix.utils.v4l2 import VideoLoopbackImageSink
+    return VideoLoopbackImageSink(device_name)
+
+
 @contextmanager
 def get_image_file_output_sink(path: str) -> T_OutputSink:
     yield partial(write_image_to, path=path)
 
 
+def get_image_output_sink_for_path(path: str) -> T_OutputSink:
+    if path.startswith('/dev/video'):
+        return get_v4l2_output_sink(path)
+    return get_image_file_output_sink(path)
+
+
 def get_show_image_output_sink() -> T_OutputSink:
-    from tf_bodypix.utils.opencv import ShowImageSink  # pylint: disable=import-outside-toplevel
+    from tf_bodypix.utils.opencv import ShowImageSink
     return ShowImageSink('image')

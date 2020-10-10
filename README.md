@@ -27,7 +27,7 @@ when using this project as a library:
 | tf         | TensorFlow (required). But you may use your own build.
 | tfjs       | TensorFlow JS Model support
 | image      | Image loading via Pillow, required by the CLI.
-| webcam     | Webcam support via OpenCV
+| webcam     | Webcam support via OpenCV and pyfakewebcam
 | all        | All of the libraries
 
 ## CLI
@@ -68,7 +68,7 @@ python -m tf_bodypix \
     --colored
 ```
 
-### Capture Webcam and adding mask overlay
+### Capture Webcam and adding mask overlay, showing the result in an image
 
 ```bash
 TF_CPP_MIN_LOG_LEVEL=3 \
@@ -76,6 +76,21 @@ python -m tf_bodypix \
     image-to-mask \
     --image webcam:0 \
     --show-output \
+    --threshold=0.75 \
+    --add-overlay-alpha=0.5 \
+    --colored
+```
+
+### Capture Webcam and adding mask overlay, writing to v4l2loopback device
+
+(replace `/dev/videoN` with the actual virtual video device)
+
+```bash
+TF_CPP_MIN_LOG_LEVEL=3 \
+python -m tf_bodypix \
+    image-to-mask \
+    --image webcam:0 \
+    --output-mask /dev/videoN \
     --threshold=0.75 \
     --add-overlay-alpha=0.5 \
     --colored
