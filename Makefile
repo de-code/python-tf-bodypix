@@ -63,7 +63,7 @@ dev-remove-dist:
 
 
 dev-build-dist:
-	$(PYTHON) setup.py sdist
+	$(PYTHON) setup.py sdist bdist_wheel
 
 
 dev-list-dist-contents:
@@ -77,7 +77,8 @@ dev-get-version:
 dev-test-install-dist:
 	$(MAKE) VENV=$(VENV_TEMP) venv-create
 	$(VENV_TEMP)/bin/pip install -r requirements.build.txt
-	$(VENV_TEMP)/bin/pip install ./dist/*
+	$(VENV_TEMP)/bin/pip install --force-reinstall ./dist/*.tar.gz
+	$(VENV_TEMP)/bin/pip install --force-reinstall ./dist/*.whl
 
 
 run:
