@@ -22,7 +22,6 @@ def get_required_and_extras(required_packages_with_groups, include_all=True):
     for requirement, groups in required_packages_with_groups:
         for group in groups + all_groups:
             grouped_extras.setdefault(group, []).append(requirement)
-    print(grouped_extras)
     return (
         grouped_extras.get(None, []),
         {key: value for key, value in grouped_extras.items() if key}
