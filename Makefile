@@ -12,9 +12,13 @@ OUTPUT_MASK_PATH = data/example-mask.jpg
 OUTPUT_SELECTED_MASK_PATH = data/example-selected-mask.jpg
 OUTPUT_COLORED_MASK_PATH = data/example-colored-mask.jpg
 OUTPUT_SELECTED_COLORED_MASK_PATH = data/example-selected-colored-mask.jpg
+OUTPUT_WEBCAM_MASK_PATH = data/webcam-mask.jpg
 MASK_THRESHOLD = 0.75
+ADD_OVERLAY_ALPHA = 0.5
 
 SELECTED_PARTS = left_face right_face
+
+WEBCAM_PATH = webcam:0
 
 
 venv-clean:
@@ -130,4 +134,16 @@ convert-example-image-to-selected-colored-mask:
 		--threshold=$(MASK_THRESHOLD) \
 		--colored \
 		--parts $(SELECTED_PARTS) \
+		$(ARGS)
+
+
+webcam:
+	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+		image-to-mask \
+		--image \
+		"$(WEBCAM_PATH)" \
+		--show-output \
+		--threshold=$(MASK_THRESHOLD) \
+		--add-overlay-alpha=$(ADD_OVERLAY_ALPHA) \
+		--colored \
 		$(ARGS)

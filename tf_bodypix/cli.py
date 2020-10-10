@@ -1,14 +1,19 @@
 import argparse
 import logging
-import os
 from abc import ABC, abstractmethod
-from hashlib import md5
 from typing import Dict, List
 
-import tensorflow as tf
+import numpy as np
 
+from tf_bodypix.utils.timer import LoggingTimer
 from tf_bodypix.download import download_model
-from tf_bodypix.model import load_model, PART_CHANNELS
+from tf_bodypix.model import load_model, PART_CHANNELS, BodyPixModelWrapper
+from tf_bodypix.source import get_image_source
+from tf_bodypix.sink import (
+    T_OutputSink,
+    get_image_file_output_sink,
+    get_show_image_output_sink
+)
 
 
 LOGGER = logging.getLogger(__name__)
@@ -42,16 +47,6 @@ def add_common_arguments(parser: argparse.ArgumentParser):
     )
 
 
-def get_file(file_path: str) -> str:
-    if os.path.exists(file_path):
-        return file_path
-    local_path = tf.keras.utils.get_file(
-        md5(file_path.encode('utf-8')).hexdigest() + '-' + os.path.basename(file_path),
-        file_path
-    )
-    return local_path
-
-
 class ImageToMaskSubCommand(SubCommand):
     def __init__(self):
         super().__init__("image-to-mask", "Converts an image to its mask")
@@ -68,16 +63,28 @@ class ImageToMaskSubCommand(SubCommand):
             default=DEFAULT_MODEL_PATH,
             help="The path or URL to the bodypix model."
         )
-        parser.add_argument(
+
+        output_group = parser.add_mutually_exclusive_group(required=True)
+        output_group.add_argument(
+            "--show-output",
+            action="store_true",
+            help="Shows the output in a window."
+        )
+        output_group.add_argument(
             "--output-mask",
-            required=True,
             help="The path to the output mask."
         )
+
         parser.add_argument(
             "--threshold",
             type=float,
             default=0.75,
             help="The mask threshold."
+        )
+        parser.add_argument(
+            "--add-overlay-alpha",
+            type=float,
+            help="The opacity of mask overlay to add."
         )
         parser.add_argument(
             "--colored",
@@ -91,28 +98,53 @@ class ImageToMaskSubCommand(SubCommand):
             help="Select the parts to output"
         )
 
-    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
-        local_image_path = get_file(args.image)
-        LOGGER.debug('local_image_path: %r', local_image_path)
-        local_model_path = download_model(args.model_path)
-        LOGGER.debug('local_model_path: %r', local_model_path)
-        bodypix_model = load_model(local_model_path)
-        image = tf.keras.preprocessing.image.load_img(
-            local_image_path
-        )
-        image_array = tf.keras.preprocessing.image.img_to_array(image)
+    def get_output_sink(self, args: argparse.Namespace) -> T_OutputSink:
+        if args.show_output:
+            return get_show_image_output_sink()
+        if args.output_mask:
+            return get_image_file_output_sink(args.output_mask)
+        raise RuntimeError('no output sink')
+
+    def get_output_image(
+        self,
+        bodypix_model: BodyPixModelWrapper,
+        image_array: np.ndarray,
+        args: argparse.Namespace
+    ) -> np.ndarray:
         result = bodypix_model.predict_single(image_array)
         mask = result.get_mask(args.threshold)
         if args.colored:
             mask = result.get_colored_part_mask(mask, part_names=args.parts)
         elif args.parts:
             mask = result.get_part_mask(mask, part_names=args.parts)
-        LOGGER.info('writing mask to: %r', args.output_mask)
-        os.makedirs(os.path.dirname(args.output_mask), exist_ok=True)
-        tf.keras.preprocessing.image.save_img(
-            args.output_mask,
-            mask
-        )
+        if args.add_overlay_alpha is not None:
+            alpha = args.add_overlay_alpha
+            output = np.clip(
+                image_array + mask * alpha,
+                0.0, 255.0
+            )
+            return output
+        return mask
+
+    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
+        local_model_path = download_model(args.model_path)
+        LOGGER.debug('local_model_path: %r', local_model_path)
+        bodypix_model = load_model(local_model_path)
+        timer = LoggingTimer()
+        try:
+            with self.get_output_sink(args) as output_sink:
+                timer.start()
+                for image_array in get_image_source(args.image):
+                    timer.on_frame_start()
+                    output_image = self.get_output_image(
+                        bodypix_model,
+                        image_array,
+                        args
+                    )
+                    output_sink(output_image)
+                    timer.on_frame_end()
+        except KeyboardInterrupt:
+            LOGGER.info('exiting')
 
 
 SUB_COMMANDS: List[SubCommand] = [

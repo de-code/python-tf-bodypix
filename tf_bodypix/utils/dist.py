@@ -6,6 +6,8 @@ def get_requirement_groups(requirement):
         return ['tfjs']
     if 'pillow' in requirement_lower:
         return ['image']
+    if 'opencv' in requirement_lower:
+        return ['webcam']
     return [None]
 
 
