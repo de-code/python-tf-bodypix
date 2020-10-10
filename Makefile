@@ -2,6 +2,8 @@ VENV = venv
 PIP = $(VENV)/bin/pip
 PYTHON = $(VENV)/bin/python
 
+VENV_TEMP = venv_temp
+
 ARGS =
 
 
@@ -56,12 +58,22 @@ dev-watch:
 dev-test: dev-lint dev-pytest
 
 
+dev-remove-dist:
+	rm -rf ./dist
+
+
 dev-build-dist:
 	$(PYTHON) setup.py sdist
 
 
 dev-get-version:
 	$(PYTHON) setup.py --version
+
+
+dev-test-install-dist:
+	$(MAKE) VENV=$(VENV_TEMP) venv-create
+	$(VENV_TEMP)/bin/pip install -r requirements.build.txt
+	$(VENV_TEMP)/bin/pip install ./dist/*
 
 
 run:
