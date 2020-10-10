@@ -5,6 +5,7 @@ from typing import Dict, List
 
 import numpy as np
 
+from tf_bodypix.utils.timer import LoggingTimer
 from tf_bodypix.download import download_model
 from tf_bodypix.model import load_model, PART_CHANNELS, BodyPixModelWrapper
 from tf_bodypix.source import get_image_source
@@ -129,15 +130,19 @@ class ImageToMaskSubCommand(SubCommand):
         local_model_path = download_model(args.model_path)
         LOGGER.debug('local_model_path: %r', local_model_path)
         bodypix_model = load_model(local_model_path)
+        timer = LoggingTimer()
         try:
             with self.get_output_sink(args) as output_sink:
+                timer.start()
                 for image_array in get_image_source(args.image):
+                    timer.on_frame_start()
                     output_image = self.get_output_image(
                         bodypix_model,
                         image_array,
                         args
                     )
                     output_sink(output_image)
+                    timer.on_frame_end()
         except KeyboardInterrupt:
             LOGGER.info('exiting')
 
