@@ -34,7 +34,7 @@ jobs:
       - name: Build dist
         if: matrix.python-version == '3.8'
         run: |
-          make dev-build-dist
+          make dev-remove-dist dev-build-dist dev-list-dist-contents dev-test-install-dist
       - name: Publish distribution to Test PyPI
         if: matrix.python-version == '3.8'
         uses: pypa/gh-action-pypi-publish@master

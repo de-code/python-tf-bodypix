@@ -1,0 +1,3 @@
+include tf_bodypix
+prune tests
+prune .*
