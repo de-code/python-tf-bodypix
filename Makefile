@@ -18,7 +18,7 @@ ADD_OVERLAY_ALPHA = 0.5
 
 SELECTED_PARTS = left_face right_face
 
-WEBCAM_PATH = /dev/video0
+WEBCAM_PATH = webcam:0
 
 
 venv-clean:

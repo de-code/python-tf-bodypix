@@ -68,6 +68,19 @@ python -m tf_bodypix \
     --colored
 ```
 
+### Capture Webcam and adding mask overlay
+
+```bash
+TF_CPP_MIN_LOG_LEVEL=3 \
+python -m tf_bodypix \
+    image-to-mask \
+    --image webcam:0 \
+    --show-output \
+    --threshold=0.75 \
+    --add-overlay-alpha=0.5 \
+    --colored
+```
+
 ## API
 
 ```python
