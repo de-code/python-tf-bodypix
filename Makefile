@@ -66,6 +66,10 @@ dev-build-dist:
 	$(PYTHON) setup.py sdist
 
 
+dev-list-dist-contents:
+	tar -ztvf dist/tf-bodypix-*.tar.gz
+
+
 dev-get-version:
 	$(PYTHON) setup.py --version
 
