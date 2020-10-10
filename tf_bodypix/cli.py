@@ -3,8 +3,10 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Dict, List
 
+import numpy as np
+
 from tf_bodypix.download import download_model
-from tf_bodypix.model import load_model, PART_CHANNELS
+from tf_bodypix.model import load_model, PART_CHANNELS, BodyPixModelWrapper
 from tf_bodypix.source import get_image_source
 from tf_bodypix.sink import (
     T_OutputSink,
@@ -97,6 +99,20 @@ class ImageToMaskSubCommand(SubCommand):
             return get_image_file_output_sink(args.output_mask)
         raise RuntimeError('no output sink')
 
+    def get_output_image(
+        self,
+        bodypix_model: BodyPixModelWrapper,
+        image_array: np.ndarray,
+        args: argparse.Namespace
+    ) -> np.ndarray:
+        result = bodypix_model.predict_single(image_array)
+        mask = result.get_mask(args.threshold)
+        if args.colored:
+            mask = result.get_colored_part_mask(mask, part_names=args.parts)
+        elif args.parts:
+            mask = result.get_part_mask(mask, part_names=args.parts)
+        return mask
+
     def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
         local_model_path = download_model(args.model_path)
         LOGGER.debug('local_model_path: %r', local_model_path)
@@ -104,13 +120,12 @@ class ImageToMaskSubCommand(SubCommand):
         try:
             with self.get_output_sink(args) as output_sink:
                 for image_array in get_image_source(args.image):
-                    result = bodypix_model.predict_single(image_array)
-                    mask = result.get_mask(args.threshold)
-                    if args.colored:
-                        mask = result.get_colored_part_mask(mask, part_names=args.parts)
-                    elif args.parts:
-                        mask = result.get_part_mask(mask, part_names=args.parts)
-                    output_sink(mask)
+                    output_image = self.get_output_image(
+                        bodypix_model,
+                        image_array,
+                        args
+                    )
+                    output_sink(output_image)
         except KeyboardInterrupt:
             pass
 
