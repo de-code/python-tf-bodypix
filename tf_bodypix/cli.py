@@ -1,14 +1,16 @@
 import argparse
 import logging
-import os
 from abc import ABC, abstractmethod
 from typing import Dict, List
-
-import tensorflow as tf
 
 from tf_bodypix.download import download_model
 from tf_bodypix.model import load_model, PART_CHANNELS
 from tf_bodypix.source import get_image_source
+from tf_bodypix.sink import (
+    T_OutputSink,
+    get_image_file_output_sink,
+    get_show_image_output_sink
+)
 
 
 LOGGER = logging.getLogger(__name__)
@@ -58,11 +60,18 @@ class ImageToMaskSubCommand(SubCommand):
             default=DEFAULT_MODEL_PATH,
             help="The path or URL to the bodypix model."
         )
-        parser.add_argument(
+
+        output_group = parser.add_mutually_exclusive_group(required=True)
+        output_group.add_argument(
+            "--show-output",
+            action="store_true",
+            help="Shows the output in a window."
+        )
+        output_group.add_argument(
             "--output-mask",
-            required=True,
             help="The path to the output mask."
         )
+
         parser.add_argument(
             "--threshold",
             type=float,
@@ -81,42 +90,33 @@ class ImageToMaskSubCommand(SubCommand):
             help="Select the parts to output"
         )
 
+    def get_output_sink(self, args: argparse.Namespace) -> T_OutputSink:
+        if args.show_output:
+            return get_show_image_output_sink()
+        if args.output_mask:
+            return get_image_file_output_sink(args.output_mask)
+        raise RuntimeError('no output sink')
+
     def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
         local_model_path = download_model(args.model_path)
         LOGGER.debug('local_model_path: %r', local_model_path)
         bodypix_model = load_model(local_model_path)
         try:
-            for image_array in get_image_source(args.image):
-                result = bodypix_model.predict_single(image_array)
-                mask = result.get_mask(args.threshold)
-                if args.colored:
-                    mask = result.get_colored_part_mask(mask, part_names=args.parts)
-                elif args.parts:
-                    mask = result.get_part_mask(mask, part_names=args.parts)
-                LOGGER.info('writing mask to: %r', args.output_mask)
-                os.makedirs(os.path.dirname(args.output_mask), exist_ok=True)
-                tf.keras.preprocessing.image.save_img(
-                    args.output_mask,
-                    mask
-                )
+            with self.get_output_sink(args) as output_sink:
+                for image_array in get_image_source(args.image):
+                    result = bodypix_model.predict_single(image_array)
+                    mask = result.get_mask(args.threshold)
+                    if args.colored:
+                        mask = result.get_colored_part_mask(mask, part_names=args.parts)
+                    elif args.parts:
+                        mask = result.get_part_mask(mask, part_names=args.parts)
+                    output_sink(mask)
         except KeyboardInterrupt:
             pass
 
 
-class WebcamToMaskSubCommand(SubCommand):
-    def __init__(self):
-        super().__init__("webcam-to-mask", "Ues the webcam as a source and shows its mask")
-
-    def add_arguments(self, parser: argparse.ArgumentParser):
-        add_common_arguments(parser)
-
-    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
-        pass
-
-
 SUB_COMMANDS: List[SubCommand] = [
-    ImageToMaskSubCommand(),
-    WebcamToMaskSubCommand()
+    ImageToMaskSubCommand()
 ]
 
 SUB_COMMAND_BY_NAME: Dict[str, SubCommand] = {

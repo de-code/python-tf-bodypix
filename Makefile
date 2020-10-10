@@ -141,8 +141,7 @@ webcam:
 		image-to-mask \
 		--image \
 		"$(WEBCAM_PATH)" \
-		--output-mask \
-		"$(OUTPUT_WEBCAM_MASK_PATH)" \
+		--show-output \
 		--threshold=$(MASK_THRESHOLD) \
 		--colored \
 		$(ARGS)
