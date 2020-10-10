@@ -8,6 +8,8 @@ def get_requirement_groups(requirement):
         return ['image']
     if 'opencv' in requirement_lower:
         return ['webcam']
+    if 'pyfakewebcam' in requirement_lower:
+        return ['webcam']
     return [None]
 
 

@@ -11,7 +11,7 @@ from tf_bodypix.model import load_model, PART_CHANNELS, BodyPixModelWrapper
 from tf_bodypix.source import get_image_source
 from tf_bodypix.sink import (
     T_OutputSink,
-    get_image_file_output_sink,
+    get_image_output_sink_for_path,
     get_show_image_output_sink
 )
 
@@ -102,7 +102,7 @@ class ImageToMaskSubCommand(SubCommand):
         if args.show_output:
             return get_show_image_output_sink()
         if args.output_mask:
-            return get_image_file_output_sink(args.output_mask)
+            return get_image_output_sink_for_path(args.output_mask)
         raise RuntimeError('no output sink')
 
     def get_output_image(

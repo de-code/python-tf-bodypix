@@ -35,6 +35,7 @@ def get_webcam_image_source(webcam_number: int) -> Iterable[np.ndarray]:
     try:
         while True:
             _, image_array = cam.read()
+            LOGGER.debug('cam image_array.shape: %s', image_array.shape)
             yield image_array
     finally:
         cam.release()
