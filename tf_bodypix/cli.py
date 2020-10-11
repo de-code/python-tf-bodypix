@@ -126,8 +126,10 @@ class ImageToMaskSubCommand(SubCommand):
             timer.on_step_start('overlay')
             LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
             alpha = args.add_overlay_alpha
+            if mask.dtype == tf.int32:
+                mask = tf.cast(mask, tf.float32)
             output = np.clip(
-                image_array + tf.cast(mask, tf.float32) * alpha,
+                image_array + mask * alpha,
                 0.0, 255.0
             )
             return output
