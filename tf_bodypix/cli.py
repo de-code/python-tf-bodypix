@@ -3,6 +3,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Dict, List
 
+import tensorflow as tf
 import numpy as np
 
 from tf_bodypix.utils.timer import LoggingTimer
@@ -109,16 +110,27 @@ class ImageToMaskSubCommand(SubCommand):
         self,
         bodypix_model: BodyPixModelWrapper,
         image_array: np.ndarray,
-        args: argparse.Namespace
+        args: argparse.Namespace,
+        timer: LoggingTimer
     ) -> np.ndarray:
         result = bodypix_model.predict_single(image_array)
+        timer.on_step_start('get_mask')
         mask = result.get_mask(args.threshold)
         if args.colored:
+            timer.on_step_start('get_cpart_mask')
             mask = result.get_colored_part_mask(mask, part_names=args.parts)
         elif args.parts:
+            timer.on_step_start('get_part_mask')
             mask = result.get_part_mask(mask, part_names=args.parts)
         if args.add_overlay_alpha is not None:
+            timer.on_step_start('overlay')
+            LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
             alpha = args.add_overlay_alpha
+            try:
+                if mask.dtype == tf.int32:
+                    mask = tf.cast(mask, tf.float32)
+            except TypeError:
+                pass
             output = np.clip(
                 image_array + mask * alpha,
                 0.0, 255.0
@@ -133,14 +145,22 @@ class ImageToMaskSubCommand(SubCommand):
         timer = LoggingTimer()
         try:
             with self.get_output_sink(args) as output_sink:
+                image_iterator = iter(get_image_source(args.image))
                 timer.start()
-                for image_array in get_image_source(args.image):
-                    timer.on_frame_start()
+                while True:
+                    timer.on_frame_start(initial_step_name='in')
+                    try:
+                        image_array = next(image_iterator)
+                    except StopIteration:
+                        break
+                    timer.on_step_start('model')
                     output_image = self.get_output_image(
                         bodypix_model,
                         image_array,
-                        args
+                        args,
+                        timer=timer
                     )
+                    timer.on_step_start('out')
                     output_sink(output_image)
                     timer.on_frame_end()
         except KeyboardInterrupt:

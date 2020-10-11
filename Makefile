@@ -158,5 +158,16 @@ webcam-v4l2:
 		--output-mask=$(VIRTUAL_VIDEO_DEVICE) \
 		--threshold=$(MASK_THRESHOLD) \
 		--add-overlay-alpha=$(ADD_OVERLAY_ALPHA) \
+		$(ARGS)
+
+
+webcam-v4l2-colored:
+	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+		image-to-mask \
+		--image \
+		"$(WEBCAM_PATH)" \
+		--output-mask=$(VIRTUAL_VIDEO_DEVICE) \
+		--threshold=$(MASK_THRESHOLD) \
+		--add-overlay-alpha=$(ADD_OVERLAY_ALPHA) \
 		--colored \
 		$(ARGS)
