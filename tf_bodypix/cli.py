@@ -109,15 +109,20 @@ class ImageToMaskSubCommand(SubCommand):
         self,
         bodypix_model: BodyPixModelWrapper,
         image_array: np.ndarray,
-        args: argparse.Namespace
+        args: argparse.Namespace,
+        timer: LoggingTimer
     ) -> np.ndarray:
         result = bodypix_model.predict_single(image_array)
+        timer.on_step_start('get_mask')
         mask = result.get_mask(args.threshold)
         if args.colored:
+            timer.on_step_start('get_cpart_mask')
             mask = result.get_colored_part_mask(mask, part_names=args.parts)
         elif args.parts:
+            timer.on_step_start('get_part_mask')
             mask = result.get_part_mask(mask, part_names=args.parts)
         if args.add_overlay_alpha is not None:
+            timer.on_step_start('overlay')
             alpha = args.add_overlay_alpha
             output = np.clip(
                 image_array + mask * alpha,
@@ -135,12 +140,14 @@ class ImageToMaskSubCommand(SubCommand):
             with self.get_output_sink(args) as output_sink:
                 timer.start()
                 for image_array in get_image_source(args.image):
-                    timer.on_frame_start()
+                    timer.on_frame_start(initial_step_name='model')
                     output_image = self.get_output_image(
                         bodypix_model,
                         image_array,
-                        args
+                        args,
+                        timer=timer
                     )
+                    timer.on_step_start('write')
                     output_sink(output_image)
                     timer.on_frame_end()
         except KeyboardInterrupt:
