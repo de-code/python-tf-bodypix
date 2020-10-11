@@ -15,7 +15,7 @@ def _mean(a: List[float]) -> float:
 class LoggingTimer:
     def __init__(self, min_interval: float = 1):
         self.min_interval = min_interval
-        self.next_log_time = None
+        self.interval_start_time = None
         self.frame_start_time = None
         self.frame_durations = []
         self.step_durations_map = {}
@@ -25,7 +25,7 @@ class LoggingTimer:
 
     def start(self):
         current_time = time()
-        self.next_log_time = current_time + self.min_interval
+        self.interval_start_time = current_time
 
     def _set_current_step_name(self, step_name: str, current_time: float = None):
         if step_name == self.current_step_name:
@@ -62,7 +62,8 @@ class LoggingTimer:
         self.check_log(frame_end_time)
 
     def check_log(self, current_time: float):
-        if self.frame_durations and current_time >= self.next_log_time:
+        interval_duration = current_time - self.interval_start_time
+        if self.frame_durations and interval_duration >= self.min_interval:
             step_info = ', '.join([
                 '%s=%0.3f' % (step_name, _mean(
                     self.step_durations_map.get(step_name, [])
@@ -70,12 +71,12 @@ class LoggingTimer:
                 for step_name in self.ordered_step_names
             ])
             LOGGER.info(
-                '%0.3fs per frame (%d frames%s)',
+                '%0.3fs per frame (%0.1ffps%s)',
                 _mean(self.frame_durations),
-                len(self.frame_durations),
+                len(self.frame_durations) / interval_duration,
                 ', ' + step_info if step_info else ''
             )
             self.frame_durations.clear()
             self.step_durations_map.clear()
             self.ordered_step_names.clear()
-            self.next_log_time = current_time + self.min_interval
+            self.interval_start_time = current_time
