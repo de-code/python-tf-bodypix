@@ -138,16 +138,22 @@ class ImageToMaskSubCommand(SubCommand):
         timer = LoggingTimer()
         try:
             with self.get_output_sink(args) as output_sink:
+                image_iterator = iter(get_image_source(args.image))
                 timer.start()
-                for image_array in get_image_source(args.image):
-                    timer.on_frame_start(initial_step_name='model')
+                while True:
+                    timer.on_frame_start(initial_step_name='in')
+                    try:
+                        image_array = next(image_iterator)
+                    except StopIteration:
+                        break
+                    timer.on_step_start('model')
                     output_image = self.get_output_image(
                         bodypix_model,
                         image_array,
                         args,
                         timer=timer
                     )
-                    timer.on_step_start('write')
+                    timer.on_step_start('out')
                     output_sink(output_image)
                     timer.on_frame_end()
         except KeyboardInterrupt:
