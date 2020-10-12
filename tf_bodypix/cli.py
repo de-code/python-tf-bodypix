@@ -77,6 +77,23 @@ class ImageToMaskSubCommand(SubCommand):
         )
 
         parser.add_argument(
+            "--output-stride",
+            type=int,
+            help=(
+                "The output stride to use."
+                " It will be guessed from the model path if not specified."
+            )
+        )
+        parser.add_argument(
+            "--internal-resolution",
+            type=float,
+            default=0.5,
+            help=(
+                "The internal resolution factor to resize the input image to"
+                " before passing it the model."
+            )
+        )
+        parser.add_argument(
             "--threshold",
             type=float,
             default=0.75,
@@ -141,7 +158,11 @@ class ImageToMaskSubCommand(SubCommand):
     def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
         local_model_path = download_model(args.model_path)
         LOGGER.debug('local_model_path: %r', local_model_path)
-        bodypix_model = load_model(local_model_path)
+        bodypix_model = load_model(
+            local_model_path,
+            internal_resolution=args.internal_resolution,
+            output_stride=args.output_stride
+        )
         timer = LoggingTimer()
         try:
             with self.get_output_sink(args) as output_sink:
