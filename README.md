@@ -38,8 +38,8 @@ when using this project as a library:
 TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     image-to-mask \
-    --image /path/to/input-image.jpg \
-    --output-mask /path/to/output-mask.jpg \
+    --source /path/to/input-image.jpg \
+    --output /path/to/output-mask.jpg \
     --threshold=0.75
 ```
 
@@ -49,8 +49,8 @@ python -m tf_bodypix \
 TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     image-to-mask \
-    --image /path/to/input-image.jpg \
-    --output-mask /path/to/output-colored-mask.jpg \
+    --source /path/to/input-image.jpg \
+    --output /path/to/output-colored-mask.jpg \
     --threshold=0.75 \
     --colored
 ```
@@ -61,8 +61,8 @@ python -m tf_bodypix \
 TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     image-to-mask \
-    --image /path/to/input-image.jpg \
-    --output-mask /path/to/output-colored-mask.jpg \
+    --source /path/to/input-image.jpg \
+    --output /path/to/output-colored-mask.jpg \
     --threshold=0.75 \
     --parts left_face right_face \
     --colored
@@ -74,7 +74,7 @@ python -m tf_bodypix \
 TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     image-to-mask \
-    --image webcam:0 \
+    --source webcam:0 \
     --show-output \
     --threshold=0.75 \
     --add-overlay-alpha=0.5 \
@@ -89,11 +89,25 @@ python -m tf_bodypix \
 TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     image-to-mask \
-    --image webcam:0 \
-    --output-mask /dev/videoN \
+    --source webcam:0 \
+    --output /dev/videoN \
     --threshold=0.75 \
     --add-overlay-alpha=0.5 \
     --colored
+```
+
+### Capture Webcam and replace background, writing to v4l2loopback device
+
+(replace `/dev/videoN` with the actual virtual video device)
+
+```bash
+TF_CPP_MIN_LOG_LEVEL=3 \
+python -m tf_bodypix \
+    replace-background \
+    --source webcam:0 \
+    --background /path/to/background-image.jpg \
+    --output /dev/videoN \
+    --threshold=0.75
 ```
 
 ## API

@@ -8,6 +8,9 @@ from typing import ContextManager, Iterable
 import numpy as np
 import tensorflow as tf
 
+from tf_bodypix.utils.image import resize_image_to, ImageSize
+
+
 # pylint: disable=import-outside-toplevel
 
 
@@ -37,18 +40,23 @@ def get_webcam_image_source(webcam_number: int) -> ContextManager[Iterable[np.nd
 
 
 @contextmanager
-def get_simple_image_source(path: str) -> ContextManager[Iterable[np.ndarray]]:
+def get_simple_image_source(
+    path: str,
+    image_size: ImageSize = None
+) -> ContextManager[Iterable[np.ndarray]]:
     local_image_path = get_file(path)
     LOGGER.debug('local_image_path: %r', local_image_path)
     image = tf.keras.preprocessing.image.load_img(
         local_image_path
     )
     image_array = tf.keras.preprocessing.image.img_to_array(image)
+    if image_size is not None:
+        image_array = resize_image_to(image_array, image_size)
     yield [image_array]
 
 
-def get_image_source(path: str) -> ContextManager[Iterable[np.ndarray]]:
+def get_image_source(path: str, **kwargs) -> ContextManager[Iterable[np.ndarray]]:
     webcam_number = get_webcam_number(path)
     if webcam_number is not None:
-        return get_webcam_image_source(webcam_number)
-    return get_simple_image_source(path)
+        return get_webcam_image_source(webcam_number, **kwargs)
+    return get_simple_image_source(path, **kwargs)
