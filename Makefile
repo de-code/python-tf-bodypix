@@ -146,7 +146,6 @@ webcam:
 		--show-output \
 		--threshold=$(MASK_THRESHOLD) \
 		--add-overlay-alpha=$(ADD_OVERLAY_ALPHA) \
-		--colored \
 		$(ARGS)
 
 
