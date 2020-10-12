@@ -32,6 +32,7 @@ def get_webcam_image_source(webcam_number: int) -> Iterable[np.ndarray]:
     import cv2  # pylint: disable=import-outside-toplevel
 
     cam = cv2.VideoCapture(webcam_number)
+    cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
     try:
         while True:
             _, image_array = cam.read()
