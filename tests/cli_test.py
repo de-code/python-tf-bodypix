@@ -18,37 +18,37 @@ EXAMPLE_BACKGROUND_IMAGE_URL = (
 
 class TestMain:
     def test_should_not_fail_converting_to_mask(self, temp_dir: Path):
-        output_mask_path = temp_dir / 'mask.jpg'
+        output_image_path = temp_dir / 'mask.jpg'
         main([
             'image-to-mask',
             '--image=%s' % EXAMPLE_IMAGE_URL,
-            '--output-mask=%s' % output_mask_path
+            '--output=%s' % output_image_path
         ])
 
     def test_should_not_fail_converting_to_selected_mask(self, temp_dir: Path):
-        output_mask_path = temp_dir / 'mask.jpg'
+        output_image_path = temp_dir / 'mask.jpg'
         main([
             'image-to-mask',
             '--image=%s' % EXAMPLE_IMAGE_URL,
-            '--output-mask=%s' % output_mask_path,
+            '--output=%s' % output_image_path,
             '--parts', 'left_face', 'right_face'
         ])
 
     def test_should_not_fail_converting_to_colored_mask(self, temp_dir: Path):
-        output_mask_path = temp_dir / 'mask.jpg'
+        output_image_path = temp_dir / 'mask.jpg'
         main([
             'image-to-mask',
             '--image=%s' % EXAMPLE_IMAGE_URL,
-            '--output-mask=%s' % output_mask_path,
+            '--output=%s' % output_image_path,
             '--colored'
         ])
 
     def test_should_not_fail_converting_to_selected_colored_mask(self, temp_dir: Path):
-        output_mask_path = temp_dir / 'mask.jpg'
+        output_image_path = temp_dir / 'mask.jpg'
         main([
             'image-to-mask',
             '--image=%s' % EXAMPLE_IMAGE_URL,
-            '--output-mask=%s' % output_mask_path,
+            '--output=%s' % output_image_path,
             '--parts', 'left_face', 'right_face',
             '--colored'
         ])
@@ -59,5 +59,5 @@ class TestMain:
             'replace-background',
             '--image=%s' % EXAMPLE_IMAGE_URL,
             '--background=%s' % EXAMPLE_IMAGE_URL,
-            '--output-mask=%s' % output_image_path
+            '--output=%s' % output_image_path
         ])

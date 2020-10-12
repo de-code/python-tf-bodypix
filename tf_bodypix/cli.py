@@ -90,16 +90,16 @@ def add_output_arguments(parser: argparse.ArgumentParser):
         help="Shows the output in a window."
     )
     output_group.add_argument(
-        "--output-mask",
-        help="The path to the output mask."
+        "--output",
+        help="The path to the output file."
     )
 
 
 def get_output_sink(args: argparse.Namespace) -> T_OutputSink:
     if args.show_output:
         return get_show_image_output_sink()
-    if args.output_mask:
-        return get_image_output_sink_for_path(args.output_mask)
+    if args.output:
+        return get_image_output_sink_for_path(args.output)
     raise RuntimeError('no output sink')
 
 

@@ -39,7 +39,7 @@ TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     image-to-mask \
     --image /path/to/input-image.jpg \
-    --output-mask /path/to/output-mask.jpg \
+    --output /path/to/output-mask.jpg \
     --threshold=0.75
 ```
 
@@ -50,7 +50,7 @@ TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     image-to-mask \
     --image /path/to/input-image.jpg \
-    --output-mask /path/to/output-colored-mask.jpg \
+    --output /path/to/output-colored-mask.jpg \
     --threshold=0.75 \
     --colored
 ```
@@ -62,7 +62,7 @@ TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     image-to-mask \
     --image /path/to/input-image.jpg \
-    --output-mask /path/to/output-colored-mask.jpg \
+    --output /path/to/output-colored-mask.jpg \
     --threshold=0.75 \
     --parts left_face right_face \
     --colored
@@ -90,7 +90,7 @@ TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     image-to-mask \
     --image webcam:0 \
-    --output-mask /dev/videoN \
+    --output /dev/videoN \
     --threshold=0.75 \
     --add-overlay-alpha=0.5 \
     --colored
