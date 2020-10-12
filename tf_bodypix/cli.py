@@ -1,6 +1,7 @@
 import argparse
 import logging
 from abc import ABC, abstractmethod
+from contextlib import ExitStack
 from typing import Dict, List
 
 import tensorflow as tf
@@ -167,8 +168,14 @@ class ImageToMaskSubCommand(SubCommand):
         )
         timer = LoggingTimer()
         try:
-            with self.get_output_sink(args) as output_sink:
-                image_iterator = iter(get_image_source(args.image))
+            with ExitStack() as exit_stack:
+                output_sink = exit_stack.enter_context(
+                    self.get_output_sink(args)
+                )
+                image_source = exit_stack.enter_context(
+                    get_image_source(args.image)
+                )
+                image_iterator = iter(image_source)
                 timer.start()
                 while True:
                     timer.on_frame_start(initial_step_name='in')
