@@ -21,7 +21,7 @@ class TestMain:
         output_image_path = temp_dir / 'mask.jpg'
         main([
             'image-to-mask',
-            '--image=%s' % EXAMPLE_IMAGE_URL,
+            '--source=%s' % EXAMPLE_IMAGE_URL,
             '--output=%s' % output_image_path
         ])
 
@@ -29,7 +29,7 @@ class TestMain:
         output_image_path = temp_dir / 'mask.jpg'
         main([
             'image-to-mask',
-            '--image=%s' % EXAMPLE_IMAGE_URL,
+            '--source=%s' % EXAMPLE_IMAGE_URL,
             '--output=%s' % output_image_path,
             '--parts', 'left_face', 'right_face'
         ])
@@ -38,7 +38,7 @@ class TestMain:
         output_image_path = temp_dir / 'mask.jpg'
         main([
             'image-to-mask',
-            '--image=%s' % EXAMPLE_IMAGE_URL,
+            '--source=%s' % EXAMPLE_IMAGE_URL,
             '--output=%s' % output_image_path,
             '--colored'
         ])
@@ -47,7 +47,7 @@ class TestMain:
         output_image_path = temp_dir / 'mask.jpg'
         main([
             'image-to-mask',
-            '--image=%s' % EXAMPLE_IMAGE_URL,
+            '--source=%s' % EXAMPLE_IMAGE_URL,
             '--output=%s' % output_image_path,
             '--parts', 'left_face', 'right_face',
             '--colored'
@@ -57,7 +57,7 @@ class TestMain:
         output_image_path = temp_dir / 'output.jpg'
         main([
             'replace-background',
-            '--image=%s' % EXAMPLE_IMAGE_URL,
+            '--source=%s' % EXAMPLE_IMAGE_URL,
             '--background=%s' % EXAMPLE_IMAGE_URL,
             '--output=%s' % output_image_path
         ])

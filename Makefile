@@ -94,7 +94,7 @@ run:
 convert-example-image-to-mask:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
 		image-to-mask \
-		--image \
+		--source \
 		"$(IMAGE_URL)" \
 		--output-mask \
 		"$(OUTPUT_MASK_PATH)" \
@@ -105,7 +105,7 @@ convert-example-image-to-mask:
 convert-example-image-to-selected-mask:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
 		image-to-mask \
-		--image \
+		--source \
 		"$(IMAGE_URL)" \
 		--output-mask \
 		"$(OUTPUT_SELECTED_MASK_PATH)" \
@@ -117,7 +117,7 @@ convert-example-image-to-selected-mask:
 convert-example-image-to-colored-mask:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
 		image-to-mask \
-		--image \
+		--source \
 		"$(IMAGE_URL)" \
 		--output-mask \
 		"$(OUTPUT_COLORED_MASK_PATH)" \
@@ -129,7 +129,7 @@ convert-example-image-to-colored-mask:
 convert-example-image-to-selected-colored-mask:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
 		image-to-mask \
-		--image \
+		--source \
 		"$(IMAGE_URL)" \
 		--output-mask \
 		"$(OUTPUT_SELECTED_COLORED_MASK_PATH)" \
@@ -142,7 +142,7 @@ convert-example-image-to-selected-colored-mask:
 webcam:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
 		image-to-mask \
-		--image \
+		--source \
 		"$(WEBCAM_PATH)" \
 		--show-output \
 		--threshold=$(MASK_THRESHOLD) \
@@ -153,7 +153,7 @@ webcam:
 webcam-replace-background:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
 		replace-background \
-		--image \
+		--source \
 		"$(WEBCAM_PATH)" \
 		--background \
 		"$(BACKGROUND_IMAGE_URL)" \
@@ -165,7 +165,7 @@ webcam-replace-background:
 webcam-v4l2:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
 		image-to-mask \
-		--image \
+		--source \
 		"$(WEBCAM_PATH)" \
 		--output-mask=$(VIRTUAL_VIDEO_DEVICE) \
 		--threshold=$(MASK_THRESHOLD) \
@@ -176,7 +176,7 @@ webcam-v4l2:
 webcam-v4l2-colored:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
 		image-to-mask \
-		--image \
+		--source \
 		"$(WEBCAM_PATH)" \
 		--output-mask=$(VIRTUAL_VIDEO_DEVICE) \
 		--threshold=$(MASK_THRESHOLD) \
@@ -188,7 +188,7 @@ webcam-v4l2-colored:
 webcam-v4l2-replace-background:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
 		replace-background \
-		--image \
+		--source \
 		"$(WEBCAM_PATH)" \
 		--background \
 		"$(BACKGROUND_IMAGE_URL)" \

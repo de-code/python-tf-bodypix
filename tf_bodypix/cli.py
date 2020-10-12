@@ -82,6 +82,14 @@ def add_model_arguments(parser: argparse.ArgumentParser):
     )
 
 
+def add_source_arguments(parser: argparse.ArgumentParser):
+    parser.add_argument(
+        "--source",
+        required=True,
+        help="The path or URL to the source image or webcam source."
+    )
+
+
 def add_output_arguments(parser: argparse.ArgumentParser):
     output_group = parser.add_mutually_exclusive_group(required=True)
     output_group.add_argument(
@@ -120,13 +128,7 @@ class ImageToMaskSubCommand(SubCommand):
     def add_arguments(self, parser: argparse.ArgumentParser):
         add_common_arguments(parser)
         add_model_arguments(parser)
-
-        parser.add_argument(
-            "--image",
-            required=True,
-            help="The path or URL to the source image."
-        )
-
+        add_source_arguments(parser)
         add_output_arguments(parser)
 
         parser.add_argument(
@@ -186,7 +188,7 @@ class ImageToMaskSubCommand(SubCommand):
         try:
             with ExitStack() as exit_stack:
                 output_sink = exit_stack.enter_context(get_output_sink(args))
-                image_source = exit_stack.enter_context(get_image_source(args.image))
+                image_source = exit_stack.enter_context(get_image_source(args.source))
                 image_iterator = iter(image_source)
                 timer.start()
                 while True:
@@ -216,12 +218,7 @@ class ReplaceBackgroundSubCommand(SubCommand):
     def add_arguments(self, parser: argparse.ArgumentParser):
         add_common_arguments(parser)
         add_model_arguments(parser)
-
-        parser.add_argument(
-            "--image",
-            required=True,
-            help="The path or URL to the source image."
-        )
+        add_source_arguments(parser)
 
         parser.add_argument(
             "--background",
@@ -267,7 +264,7 @@ class ReplaceBackgroundSubCommand(SubCommand):
             background_image_iterator = None
             with ExitStack() as exit_stack:
                 output_sink = exit_stack.enter_context(get_output_sink(args))
-                image_source = exit_stack.enter_context(get_image_source(args.image))
+                image_source = exit_stack.enter_context(get_image_source(args.source))
                 image_iterator = iter(image_source)
                 timer.start()
                 while True:
