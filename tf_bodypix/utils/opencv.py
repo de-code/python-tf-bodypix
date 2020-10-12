@@ -1,5 +1,6 @@
 import logging
-from typing import Iterable
+from contextlib import contextmanager
+from typing import ContextManager, Iterable
 
 import cv2
 import numpy as np
@@ -8,15 +9,21 @@ import numpy as np
 LOGGER = logging.getLogger(__name__)
 
 
-def get_webcam_image_source(webcam_number: int) -> Iterable[np.ndarray]:
+def iter_read_video_images(video_capture: cv2.VideoCapture) -> Iterable[np.ndarray]:
+    while True:
+        _, image_array = video_capture.read()
+        LOGGER.debug('cam image_array.shape: %s', image_array.shape)
+        yield image_array
+
+
+@contextmanager
+def get_webcam_image_source(webcam_number: int) -> ContextManager[Iterable[np.ndarray]]:
     cam = cv2.VideoCapture(webcam_number)
     cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
     try:
-        while True:
-            _, image_array = cam.read()
-            LOGGER.debug('cam image_array.shape: %s', image_array.shape)
-            yield image_array
+        yield iter_read_video_images(cam)
     finally:
+        LOGGER.debug('releasing video capture: %s', webcam_number)
         cam.release()
 
 

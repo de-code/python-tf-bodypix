@@ -1,8 +1,9 @@
 import logging
 import os
 import re
+from contextlib import contextmanager
 from hashlib import md5
-from typing import Iterable
+from typing import ContextManager, Iterable
 
 import numpy as np
 import tensorflow as tf
@@ -30,22 +31,23 @@ def get_webcam_number(path: str) -> int:
     return int(match.group(1))
 
 
-def get_webcam_image_source(webcam_number: int) -> Iterable[np.ndarray]:
+def get_webcam_image_source(webcam_number: int) -> ContextManager[Iterable[np.ndarray]]:
     from tf_bodypix.utils.opencv import get_webcam_image_source as _get_webcam_image_source
     return _get_webcam_image_source(webcam_number)
 
 
-def get_simple_image_source(path: str) -> Iterable[np.ndarray]:
+@contextmanager
+def get_simple_image_source(path: str) -> ContextManager[Iterable[np.ndarray]]:
     local_image_path = get_file(path)
     LOGGER.debug('local_image_path: %r', local_image_path)
     image = tf.keras.preprocessing.image.load_img(
         local_image_path
     )
     image_array = tf.keras.preprocessing.image.img_to_array(image)
-    yield image_array
+    yield [image_array]
 
 
-def get_image_source(path: str) -> Iterable[np.ndarray]:
+def get_image_source(path: str) -> ContextManager[Iterable[np.ndarray]]:
     webcam_number = get_webcam_number(path)
     if webcam_number is not None:
         return get_webcam_image_source(webcam_number)
