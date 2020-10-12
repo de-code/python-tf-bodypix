@@ -238,14 +238,9 @@ class ReplaceBackgroundSubCommand(SubCommand):
     ) -> np.ndarray:
         result = bodypix_model.predict_single(image_array)
         timer.on_step_start('get_mask')
-        mask = result.get_mask(args.threshold)
+        mask = result.get_mask(args.threshold, dtype=tf.float32)
         LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
         timer.on_step_start('compose')
-        try:
-            if mask.dtype == tf.int32:
-                mask = tf.cast(mask, tf.float32)
-        except TypeError:
-            pass
         background_image_array = resize_image_to(
             background_image_array, get_image_size(image_array)
         )

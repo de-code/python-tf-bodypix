@@ -224,10 +224,11 @@ class BodyPixResultWrapper:
             )
         return scaled_part_heatmap_argmax
 
-    def get_mask(self, threshold: float) -> np.ndarray:
+    def get_mask(self, threshold: float, **kwargs) -> np.ndarray:
         return to_mask_tensor(
             self.get_scaled_segment_scores(),
-            threshold
+            threshold,
+            **kwargs
         )
 
     def get_part_mask(

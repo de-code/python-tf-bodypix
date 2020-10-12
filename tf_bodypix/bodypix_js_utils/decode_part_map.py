@@ -8,9 +8,10 @@ import numpy as np
 
 def to_mask_tensor(
     segment_scores: np.ndarray,
-    threshold: float
+    threshold: float,
+    dtype: type = tf.int32
 ) -> np.ndarray:
     return tf.cast(
         tf.greater(segment_scores, threshold),
-        tf.int32
+        dtype
     )
