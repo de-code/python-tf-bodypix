@@ -103,6 +103,16 @@ def get_output_sink(args: argparse.Namespace) -> T_OutputSink:
     raise RuntimeError('no output sink')
 
 
+def load_bodypix_model(args: argparse.Namespace) -> BodyPixModelWrapper:
+    local_model_path = download_model(args.model_path)
+    LOGGER.debug('local_model_path: %r', local_model_path)
+    return load_model(
+        local_model_path,
+        internal_resolution=args.internal_resolution,
+        output_stride=args.output_stride
+    )
+
+
 class ImageToMaskSubCommand(SubCommand):
     def __init__(self):
         super().__init__("image-to-mask", "Converts an image to its mask")
@@ -171,13 +181,7 @@ class ImageToMaskSubCommand(SubCommand):
         return mask
 
     def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
-        local_model_path = download_model(args.model_path)
-        LOGGER.debug('local_model_path: %r', local_model_path)
-        bodypix_model = load_model(
-            local_model_path,
-            internal_resolution=args.internal_resolution,
-            output_stride=args.output_stride
-        )
+        bodypix_model = load_bodypix_model(args)
         timer = LoggingTimer()
         try:
             with ExitStack() as exit_stack:
@@ -257,13 +261,7 @@ class ReplaceBackgroundSubCommand(SubCommand):
         return output
 
     def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
-        local_model_path = download_model(args.model_path)
-        LOGGER.debug('local_model_path: %r', local_model_path)
-        bodypix_model = load_model(
-            local_model_path,
-            internal_resolution=args.internal_resolution,
-            output_stride=args.output_stride
-        )
+        bodypix_model = load_bodypix_model(args)
         timer = LoggingTimer()
         try:
             background_image_iterator = None
