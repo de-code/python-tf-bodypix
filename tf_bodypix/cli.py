@@ -51,6 +51,14 @@ def add_common_arguments(parser: argparse.ArgumentParser):
     )
 
 
+def get_output_sink(args: argparse.Namespace) -> T_OutputSink:
+    if args.show_output:
+        return get_show_image_output_sink()
+    if args.output_mask:
+        return get_image_output_sink_for_path(args.output_mask)
+    raise RuntimeError('no output sink')
+
+
 class ImageToMaskSubCommand(SubCommand):
     def __init__(self):
         super().__init__("image-to-mask", "Converts an image to its mask")
@@ -119,13 +127,6 @@ class ImageToMaskSubCommand(SubCommand):
             help="Select the parts to output"
         )
 
-    def get_output_sink(self, args: argparse.Namespace) -> T_OutputSink:
-        if args.show_output:
-            return get_show_image_output_sink()
-        if args.output_mask:
-            return get_image_output_sink_for_path(args.output_mask)
-        raise RuntimeError('no output sink')
-
     def get_output_image(
         self,
         bodypix_model: BodyPixModelWrapper,
@@ -171,7 +172,7 @@ class ImageToMaskSubCommand(SubCommand):
         timer = LoggingTimer()
         try:
             with ExitStack() as exit_stack:
-                output_sink = exit_stack.enter_context(self.get_output_sink(args))
+                output_sink = exit_stack.enter_context(get_output_sink(args))
                 image_source = exit_stack.enter_context(get_image_source(args.image))
                 image_iterator = iter(image_source)
                 timer.start()
@@ -269,13 +270,6 @@ class ReplaceBackgroundSubCommand(SubCommand):
             help="Select the parts to output"
         )
 
-    def get_output_sink(self, args: argparse.Namespace) -> T_OutputSink:
-        if args.show_output:
-            return get_show_image_output_sink()
-        if args.output_mask:
-            return get_image_output_sink_for_path(args.output_mask)
-        raise RuntimeError('no output sink')
-
     def get_output_image(
         self,
         bodypix_model: BodyPixModelWrapper,
@@ -317,7 +311,7 @@ class ReplaceBackgroundSubCommand(SubCommand):
         try:
             background_image_iterator = None
             with ExitStack() as exit_stack:
-                output_sink = exit_stack.enter_context(self.get_output_sink(args))
+                output_sink = exit_stack.enter_context(get_output_sink(args))
                 image_source = exit_stack.enter_context(get_image_source(args.image))
                 image_iterator = iter(image_source)
                 timer.start()
