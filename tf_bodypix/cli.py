@@ -169,12 +169,8 @@ class ImageToMaskSubCommand(SubCommand):
         timer = LoggingTimer()
         try:
             with ExitStack() as exit_stack:
-                output_sink = exit_stack.enter_context(
-                    self.get_output_sink(args)
-                )
-                image_source = exit_stack.enter_context(
-                    get_image_source(args.image)
-                )
+                output_sink = exit_stack.enter_context(self.get_output_sink(args))
+                image_source = exit_stack.enter_context(get_image_source(args.image))
                 image_iterator = iter(image_source)
                 timer.start()
                 while True:
