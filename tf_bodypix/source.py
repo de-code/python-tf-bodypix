@@ -7,6 +7,8 @@ from typing import Iterable
 import numpy as np
 import tensorflow as tf
 
+# pylint: disable=import-outside-toplevel
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,17 +31,8 @@ def get_webcam_number(path: str) -> int:
 
 
 def get_webcam_image_source(webcam_number: int) -> Iterable[np.ndarray]:
-    import cv2  # pylint: disable=import-outside-toplevel
-
-    cam = cv2.VideoCapture(webcam_number)
-    cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-    try:
-        while True:
-            _, image_array = cam.read()
-            LOGGER.debug('cam image_array.shape: %s', image_array.shape)
-            yield image_array
-    finally:
-        cam.release()
+    from tf_bodypix.utils.opencv import get_webcam_image_source as _get_webcam_image_source
+    return _get_webcam_image_source(webcam_number)
 
 
 def get_simple_image_source(path: str) -> Iterable[np.ndarray]:
