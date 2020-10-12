@@ -241,7 +241,6 @@ class ReplaceBackgroundSubCommand(SubCommand):
         mask = result.get_mask(args.threshold)
         LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
         timer.on_step_start('compose')
-        # alpha = 255
         try:
             if mask.dtype == tf.int32:
                 mask = tf.cast(mask, tf.float32)
