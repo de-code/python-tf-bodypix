@@ -77,6 +77,14 @@ class ImageToMaskSubCommand(SubCommand):
         )
 
         parser.add_argument(
+            "--output-stride",
+            type=int,
+            help=(
+                "The output stride to use."
+                " It will be guessed from the model path if not specified."
+            )
+        )
+        parser.add_argument(
             "--internal-resolution",
             type=float,
             default=0.5,
@@ -152,7 +160,8 @@ class ImageToMaskSubCommand(SubCommand):
         LOGGER.debug('local_model_path: %r', local_model_path)
         bodypix_model = load_model(
             local_model_path,
-            internal_resolution=args.internal_resolution
+            internal_resolution=args.internal_resolution,
+            output_stride=args.output_stride
         )
         timer = LoggingTimer()
         try:
