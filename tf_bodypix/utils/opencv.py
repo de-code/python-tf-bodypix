@@ -1,10 +1,23 @@
 import logging
+from typing import Iterable
 
 import cv2
 import numpy as np
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+def get_webcam_image_source(webcam_number: int) -> Iterable[np.ndarray]:
+    cam = cv2.VideoCapture(webcam_number)
+    cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+    try:
+        while True:
+            _, image_array = cam.read()
+            LOGGER.debug('cam image_array.shape: %s', image_array.shape)
+            yield image_array
+    finally:
+        cam.release()
 
 
 class ShowImageSink:
