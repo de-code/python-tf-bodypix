@@ -10,6 +10,12 @@ EXAMPLE_IMAGE_URL = (
 )
 
 
+EXAMPLE_BACKGROUND_IMAGE_URL = (
+    r'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa'
+    r'/Gold_Coast_skyline.jpg/640px-Gold_Coast_skyline.jpg'
+)
+
+
 class TestMain:
     def test_should_not_fail_converting_to_mask(self, temp_dir: Path):
         output_mask_path = temp_dir / 'mask.jpg'
@@ -45,4 +51,13 @@ class TestMain:
             '--output-mask=%s' % output_mask_path,
             '--parts', 'left_face', 'right_face',
             '--colored'
+        ])
+
+    def test_should_not_fail_replacing_background(self, temp_dir: Path):
+        output_image_path = temp_dir / 'output.jpg'
+        main([
+            'replace-background',
+            '--image=%s' % EXAMPLE_IMAGE_URL,
+            '--background=%s' % EXAMPLE_IMAGE_URL,
+            '--output-mask=%s' % output_image_path
         ])

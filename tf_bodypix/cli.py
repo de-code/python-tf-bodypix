@@ -51,6 +51,37 @@ def add_common_arguments(parser: argparse.ArgumentParser):
     )
 
 
+def add_model_arguments(parser: argparse.ArgumentParser):
+    parser.add_argument(
+        "--model-path",
+        default=DEFAULT_MODEL_PATH,
+        help="The path or URL to the bodypix model."
+    )
+    parser.add_argument(
+        "--output-stride",
+        type=int,
+        help=(
+            "The output stride to use."
+            " It will be guessed from the model path if not specified."
+        )
+    )
+    parser.add_argument(
+        "--internal-resolution",
+        type=float,
+        default=0.5,
+        help=(
+            "The internal resolution factor to resize the input image to"
+            " before passing it the model."
+        )
+    )
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=0.75,
+        help="The mask threshold."
+    )
+
+
 def get_output_sink(args: argparse.Namespace) -> T_OutputSink:
     if args.show_output:
         return get_show_image_output_sink()
@@ -65,15 +96,12 @@ class ImageToMaskSubCommand(SubCommand):
 
     def add_arguments(self, parser: argparse.ArgumentParser):
         add_common_arguments(parser)
+        add_model_arguments(parser)
+
         parser.add_argument(
             "--image",
             required=True,
             help="The path or URL to the source image."
-        )
-        parser.add_argument(
-            "--model-path",
-            default=DEFAULT_MODEL_PATH,
-            help="The path or URL to the bodypix model."
         )
 
         output_group = parser.add_mutually_exclusive_group(required=True)
@@ -85,30 +113,6 @@ class ImageToMaskSubCommand(SubCommand):
         output_group.add_argument(
             "--output-mask",
             help="The path to the output mask."
-        )
-
-        parser.add_argument(
-            "--output-stride",
-            type=int,
-            help=(
-                "The output stride to use."
-                " It will be guessed from the model path if not specified."
-            )
-        )
-        parser.add_argument(
-            "--internal-resolution",
-            type=float,
-            default=0.5,
-            help=(
-                "The internal resolution factor to resize the input image to"
-                " before passing it the model."
-            )
-        )
-        parser.add_argument(
-            "--threshold",
-            type=float,
-            default=0.75,
-            help="The mask threshold."
         )
         parser.add_argument(
             "--add-overlay-alpha",
@@ -202,15 +206,12 @@ class ReplaceBackgroundSubCommand(SubCommand):
 
     def add_arguments(self, parser: argparse.ArgumentParser):
         add_common_arguments(parser)
+        add_model_arguments(parser)
+
         parser.add_argument(
             "--image",
             required=True,
             help="The path or URL to the source image."
-        )
-        parser.add_argument(
-            "--model-path",
-            default=DEFAULT_MODEL_PATH,
-            help="The path or URL to the bodypix model."
         )
 
         parser.add_argument(
@@ -228,30 +229,6 @@ class ReplaceBackgroundSubCommand(SubCommand):
         output_group.add_argument(
             "--output-mask",
             help="The path to the output mask."
-        )
-
-        parser.add_argument(
-            "--output-stride",
-            type=int,
-            help=(
-                "The output stride to use."
-                " It will be guessed from the model path if not specified."
-            )
-        )
-        parser.add_argument(
-            "--internal-resolution",
-            type=float,
-            default=0.5,
-            help=(
-                "The internal resolution factor to resize the input image to"
-                " before passing it the model."
-            )
-        )
-        parser.add_argument(
-            "--threshold",
-            type=float,
-            default=0.75,
-            help="The mask threshold."
         )
         parser.add_argument(
             "--add-overlay-alpha",
