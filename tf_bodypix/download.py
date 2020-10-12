@@ -34,10 +34,10 @@ class BodyPixModelPaths:
         _DOWNLOAD_URL_PREFIX + 'mobilenet/float/100/model-stride16.json'
     )
     MOBILENET_RESNET50_FLOAT_STRIDE_16 = (
-        _DOWNLOAD_URL_PREFIX + 'savedmodel/bodypix/resnet50/float/model-stride16.json'
+        _DOWNLOAD_URL_PREFIX + 'resnet50/float/model-stride16.json'
     )
     MOBILENET_RESNET50_FLOAT_STRIDE_32 = (
-        _DOWNLOAD_URL_PREFIX + 'savedmodel/bodypix/resnet50/float/model-stride32.json'
+        _DOWNLOAD_URL_PREFIX + 'resnet50/float/model-stride32.json'
     )
 
 

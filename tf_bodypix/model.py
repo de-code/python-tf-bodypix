@@ -312,6 +312,58 @@ def get_structured_output_names(structured_outputs: List[tf.Tensor]) -> List[str
     ]
 
 
+def load_tflite_model(model_path: str):
+    # Load TFLite model and allocate tensors.
+    interpreter = tf.lite.Interpreter(model_path=model_path)
+    interpreter.allocate_tensors()
+
+    input_details = interpreter.get_input_details()
+    LOGGER.debug('input_details: %s', input_details)
+    input_names = [item['name'] for item in input_details]
+    LOGGER.debug('input_names: %s', input_names)
+    input_details_map = dict(zip(input_names, input_details))
+
+    output_details = interpreter.get_output_details()
+    LOGGER.debug('output_details: %s', output_details)
+    output_names = [item['name'] for item in output_details]
+    LOGGER.debug('output_names: %s', output_names)
+
+    image_input = input_details_map['image']
+    input_shape = image_input['shape']
+    LOGGER.debug('input_shape: %s', input_shape)
+
+    def predict(image_data: np.ndarray):
+        if len(image_data.shape) == 4:
+            image_data = image_data[0]
+        LOGGER.debug('tflite predict, image_data.shape=%s (%s)', image_data.shape, image_data.dtype)
+        height, width, _ = image_data.shape
+        # input_data = np.array(np.random.random_sample(input_shape), dtype=np.float32)
+        interpreter.resize_tensor_input(image_input['index'], list(image_data.shape))
+        interpreter.allocate_tensors()
+        interpreter.set_tensor(image_input['index'], image_data)
+        # interpreter.
+        interpreter.set_tensor(input_details_map['image_size']['index'], np.array([height, width], dtype=np.float))
+
+        interpreter.invoke()
+
+        # The function `get_tensor()` returns a copy of the tensor data.
+        # Use `tensor()` in order to get a pointer to the tensor.
+        return {
+            item['name']: interpreter.get_tensor(item['index'])
+            for item in output_details
+        }
+        # output_data = interpreter.get_tensor(output_details[0]['index'])
+        # LOGGER.debug('output_data: %s', output_data)
+
+        # loaded = tf.saved_model.load(model_path)
+        # LOGGER.debug('loaded: %s', loaded)
+        # LOGGER.debug('signature keys: %s', list(loaded.signatures.keys()))
+        # infer = loaded.signatures["serving_default"]
+        # LOGGER.info('structured_outputs: %s', infer.structured_outputs)
+        # return infer
+    return predict
+
+
 def load_using_saved_model_and_get_predict_function(model_path):
     loaded = tf.saved_model.load(model_path)
     LOGGER.debug('loaded: %s', loaded)
@@ -337,6 +389,8 @@ def load_using_tfjs_graph_converter_and_get_predict_function(
 def load_model_and_get_predict_function(
     model_path: str
 ) -> Callable[[np.ndarray], dict]:
+    if model_path.endswith('.tflite'):
+        return load_tflite_model(model_path)
     try:
         return load_using_saved_model_and_get_predict_function(model_path)
     except OSError:
@@ -344,10 +398,10 @@ def load_model_and_get_predict_function(
 
 
 def get_output_stride_from_model_path(model_path: str) -> int:
-    match = re.search(r'stride(\d+)', model_path)
+    match = re.search(r'stride(\d+)|_(\d+)_quant', model_path)
     if not match:
         raise ValueError('cannot extract output stride from model path: %r' % model_path)
-    return int(match.group(1))
+    return int(match.group(1) or match.group(2))
 
 
 def get_architecture_from_model_path(model_path: str) -> int:
