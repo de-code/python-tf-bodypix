@@ -96,6 +96,20 @@ python -m tf_bodypix \
     --colored
 ```
 
+### Capture Webcam and replace background, writing to v4l2loopback device
+
+(replace `/dev/videoN` with the actual virtual video device)
+
+```bash
+TF_CPP_MIN_LOG_LEVEL=3 \
+python -m tf_bodypix \
+    replace-background \
+    --source webcam:0 \
+    --background /path/to/background-image.jpg \
+    --output /dev/videoN \
+    --threshold=0.75
+```
+
 ## API
 
 ```python
