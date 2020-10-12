@@ -82,6 +82,19 @@ def add_model_arguments(parser: argparse.ArgumentParser):
     )
 
 
+def add_output_arguments(parser: argparse.ArgumentParser):
+    output_group = parser.add_mutually_exclusive_group(required=True)
+    output_group.add_argument(
+        "--show-output",
+        action="store_true",
+        help="Shows the output in a window."
+    )
+    output_group.add_argument(
+        "--output-mask",
+        help="The path to the output mask."
+    )
+
+
 def get_output_sink(args: argparse.Namespace) -> T_OutputSink:
     if args.show_output:
         return get_show_image_output_sink()
@@ -104,16 +117,8 @@ class ImageToMaskSubCommand(SubCommand):
             help="The path or URL to the source image."
         )
 
-        output_group = parser.add_mutually_exclusive_group(required=True)
-        output_group.add_argument(
-            "--show-output",
-            action="store_true",
-            help="Shows the output in a window."
-        )
-        output_group.add_argument(
-            "--output-mask",
-            help="The path to the output mask."
-        )
+        add_output_arguments(parser)
+
         parser.add_argument(
             "--add-overlay-alpha",
             type=float,
@@ -220,32 +225,7 @@ class ReplaceBackgroundSubCommand(SubCommand):
             help="The path or URL to the background image."
         )
 
-        output_group = parser.add_mutually_exclusive_group(required=True)
-        output_group.add_argument(
-            "--show-output",
-            action="store_true",
-            help="Shows the output in a window."
-        )
-        output_group.add_argument(
-            "--output-mask",
-            help="The path to the output mask."
-        )
-        parser.add_argument(
-            "--add-overlay-alpha",
-            type=float,
-            help="The opacity of mask overlay to add."
-        )
-        parser.add_argument(
-            "--colored",
-            action="store_true",
-            help="Enable generating the colored part mask"
-        )
-        parser.add_argument(
-            "--parts",
-            nargs="*",
-            choices=PART_CHANNELS,
-            help="Select the parts to output"
-        )
+        add_output_arguments(parser)
 
     def get_output_image(
         self,

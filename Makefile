@@ -159,7 +159,6 @@ webcam-replace-background:
 		"$(BACKGROUND_IMAGE_URL)" \
 		--show-output \
 		--threshold=$(MASK_THRESHOLD) \
-		--add-overlay-alpha=$(ADD_OVERLAY_ALPHA) \
 		$(ARGS)
 
 
