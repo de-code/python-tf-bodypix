@@ -8,6 +8,7 @@ ARGS =
 
 
 IMAGE_URL = https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Person_Of_Interest_-_Panel_%289353656298%29.jpg/640px-Person_Of_Interest_-_Panel_%289353656298%29.jpg
+BACKGROUND_IMAGE_URL = https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Gold_Coast_skyline.jpg/640px-Gold_Coast_skyline.jpg
 OUTPUT_MASK_PATH = data/example-mask.jpg
 OUTPUT_SELECTED_MASK_PATH = data/example-selected-mask.jpg
 OUTPUT_COLORED_MASK_PATH = data/example-colored-mask.jpg
@@ -149,6 +150,19 @@ webcam:
 		$(ARGS)
 
 
+webcam-replace-background:
+	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+		replace-background \
+		--image \
+		"$(WEBCAM_PATH)" \
+		--background \
+		"$(BACKGROUND_IMAGE_URL)" \
+		--show-output \
+		--threshold=$(MASK_THRESHOLD) \
+		--add-overlay-alpha=$(ADD_OVERLAY_ALPHA) \
+		$(ARGS)
+
+
 webcam-v4l2:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
 		image-to-mask \
@@ -169,4 +183,16 @@ webcam-v4l2-colored:
 		--threshold=$(MASK_THRESHOLD) \
 		--add-overlay-alpha=$(ADD_OVERLAY_ALPHA) \
 		--colored \
+		$(ARGS)
+
+
+webcam-v4l2-replace-background:
+	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+		replace-background \
+		--image \
+		"$(WEBCAM_PATH)" \
+		--background \
+		"$(BACKGROUND_IMAGE_URL)" \
+		--output-mask=$(VIRTUAL_VIDEO_DEVICE) \
+		--threshold=$(MASK_THRESHOLD) \
 		$(ARGS)
