@@ -5,16 +5,18 @@ from contextlib import contextmanager
 from hashlib import md5
 from typing import ContextManager, Iterable
 
-import numpy as np
 import tensorflow as tf
 
-from tf_bodypix.utils.image import resize_image_to, ImageSize
+from tf_bodypix.utils.image import resize_image_to, ImageSize, ImageArray
 
 
 # pylint: disable=import-outside-toplevel
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+T_ImageSource = ContextManager[Iterable[ImageArray]]
 
 
 def get_file(file_path: str) -> str:
@@ -34,16 +36,17 @@ def get_webcam_number(path: str) -> int:
     return int(match.group(1))
 
 
-def get_webcam_image_source(webcam_number: int) -> ContextManager[Iterable[np.ndarray]]:
+def get_webcam_image_source(webcam_number: int, **kwargs) -> T_ImageSource:
     from tf_bodypix.utils.opencv import get_webcam_image_source as _get_webcam_image_source
-    return _get_webcam_image_source(webcam_number)
+    return _get_webcam_image_source(webcam_number, **kwargs)
 
 
 @contextmanager
 def get_simple_image_source(
     path: str,
-    image_size: ImageSize = None
-) -> ContextManager[Iterable[np.ndarray]]:
+    image_size: ImageSize = None,
+    **_
+) -> T_ImageSource:
     local_image_path = get_file(path)
     LOGGER.debug('local_image_path: %r', local_image_path)
     image = tf.keras.preprocessing.image.load_img(
@@ -55,7 +58,7 @@ def get_simple_image_source(
     yield [image_array]
 
 
-def get_image_source(path: str, **kwargs) -> ContextManager[Iterable[np.ndarray]]:
+def get_image_source(path: str, **kwargs) -> T_ImageSource:
     webcam_number = get_webcam_number(path)
     if webcam_number is not None:
         return get_webcam_image_source(webcam_number, **kwargs)

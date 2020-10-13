@@ -9,10 +9,15 @@ import tensorflow as tf
 import numpy as np
 
 from tf_bodypix.utils.timer import LoggingTimer
-from tf_bodypix.utils.image import resize_image_to, get_image_size, box_blur_image
+from tf_bodypix.utils.image import (
+    ImageSize,
+    resize_image_to,
+    get_image_size,
+    box_blur_image
+)
 from tf_bodypix.download import download_model
 from tf_bodypix.model import load_model, PART_CHANNELS, BodyPixModelWrapper, BodyPixResultWrapper
-from tf_bodypix.source import get_image_source
+from tf_bodypix.source import get_image_source, T_ImageSource
 from tf_bodypix.sink import (
     T_OutputSink,
     get_image_output_sink_for_path,
@@ -94,11 +99,42 @@ def add_model_arguments(parser: argparse.ArgumentParser):
     )
 
 
+def _fourcc_type(text: str) -> str:
+    if not text:
+        return text
+    if len(text) != 4:
+        raise TypeError(
+            'fourcc code must have exactly four characters, e.g. MJPG; but was: %r' % text
+        )
+    return text
+
+
 def add_source_arguments(parser: argparse.ArgumentParser):
-    parser.add_argument(
+    source_group = parser.add_argument_group('source')
+    source_group.add_argument(
         "--source",
         required=True,
         help="The path or URL to the source image or webcam source."
+    )
+    image_size_help = (
+        "If width and height are specified, the source will be resized."
+        "In the case of the webcam, it will be asked to produce that resolution if possible"
+    )
+    source_group.add_argument(
+        "--source-width",
+        type=int,
+        help=image_size_help
+    )
+    source_group.add_argument(
+        "--source-height",
+        type=int,
+        help=image_size_help
+    )
+    source_group.add_argument(
+        "--source-fourcc",
+        type=_fourcc_type,
+        default="MJPG",
+        help="the fourcc code to select the source to"
     )
 
 
@@ -113,6 +149,13 @@ def add_output_arguments(parser: argparse.ArgumentParser):
         "--output",
         help="The path to the output file."
     )
+
+
+def get_image_source_for_args(args: argparse.Namespace) -> T_ImageSource:
+    image_size = None
+    if args.source_width and args.source_height:
+        image_size = ImageSize(height=args.source_height, width=args.source_width)
+    return get_image_source(args.source, image_size=image_size, fourcc=args.source_fourcc)
 
 
 def get_output_sink(args: argparse.Namespace) -> T_OutputSink:
@@ -223,7 +266,7 @@ class ImageToMaskSubCommand(SubCommand):
         try:
             with ExitStack() as exit_stack:
                 output_sink = exit_stack.enter_context(get_output_sink(args))
-                image_source = exit_stack.enter_context(get_image_source(args.source))
+                image_source = exit_stack.enter_context(get_image_source_for_args(args))
                 image_iterator = iter(image_source)
                 timer.start()
                 while True:
@@ -295,7 +338,7 @@ class ReplaceBackgroundSubCommand(SubCommand):
             background_image_iterator = None
             with ExitStack() as exit_stack:
                 output_sink = exit_stack.enter_context(get_output_sink(args))
-                image_source = exit_stack.enter_context(get_image_source(args.source))
+                image_source = exit_stack.enter_context(get_image_source_for_args(args))
                 image_iterator = iter(image_source)
                 timer.start()
                 while True:
