@@ -134,7 +134,7 @@ def add_source_arguments(parser: argparse.ArgumentParser):
         "--source-fourcc",
         type=_fourcc_type,
         default="MJPG",
-        help="the fourcc code to select the source to"
+        help="the fourcc code to select the source to, e.g. MJPG"
     )
 
 
