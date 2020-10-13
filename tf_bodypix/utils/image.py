@@ -4,6 +4,11 @@ from collections import namedtuple
 import numpy as np
 import tensorflow as tf
 
+try:
+    import cv2
+except ImportError:
+    cv2 = None
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -11,6 +16,24 @@ LOGGER = logging.getLogger(__name__)
 ImageSize = namedtuple('ImageSize', ('height', 'width'))
 
 ImageArray = np.ndarray
+
+
+def require_opencv():
+    if cv2 is None:
+        raise ImportError('OpenCV is required')
+
+
+def box_blur_image(image: ImageArray, blur_size: int) -> ImageArray:
+    if not blur_size:
+        return image
+    require_opencv()
+    if len(image.shape) == 4:
+        image = image[0]
+    result = cv2.blur(np.asarray(image), (blur_size, blur_size))
+    if len(result.shape) == 2:
+        result = np.expand_dims(result, axis=-1)
+    result = result.astype(np.float32)
+    return result
 
 
 def get_image_size(image: ImageArray):

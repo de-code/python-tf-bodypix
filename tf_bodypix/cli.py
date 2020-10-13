@@ -9,9 +9,9 @@ import tensorflow as tf
 import numpy as np
 
 from tf_bodypix.utils.timer import LoggingTimer
-from tf_bodypix.utils.image import resize_image_to, get_image_size
+from tf_bodypix.utils.image import resize_image_to, get_image_size, box_blur_image
 from tf_bodypix.download import download_model
-from tf_bodypix.model import load_model, PART_CHANNELS, BodyPixModelWrapper
+from tf_bodypix.model import load_model, PART_CHANNELS, BodyPixModelWrapper, BodyPixResultWrapper
 from tf_bodypix.source import get_image_source
 from tf_bodypix.sink import (
     T_OutputSink,
@@ -80,6 +80,18 @@ def add_model_arguments(parser: argparse.ArgumentParser):
         default=0.75,
         help="The mask threshold."
     )
+    parser.add_argument(
+        "--mask-blur",
+        type=int,
+        default=0,
+        help="The blur radius for the mask."
+    )
+    parser.add_argument(
+        "--mask-mean-count",
+        type=int,
+        default=0,
+        help="The number of masks to average to smooth the results."
+    )
 
 
 def add_source_arguments(parser: argparse.ArgumentParser):
@@ -121,6 +133,27 @@ def load_bodypix_model(args: argparse.Namespace) -> BodyPixModelWrapper:
     )
 
 
+def get_mask(
+    bodypix_result: BodyPixResultWrapper,
+    masks: List[np.ndarray],
+    timer: LoggingTimer,
+    args: argparse.Namespace
+) -> np.ndarray:
+    mask = bodypix_result.get_mask(args.threshold, dtype=np.float32)
+    if args.mask_blur:
+        timer.on_step_start('mblur')
+        mask = box_blur_image(mask, args.mask_blur)
+    if args.mask_mean_count >= 2:
+        timer.on_step_start('mmean')
+        masks.append(mask)
+        if len(masks) > args.mask_mean_count:
+            masks.pop(0)
+        if len(masks) >= 2:
+            mask = np.mean(masks, axis=0)
+    LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
+    return mask
+
+
 class ImageToMaskSubCommand(SubCommand):
     def __init__(self):
         super().__init__("image-to-mask", "Converts an image to its mask")
@@ -153,11 +186,12 @@ class ImageToMaskSubCommand(SubCommand):
         bodypix_model: BodyPixModelWrapper,
         image_array: np.ndarray,
         args: argparse.Namespace,
+        masks: List[np.ndarray],
         timer: LoggingTimer
     ) -> np.ndarray:
         result = bodypix_model.predict_single(image_array)
         timer.on_step_start('get_mask')
-        mask = result.get_mask(args.threshold)
+        mask = get_mask(result, masks=masks, timer=timer, args=args)
         if args.colored:
             timer.on_step_start('get_cpart_mask')
             mask = result.get_colored_part_mask(mask, part_names=args.parts)
@@ -185,6 +219,7 @@ class ImageToMaskSubCommand(SubCommand):
     def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
         bodypix_model = load_bodypix_model(args)
         timer = LoggingTimer()
+        masks = []
         try:
             with ExitStack() as exit_stack:
                 output_sink = exit_stack.enter_context(get_output_sink(args))
@@ -202,6 +237,7 @@ class ImageToMaskSubCommand(SubCommand):
                         bodypix_model,
                         image_array,
                         args,
+                        masks=masks,
                         timer=timer
                     )
                     timer.on_step_start('out')
@@ -233,13 +269,13 @@ class ReplaceBackgroundSubCommand(SubCommand):
         bodypix_model: BodyPixModelWrapper,
         image_array: np.ndarray,
         args: argparse.Namespace,
+        masks: List[np.ndarray],
         background_image_array: np.ndarray,
         timer: LoggingTimer
     ) -> np.ndarray:
         result = bodypix_model.predict_single(image_array)
         timer.on_step_start('get_mask')
-        mask = result.get_mask(args.threshold, dtype=tf.float32)
-        LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
+        mask = get_mask(result, masks=masks, timer=timer, args=args)
         timer.on_step_start('compose')
         background_image_array = resize_image_to(
             background_image_array, get_image_size(image_array)
@@ -254,6 +290,7 @@ class ReplaceBackgroundSubCommand(SubCommand):
     def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
         bodypix_model = load_bodypix_model(args)
         timer = LoggingTimer()
+        masks = []
         try:
             background_image_iterator = None
             with ExitStack() as exit_stack:
@@ -280,6 +317,7 @@ class ReplaceBackgroundSubCommand(SubCommand):
                         bodypix_model,
                         image_array,
                         args,
+                        masks=masks,
                         background_image_array=background_image_array,
                         timer=timer
                     )
