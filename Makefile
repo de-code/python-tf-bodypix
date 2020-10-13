@@ -96,7 +96,7 @@ convert-example-image-to-mask:
 		image-to-mask \
 		--source \
 		"$(IMAGE_URL)" \
-		--output-mask \
+		--output \
 		"$(OUTPUT_MASK_PATH)" \
 		--threshold=$(MASK_THRESHOLD) \
 		$(ARGS)
@@ -107,7 +107,7 @@ convert-example-image-to-selected-mask:
 		image-to-mask \
 		--source \
 		"$(IMAGE_URL)" \
-		--output-mask \
+		--output \
 		"$(OUTPUT_SELECTED_MASK_PATH)" \
 		--threshold=$(MASK_THRESHOLD) \
 		--parts $(SELECTED_PARTS) \
@@ -119,7 +119,7 @@ convert-example-image-to-colored-mask:
 		image-to-mask \
 		--source \
 		"$(IMAGE_URL)" \
-		--output-mask \
+		--output \
 		"$(OUTPUT_COLORED_MASK_PATH)" \
 		--threshold=$(MASK_THRESHOLD) \
 		--colored \
@@ -131,7 +131,7 @@ convert-example-image-to-selected-colored-mask:
 		image-to-mask \
 		--source \
 		"$(IMAGE_URL)" \
-		--output-mask \
+		--output \
 		"$(OUTPUT_SELECTED_COLORED_MASK_PATH)" \
 		--threshold=$(MASK_THRESHOLD) \
 		--colored \
@@ -167,7 +167,7 @@ webcam-v4l2:
 		image-to-mask \
 		--source \
 		"$(WEBCAM_PATH)" \
-		--output-mask=$(VIRTUAL_VIDEO_DEVICE) \
+		--output=$(VIRTUAL_VIDEO_DEVICE) \
 		--threshold=$(MASK_THRESHOLD) \
 		--add-overlay-alpha=$(ADD_OVERLAY_ALPHA) \
 		$(ARGS)
@@ -178,7 +178,7 @@ webcam-v4l2-colored:
 		image-to-mask \
 		--source \
 		"$(WEBCAM_PATH)" \
-		--output-mask=$(VIRTUAL_VIDEO_DEVICE) \
+		--output=$(VIRTUAL_VIDEO_DEVICE) \
 		--threshold=$(MASK_THRESHOLD) \
 		--add-overlay-alpha=$(ADD_OVERLAY_ALPHA) \
 		--colored \
@@ -192,6 +192,6 @@ webcam-v4l2-replace-background:
 		"$(WEBCAM_PATH)" \
 		--background \
 		"$(BACKGROUND_IMAGE_URL)" \
-		--output-mask=$(VIRTUAL_VIDEO_DEVICE) \
+		--output=$(VIRTUAL_VIDEO_DEVICE) \
 		--threshold=$(MASK_THRESHOLD) \
 		$(ARGS)
