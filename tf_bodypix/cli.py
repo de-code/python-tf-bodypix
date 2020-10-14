@@ -170,7 +170,10 @@ def get_output_sink(args: argparse.Namespace) -> T_OutputSink:
 
 def load_bodypix_model(args: argparse.Namespace) -> BodyPixModelWrapper:
     local_model_path = download_model(args.model_path)
-    LOGGER.debug('local_model_path: %r', local_model_path)
+    if args.model_path != local_model_path:
+        LOGGER.info('loading model: %r (downloaded from %r)', local_model_path, args.model_path)
+    else:
+        LOGGER.info('loading model: %r', local_model_path)
     return load_model(
         local_model_path,
         internal_resolution=args.internal_resolution,
