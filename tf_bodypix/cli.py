@@ -1,5 +1,6 @@
 import argparse
 import logging
+import re
 from abc import ABC, abstractmethod
 from contextlib import ExitStack
 from itertools import cycle
@@ -15,6 +16,7 @@ from tf_bodypix.utils.image import (
     get_image_size,
     box_blur_image
 )
+from tf_bodypix.utils.s3 import iter_s3_file_urls
 from tf_bodypix.download import download_model
 from tf_bodypix.model import load_model, PART_CHANNELS, BodyPixModelWrapper, BodyPixResultWrapper
 from tf_bodypix.source import get_image_source, T_ImageSource
@@ -168,7 +170,10 @@ def get_output_sink(args: argparse.Namespace) -> T_OutputSink:
 
 def load_bodypix_model(args: argparse.Namespace) -> BodyPixModelWrapper:
     local_model_path = download_model(args.model_path)
-    LOGGER.debug('local_model_path: %r', local_model_path)
+    if args.model_path != local_model_path:
+        LOGGER.info('loading model: %r (downloaded from %r)', local_model_path, args.model_path)
+    else:
+        LOGGER.info('loading model: %r', local_model_path)
     return load_model(
         local_model_path,
         internal_resolution=args.internal_resolution,
@@ -195,6 +200,27 @@ def get_mask(
             mask = np.mean(masks, axis=0)
     LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
     return mask
+
+
+class ListModelsSubCommand(SubCommand):
+    def __init__(self):
+        super().__init__("list-models", "Lists available bodypix models (original models)")
+
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        add_common_arguments(parser)
+        parser.add_argument(
+            "--storage-url",
+            default="https://storage.googleapis.com/tfjs-models/",
+            help="The base URL for the storage containing the models"
+        )
+
+    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
+        bodypix_model_json_files = [
+            file_url
+            for file_url in iter_s3_file_urls(args.storage_url)
+            if re.match(r'.*/bodypix/.*/model.*\.json', file_url)
+        ]
+        print('\n'.join(bodypix_model_json_files))
 
 
 class ImageToMaskSubCommand(SubCommand):
@@ -372,6 +398,7 @@ class ReplaceBackgroundSubCommand(SubCommand):
 
 
 SUB_COMMANDS: List[SubCommand] = [
+    ListModelsSubCommand(),
     ImageToMaskSubCommand(),
     ReplaceBackgroundSubCommand()
 ]

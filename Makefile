@@ -91,6 +91,11 @@ run:
 	$(PYTHON) -m tf_bodypix $(ARGS)
 
 
+list-models:
+	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+		list-models
+
+
 convert-example-image-to-mask:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
 		image-to-mask \
