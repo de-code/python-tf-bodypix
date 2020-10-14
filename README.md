@@ -32,6 +32,19 @@ when using this project as a library:
 
 ## CLI
 
+### List Available Models
+
+```bash
+TF_CPP_MIN_LOG_LEVEL=3 \
+python -m tf_bodypix list-models
+```
+
+The result will be a list of all of the `bodypix` TensorFlow JS models available in the [tfjs-models bucket](https://storage.googleapis.com/tfjs-models/).
+
+Those URLs can be passed as the `--model-path` arguments below, or to the `download_model` method of the Python API.
+
+The CLI will download and cache the model from the provided path. If no `--model-path` is provided, it will use a default model (mobilenet).
+
 ### Creating a simple body mask
 
 ```bash
@@ -110,7 +123,7 @@ python -m tf_bodypix \
     --threshold=0.75
 ```
 
-## API
+## Python API
 
 ```python
 import tensorflow as tf
