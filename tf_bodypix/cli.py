@@ -1,5 +1,6 @@
 import argparse
 import logging
+import re
 from abc import ABC, abstractmethod
 from contextlib import ExitStack
 from itertools import cycle
@@ -15,6 +16,7 @@ from tf_bodypix.utils.image import (
     get_image_size,
     box_blur_image
 )
+from tf_bodypix.utils.s3 import iter_s3_file_urls
 from tf_bodypix.download import download_model
 from tf_bodypix.model import load_model, PART_CHANNELS, BodyPixModelWrapper, BodyPixResultWrapper
 from tf_bodypix.source import get_image_source, T_ImageSource
@@ -197,6 +199,27 @@ def get_mask(
     return mask
 
 
+class ListModelsSubCommand(SubCommand):
+    def __init__(self):
+        super().__init__("list-models", "Lists available bodypix models (original models)")
+
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        add_common_arguments(parser)
+        parser.add_argument(
+            "--storage-url",
+            default="https://storage.googleapis.com/tfjs-models/",
+            help="The base URL for the storage containing the models"
+        )
+
+    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
+        bodypix_model_json_files = [
+            file_url
+            for file_url in iter_s3_file_urls(args.storage_url)
+            if re.match(r'.*/bodypix/.*/model.*\.json', file_url)
+        ]
+        print('\n'.join(bodypix_model_json_files))
+
+
 class ImageToMaskSubCommand(SubCommand):
     def __init__(self):
         super().__init__("image-to-mask", "Converts an image to its mask")
@@ -372,6 +395,7 @@ class ReplaceBackgroundSubCommand(SubCommand):
 
 
 SUB_COMMANDS: List[SubCommand] = [
+    ListModelsSubCommand(),
     ImageToMaskSubCommand(),
     ReplaceBackgroundSubCommand()
 ]
