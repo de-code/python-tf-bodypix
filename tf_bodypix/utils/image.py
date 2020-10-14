@@ -47,3 +47,12 @@ def resize_image_to(image: ImageArray, size: ImageSize) -> ImageArray:
         return image
 
     return tf.image.resize([image], (size.height, size.width))[0]
+
+
+def bgr_to_rgb(image: ImageArray) -> ImageArray:
+    # see https://www.scivision.dev/numpy-image-bgr-to-rgb/
+    return image[..., ::-1]
+
+
+def rgb_to_bgr(image: ImageArray) -> ImageArray:
+    return bgr_to_rgb(image)

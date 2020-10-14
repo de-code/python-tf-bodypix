@@ -5,7 +5,7 @@ from typing import ContextManager, Iterable
 import cv2
 import numpy as np
 
-from tf_bodypix.utils.image import ImageSize, resize_image_to
+from tf_bodypix.utils.image import ImageSize, resize_image_to, bgr_to_rgb, rgb_to_bgr
 
 
 LOGGER = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ def iter_read_video_images(
             )
         if image_size:
             image_array = resize_image_to(image_array, image_size)
-        yield image_array
+        yield bgr_to_rgb(image_array)
         is_first = False
 
 
@@ -74,5 +74,5 @@ class ShowImageSink:
             LOGGER.info('window closed')
             raise KeyboardInterrupt('window closed')
         image_array = np.asarray(image_array).astype(np.uint8)
-        cv2.imshow(self.window_name, image_array)
+        cv2.imshow(self.window_name, rgb_to_bgr(image_array))
         cv2.waitKey(1)
