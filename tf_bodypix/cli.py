@@ -223,16 +223,61 @@ class ListModelsSubCommand(SubCommand):
         print('\n'.join(bodypix_model_json_files))
 
 
-class ImageToMaskSubCommand(SubCommand):
-    def __init__(self):
-        super().__init__("image-to-mask", "Converts an image to its mask")
-
+class AbstractWebcamFilterSubCommand(SubCommand):
     def add_arguments(self, parser: argparse.ArgumentParser):
         add_common_arguments(parser)
         add_model_arguments(parser)
         add_source_arguments(parser)
         add_output_arguments(parser)
 
+    @abstractmethod
+    def get_output_image(
+        self,
+        bodypix_model: BodyPixModelWrapper,
+        image_array: np.ndarray,
+        args: argparse.Namespace,
+        masks: List[np.ndarray],
+        timer: LoggingTimer
+    ) -> np.ndarray:
+        pass
+
+    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
+        bodypix_model = load_bodypix_model(args)
+        timer = LoggingTimer()
+        masks = []
+        try:
+            with ExitStack() as exit_stack:
+                output_sink = exit_stack.enter_context(get_output_sink(args))
+                image_source = exit_stack.enter_context(get_image_source_for_args(args))
+                image_iterator = iter(image_source)
+                timer.start()
+                while True:
+                    timer.on_frame_start(initial_step_name='in')
+                    try:
+                        image_array = next(image_iterator)
+                    except StopIteration:
+                        break
+                    timer.on_step_start('model')
+                    output_image = self.get_output_image(
+                        bodypix_model,
+                        image_array,
+                        args,
+                        masks=masks,
+                        timer=timer
+                    )
+                    timer.on_step_start('out')
+                    output_sink(output_image)
+                    timer.on_frame_end()
+        except KeyboardInterrupt:
+            LOGGER.info('exiting')
+
+
+class ImageToMaskSubCommand(AbstractWebcamFilterSubCommand):
+    def __init__(self):
+        super().__init__("image-to-mask", "Converts an image to its mask")
+
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        super().add_arguments(parser)
         parser.add_argument(
             "--add-overlay-alpha",
             type=float,
@@ -285,35 +330,40 @@ class ImageToMaskSubCommand(SubCommand):
             return output
         return mask
 
-    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
-        bodypix_model = load_bodypix_model(args)
-        timer = LoggingTimer()
-        masks = []
-        try:
-            with ExitStack() as exit_stack:
-                output_sink = exit_stack.enter_context(get_output_sink(args))
-                image_source = exit_stack.enter_context(get_image_source_for_args(args))
-                image_iterator = iter(image_source)
-                timer.start()
-                while True:
-                    timer.on_frame_start(initial_step_name='in')
-                    try:
-                        image_array = next(image_iterator)
-                    except StopIteration:
-                        break
-                    timer.on_step_start('model')
-                    output_image = self.get_output_image(
-                        bodypix_model,
-                        image_array,
-                        args,
-                        masks=masks,
-                        timer=timer
-                    )
-                    timer.on_step_start('out')
-                    output_sink(output_image)
-                    timer.on_frame_end()
-        except KeyboardInterrupt:
-            LOGGER.info('exiting')
+
+class BlurBackgroundSubCommand(AbstractWebcamFilterSubCommand):
+    def __init__(self):
+        super().__init__("blur-background", "Blurs the background of the webcam image")
+
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        super().add_arguments(parser)
+        parser.add_argument(
+            "--background-blur",
+            type=int,
+            default=15,
+            help="The blur radius for the background."
+        )
+
+    def get_output_image(
+        self,
+        bodypix_model: BodyPixModelWrapper,
+        image_array: np.ndarray,
+        args: argparse.Namespace,
+        masks: List[np.ndarray],
+        timer: LoggingTimer
+    ) -> np.ndarray:
+        result = bodypix_model.predict_single(image_array)
+        timer.on_step_start('get_mask')
+        mask = get_mask(result, masks=masks, timer=timer, args=args)
+        timer.on_step_start('bblur')
+        background_image_array = box_blur_image(image_array, args.background_blur)
+        timer.on_step_start('compose')
+        output = np.clip(
+            background_image_array * (1 - mask)
+            + image_array * mask,
+            0.0, 255.0
+        )
+        return output
 
 
 class ReplaceBackgroundSubCommand(SubCommand):
@@ -400,6 +450,7 @@ class ReplaceBackgroundSubCommand(SubCommand):
 SUB_COMMANDS: List[SubCommand] = [
     ListModelsSubCommand(),
     ImageToMaskSubCommand(),
+    BlurBackgroundSubCommand(),
     ReplaceBackgroundSubCommand()
 ]
 
