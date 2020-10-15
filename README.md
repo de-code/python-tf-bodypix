@@ -47,7 +47,6 @@ python -m tf_bodypix <sub command> --help
 ### List Available Models
 
 ```bash
-TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix list-models
 ```
 
@@ -62,7 +61,6 @@ The CLI will download and cache the model from the provided path. If no `--model
 #### Creating a simple body mask
 
 ```bash
-TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     draw-mask \
     --source /path/to/input-image.jpg \
@@ -73,7 +71,6 @@ python -m tf_bodypix \
 #### Colorize the body mask depending on the body part
 
 ```bash
-TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     draw-mask \
     --source /path/to/input-image.jpg \
@@ -85,7 +82,6 @@ python -m tf_bodypix \
 #### Additionally select the body parts
 
 ```bash
-TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     draw-mask \
     --source /path/to/input-image.jpg \
@@ -98,7 +94,6 @@ python -m tf_bodypix \
 #### Capture Webcam and adding mask overlay, showing the result in an image
 
 ```bash
-TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     draw-mask \
     --source webcam:0 \
@@ -113,7 +108,6 @@ python -m tf_bodypix \
 (replace `/dev/videoN` with the actual virtual video device)
 
 ```bash
-TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     draw-mask \
     --source webcam:0 \
@@ -128,7 +122,6 @@ python -m tf_bodypix \
 (replace `/dev/videoN` with the actual virtual video device)
 
 ```bash
-TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     blur-background \
     --source webcam:0 \
@@ -142,7 +135,6 @@ python -m tf_bodypix \
 (replace `/dev/videoN` with the actual virtual video device)
 
 ```bash
-TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
     replace-background \
     --source webcam:0 \
