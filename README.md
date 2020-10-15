@@ -5,6 +5,11 @@
 
 A Python implementation of [body-pix](https://github.com/tensorflow/tfjs-models/tree/body-pix-v2.0.4/body-pix).
 
+Goals of this project is:
+
+* Python library, making it easy to integrate the BodyPix model
+* CLI with limited functionality, mostly for demonstration purpose
+
 ## Install
 
 Install with all dependencies:
@@ -29,6 +34,34 @@ when using this project as a library:
 | image      | Image loading via Pillow, required by the CLI.
 | webcam     | Webcam support via OpenCV and pyfakewebcam
 | all        | All of the libraries
+
+## Python API
+
+```python
+import tensorflow as tf
+from tf_bodypix.api import download_model, load_model, BodyPixModelPaths
+
+bodypix_model = load_model(download_model(
+    BodyPixModelPaths.MOBILENET_FLOAT_50_STRIDE_16
+))
+
+image = tf.keras.preprocessing.image.load_img(
+    '/path/to/input-image.jpg'
+)
+image_array = tf.keras.preprocessing.image.img_to_array(image)
+result = bodypix_model.predict_single(image_array)
+mask = result.get_mask(threshold=0.75)
+tf.keras.preprocessing.image.save_img(
+    '/path/to/output-mask.jpg',
+    mask
+)
+
+colored_mask = result.get_colored_mask(mask)
+tf.keras.preprocessing.image.save_img(
+    '/path/to/output-colored-mask.jpg',
+    colored_mask
+)
+```
 
 ## CLI
 
@@ -117,7 +150,7 @@ python -m tf_bodypix \
     --colored
 ```
 
-### Capture Webcam and blur background, writing to v4l2loopback device
+#### Capture Webcam and blur background, writing to v4l2loopback device
 
 (replace `/dev/videoN` with the actual virtual video device)
 
@@ -130,7 +163,7 @@ python -m tf_bodypix \
     --threshold=0.75
 ```
 
-### Capture Webcam and replace background, writing to v4l2loopback device
+#### Capture Webcam and replace background, writing to v4l2loopback device
 
 (replace `/dev/videoN` with the actual virtual video device)
 
@@ -141,34 +174,6 @@ python -m tf_bodypix \
     --background /path/to/background-image.jpg \
     --output /dev/videoN \
     --threshold=0.75
-```
-
-## Python API
-
-```python
-import tensorflow as tf
-from tf_bodypix.api import download_model, load_model, BodyPixModelPaths
-
-bodypix_model = load_model(download_model(
-    BodyPixModelPaths.MOBILENET_FLOAT_50_STRIDE_16
-))
-
-image = tf.keras.preprocessing.image.load_img(
-    '/path/to/input-image.jpg'
-)
-image_array = tf.keras.preprocessing.image.img_to_array(image)
-result = bodypix_model.predict_single(image_array)
-mask = result.get_mask(threshold=0.75)
-tf.keras.preprocessing.image.save_img(
-    '/path/to/output-mask.jpg',
-    mask
-)
-
-colored_mask = result.get_colored_mask(mask)
-tf.keras.preprocessing.image.save_img(
-    '/path/to/output-colored-mask.jpg',
-    colored_mask
-)
 ```
 
 ## Acknowledgements
