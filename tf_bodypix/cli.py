@@ -272,9 +272,9 @@ class AbstractWebcamFilterSubCommand(SubCommand):
             LOGGER.info('exiting')
 
 
-class ImageToMaskSubCommand(AbstractWebcamFilterSubCommand):
+class DrawMaskSubCommand(AbstractWebcamFilterSubCommand):
     def __init__(self):
-        super().__init__("image-to-mask", "Converts an image to its mask")
+        super().__init__("draw-mask", "Draws the mask for the input")
 
     def add_arguments(self, parser: argparse.ArgumentParser):
         super().add_arguments(parser)
@@ -449,7 +449,7 @@ class ReplaceBackgroundSubCommand(SubCommand):
 
 SUB_COMMANDS: List[SubCommand] = [
     ListModelsSubCommand(),
-    ImageToMaskSubCommand(),
+    DrawMaskSubCommand(),
     BlurBackgroundSubCommand(),
     ReplaceBackgroundSubCommand()
 ]

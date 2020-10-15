@@ -32,6 +32,18 @@ when using this project as a library:
 
 ## CLI
 
+### CLI Help
+
+```bash
+python -m tf_bodypix --help
+```
+
+or
+
+```bash
+python -m tf_bodypix <sub command> --help
+```
+
 ### List Available Models
 
 ```bash
@@ -45,35 +57,37 @@ Those URLs can be passed as the `--model-path` arguments below, or to the `downl
 
 The CLI will download and cache the model from the provided path. If no `--model-path` is provided, it will use a default model (mobilenet).
 
-### Creating a simple body mask
+### Example commands
+
+#### Creating a simple body mask
 
 ```bash
 TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
-    image-to-mask \
+    draw-mask \
     --source /path/to/input-image.jpg \
     --output /path/to/output-mask.jpg \
     --threshold=0.75
 ```
 
-### Colorize the body mask depending on the body part
+#### Colorize the body mask depending on the body part
 
 ```bash
 TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
-    image-to-mask \
+    draw-mask \
     --source /path/to/input-image.jpg \
     --output /path/to/output-colored-mask.jpg \
     --threshold=0.75 \
     --colored
 ```
 
-### Additionally select the body parts
+#### Additionally select the body parts
 
 ```bash
 TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
-    image-to-mask \
+    draw-mask \
     --source /path/to/input-image.jpg \
     --output /path/to/output-colored-mask.jpg \
     --threshold=0.75 \
@@ -81,12 +95,12 @@ python -m tf_bodypix \
     --colored
 ```
 
-### Capture Webcam and adding mask overlay, showing the result in an image
+#### Capture Webcam and adding mask overlay, showing the result in an image
 
 ```bash
 TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
-    image-to-mask \
+    draw-mask \
     --source webcam:0 \
     --show-output \
     --threshold=0.75 \
@@ -94,14 +108,14 @@ python -m tf_bodypix \
     --colored
 ```
 
-### Capture Webcam and adding mask overlay, writing to v4l2loopback device
+#### Capture Webcam and adding mask overlay, writing to v4l2loopback device
 
 (replace `/dev/videoN` with the actual virtual video device)
 
 ```bash
 TF_CPP_MIN_LOG_LEVEL=3 \
 python -m tf_bodypix \
-    image-to-mask \
+    draw-mask \
     --source webcam:0 \
     --output /dev/videoN \
     --threshold=0.75 \
