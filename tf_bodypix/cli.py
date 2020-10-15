@@ -1,10 +1,16 @@
 import argparse
 import logging
+import os
 import re
 from abc import ABC, abstractmethod
 from contextlib import ExitStack
 from itertools import cycle
 from typing import Dict, List
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = "3"
+
+# pylint: disable=wrong-import-position
+# flake8: noqa: E402
 
 import tensorflow as tf
 import numpy as np

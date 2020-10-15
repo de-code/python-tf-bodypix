@@ -92,12 +92,12 @@ run:
 
 
 list-models:
-	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+	$(PYTHON) -m tf_bodypix \
 		list-models
 
 
 convert-example-draw-mask:
-	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+	$(PYTHON) -m tf_bodypix \
 		draw-mask \
 		--source \
 		"$(IMAGE_URL)" \
@@ -108,7 +108,7 @@ convert-example-draw-mask:
 
 
 convert-example-draw-selected-mask:
-	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+	$(PYTHON) -m tf_bodypix \
 		draw-mask \
 		--source \
 		"$(IMAGE_URL)" \
@@ -120,7 +120,7 @@ convert-example-draw-selected-mask:
 
 
 convert-example-draw-colored-mask:
-	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+	$(PYTHON) -m tf_bodypix \
 		draw-mask \
 		--source \
 		"$(IMAGE_URL)" \
@@ -132,7 +132,7 @@ convert-example-draw-colored-mask:
 
 
 convert-example-draw-selected-colored-mask:
-	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+	$(PYTHON) -m tf_bodypix \
 		draw-mask \
 		--source \
 		"$(IMAGE_URL)" \
@@ -145,7 +145,7 @@ convert-example-draw-selected-colored-mask:
 
 
 webcam-draw-mask:
-	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+	$(PYTHON) -m tf_bodypix \
 		draw-mask \
 		--source \
 		"$(WEBCAM_PATH)" \
@@ -156,7 +156,7 @@ webcam-draw-mask:
 
 
 webcam-blur-background:
-	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+	$(PYTHON) -m tf_bodypix \
 		blur-background \
 		--source \
 		"$(WEBCAM_PATH)" \
@@ -166,7 +166,7 @@ webcam-blur-background:
 
 
 webcam-replace-background:
-	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+	$(PYTHON) -m tf_bodypix \
 		replace-background \
 		--source \
 		"$(WEBCAM_PATH)" \
@@ -178,7 +178,7 @@ webcam-replace-background:
 
 
 webcam-v4l2-draw-mask:
-	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+	$(PYTHON) -m tf_bodypix \
 		draw-mask \
 		--source \
 		"$(WEBCAM_PATH)" \
@@ -189,7 +189,7 @@ webcam-v4l2-draw-mask:
 
 
 webcam-v4l2-draw-mask-colored:
-	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+	$(PYTHON) -m tf_bodypix \
 		draw-mask \
 		--source \
 		"$(WEBCAM_PATH)" \
@@ -201,7 +201,7 @@ webcam-v4l2-draw-mask-colored:
 
 
 webcam-v4l2-blur-background:
-	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+	$(PYTHON) -m tf_bodypix \
 		blur-background \
 		--source \
 		"$(WEBCAM_PATH)" \
@@ -211,7 +211,7 @@ webcam-v4l2-blur-background:
 
 
 webcam-v4l2-replace-background:
-	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+	$(PYTHON) -m tf_bodypix \
 		replace-background \
 		--source \
 		"$(WEBCAM_PATH)" \
