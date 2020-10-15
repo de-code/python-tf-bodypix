@@ -155,6 +155,16 @@ webcam:
 		$(ARGS)
 
 
+webcam-blur-background:
+	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+		blur-background \
+		--source \
+		"$(WEBCAM_PATH)" \
+		--show-output \
+		--threshold=$(MASK_THRESHOLD) \
+		$(ARGS)
+
+
 webcam-replace-background:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
 		replace-background \
@@ -187,6 +197,16 @@ webcam-v4l2-colored:
 		--threshold=$(MASK_THRESHOLD) \
 		--add-overlay-alpha=$(ADD_OVERLAY_ALPHA) \
 		--colored \
+		$(ARGS)
+
+
+webcam-v4l2-blur-background:
+	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
+		blur-background \
+		--source \
+		"$(WEBCAM_PATH)" \
+		--output=$(VIRTUAL_VIDEO_DEVICE) \
+		--threshold=$(MASK_THRESHOLD) \
 		$(ARGS)
 
 

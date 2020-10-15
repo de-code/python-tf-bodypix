@@ -109,6 +109,20 @@ python -m tf_bodypix \
     --colored
 ```
 
+### Capture Webcam and blur background, writing to v4l2loopback device
+
+(replace `/dev/videoN` with the actual virtual video device)
+
+```bash
+TF_CPP_MIN_LOG_LEVEL=3 \
+python -m tf_bodypix \
+    blur-background \
+    --source webcam:0 \
+    --background-blur 20 \
+    --output /dev/videoN \
+    --threshold=0.75
+```
+
 ### Capture Webcam and replace background, writing to v4l2loopback device
 
 (replace `/dev/videoN` with the actual virtual video device)
