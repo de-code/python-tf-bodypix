@@ -96,9 +96,9 @@ list-models:
 		list-models
 
 
-convert-example-image-to-mask:
+convert-example-draw-mask:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
-		image-to-mask \
+		draw-mask \
 		--source \
 		"$(IMAGE_URL)" \
 		--output \
@@ -107,9 +107,9 @@ convert-example-image-to-mask:
 		$(ARGS)
 
 
-convert-example-image-to-selected-mask:
+convert-example-draw-selected-mask:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
-		image-to-mask \
+		draw-mask \
 		--source \
 		"$(IMAGE_URL)" \
 		--output \
@@ -119,9 +119,9 @@ convert-example-image-to-selected-mask:
 		$(ARGS)
 
 
-convert-example-image-to-colored-mask:
+convert-example-draw-colored-mask:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
-		image-to-mask \
+		draw-mask \
 		--source \
 		"$(IMAGE_URL)" \
 		--output \
@@ -131,9 +131,9 @@ convert-example-image-to-colored-mask:
 		$(ARGS)
 
 
-convert-example-image-to-selected-colored-mask:
+convert-example-draw-selected-colored-mask:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
-		image-to-mask \
+		draw-mask \
 		--source \
 		"$(IMAGE_URL)" \
 		--output \
@@ -144,9 +144,9 @@ convert-example-image-to-selected-colored-mask:
 		$(ARGS)
 
 
-webcam:
+webcam-draw-mask:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
-		image-to-mask \
+		draw-mask \
 		--source \
 		"$(WEBCAM_PATH)" \
 		--show-output \
@@ -177,9 +177,9 @@ webcam-replace-background:
 		$(ARGS)
 
 
-webcam-v4l2:
+webcam-v4l2-draw-mask:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
-		image-to-mask \
+		draw-mask \
 		--source \
 		"$(WEBCAM_PATH)" \
 		--output=$(VIRTUAL_VIDEO_DEVICE) \
@@ -188,9 +188,9 @@ webcam-v4l2:
 		$(ARGS)
 
 
-webcam-v4l2-colored:
+webcam-v4l2-draw-mask-colored:
 	TF_CPP_MIN_LOG_LEVEL=3 $(PYTHON) -m tf_bodypix \
-		image-to-mask \
+		draw-mask \
 		--source \
 		"$(WEBCAM_PATH)" \
 		--output=$(VIRTUAL_VIDEO_DEVICE) \
