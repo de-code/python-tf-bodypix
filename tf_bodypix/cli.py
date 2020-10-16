@@ -155,6 +155,12 @@ def add_source_arguments(parser: argparse.ArgumentParser):
         default="MJPG",
         help="the fourcc code to select the source to, e.g. MJPG"
     )
+    source_group.add_argument(
+        "--source-fps",
+        type=int,
+        default=0,
+        help="the desired FPS for the source (this may not be supported)"
+    )
 
 
 def add_output_arguments(parser: argparse.ArgumentParser):
@@ -174,7 +180,12 @@ def get_image_source_for_args(args: argparse.Namespace) -> T_ImageSource:
     image_size = None
     if args.source_width and args.source_height:
         image_size = ImageSize(height=args.source_height, width=args.source_width)
-    return get_image_source(args.source, image_size=image_size, fourcc=args.source_fourcc)
+    return get_image_source(
+        args.source,
+        image_size=image_size,
+        fourcc=args.source_fourcc,
+        fps=args.source_fps
+    )
 
 
 def get_output_sink(args: argparse.Namespace) -> T_OutputSink:

@@ -34,7 +34,8 @@ def iter_read_video_images(
 def get_webcam_image_source(
     webcam_number: int,
     image_size: ImageSize = None,
-    fourcc: str = None
+    fourcc: str = None,
+    fps: int = None
 ) -> ContextManager[Iterable[np.ndarray]]:
     cam = cv2.VideoCapture(webcam_number)
     if fourcc:
@@ -45,11 +46,18 @@ def get_webcam_image_source(
         LOGGER.info('attempting to set camera image size to: %s', image_size)
         cam.set(cv2.CAP_PROP_FRAME_WIDTH, image_size.width)
         cam.set(cv2.CAP_PROP_FRAME_HEIGHT, image_size.height)
+    if fps:
+        LOGGER.info('setting camera fps to %r', fps)
+        cam.set(cv2.CAP_PROP_FPS, fps)
     actual_camera_image_size = ImageSize(
         width=cam.get(cv2.CAP_PROP_FRAME_WIDTH),
         height=cam.get(cv2.CAP_PROP_FRAME_HEIGHT)
     )
-    LOGGER.info('camera reported image size: %s', actual_camera_image_size)
+    actual_fps = cam.get(cv2.CAP_PROP_FPS)
+    LOGGER.info(
+        'camera reported image size: %s (%s fps)',
+        actual_camera_image_size, actual_fps
+    )
     try:
         yield iter_read_video_images(cam)
     finally:
