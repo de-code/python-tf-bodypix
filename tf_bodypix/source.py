@@ -3,6 +3,8 @@ import os
 import re
 from contextlib import contextmanager
 from hashlib import md5
+from queue import Queue
+from threading import Thread
 from typing import ContextManager, Iterable
 
 import tensorflow as tf
@@ -63,3 +65,48 @@ def get_image_source(path: str, **kwargs) -> T_ImageSource:
     if webcam_number is not None:
         return get_webcam_image_source(webcam_number, **kwargs)
     return get_simple_image_source(path, **kwargs)
+
+
+class ThreadedImageSource:
+    def __init__(self, image_source: T_ImageSource, queue_size: int = 1):
+        self.image_source = image_source
+        self.image_source_iterator = None
+        self.queue = Queue(queue_size)
+        self.thread = None
+        self.stopped = False
+
+    def __enter__(self):
+        self.stopped = False
+        self.thread = Thread(target=self.run)
+        self.image_source_iterator = iter(self.image_source.__enter__())
+        self.thread.start()
+        LOGGER.info('using threaded image source')
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.stop()
+        self.image_source.__exit__(*args, **kwargs)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        LOGGER.debug('reading from queue, qsize: %d', self.queue.qsize())
+        return self.queue.get()
+
+    def stop(self):
+        self.stopped = True
+        self.thread.join()
+
+    def run(self):
+        while not self.stopped:
+            try:
+                data = next(self.image_source_iterator)
+            except StopIteration:
+                self.stopped = True
+                return
+            self.queue.put(data)
+
+
+def get_threaded_image_source(image_source: T_ImageSource) -> T_ImageSource:
+    return ThreadedImageSource(image_source)

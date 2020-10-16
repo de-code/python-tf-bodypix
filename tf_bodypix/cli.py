@@ -26,7 +26,7 @@ from tf_bodypix.utils.image import (
 from tf_bodypix.utils.s3 import iter_s3_file_urls
 from tf_bodypix.download import download_model
 from tf_bodypix.model import load_model, PART_CHANNELS, BodyPixModelWrapper, BodyPixResultWrapper
-from tf_bodypix.source import get_image_source, T_ImageSource
+from tf_bodypix.source import get_image_source, get_threaded_image_source, T_ImageSource
 from tf_bodypix.sink import (
     T_OutputSink,
     get_image_output_sink_for_path,
@@ -161,6 +161,11 @@ def add_source_arguments(parser: argparse.ArgumentParser):
         default=0,
         help="the desired FPS for the source (this may not be supported)"
     )
+    source_group.add_argument(
+        "--source-threaded",
+        action='store_true',
+        help="if set, will read from the source in a thread (experimental)."
+    )
 
 
 def add_output_arguments(parser: argparse.ArgumentParser):
@@ -180,12 +185,15 @@ def get_image_source_for_args(args: argparse.Namespace) -> T_ImageSource:
     image_size = None
     if args.source_width and args.source_height:
         image_size = ImageSize(height=args.source_height, width=args.source_width)
-    return get_image_source(
+    image_source = get_image_source(
         args.source,
         image_size=image_size,
         fourcc=args.source_fourcc,
         fps=args.source_fps
     )
+    if args.source_threaded:
+        return get_threaded_image_source(image_source)
+    return image_source
 
 
 def get_output_sink(args: argparse.Namespace) -> T_OutputSink:
