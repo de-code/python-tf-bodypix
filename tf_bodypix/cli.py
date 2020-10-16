@@ -5,6 +5,7 @@ import re
 from abc import ABC, abstractmethod
 from contextlib import ExitStack
 from itertools import cycle
+from time import time
 from typing import Dict, List
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = "3"
@@ -104,6 +105,16 @@ def add_model_arguments(parser: argparse.ArgumentParser):
         type=int,
         default=0,
         help="The number of masks to average to smooth the results."
+    )
+    parser.add_argument(
+        "--mask-cache-time",
+        type=float,
+        default=0,
+        help=(
+            "For how long, in seconds, the mask model result should be cached."
+            " e.g. if the model is very slow, you could let it calculate every second only."
+            " of course that would be visible when moving quickly"
+        )
     )
 
 
@@ -229,6 +240,72 @@ class ListModelsSubCommand(SubCommand):
         print('\n'.join(bodypix_model_json_files))
 
 
+class AbstractWebcamFilterApp(ABC):
+    def __init__(self, args: argparse.Namespace):
+        self.args = args
+        self.bodypix_model = None
+        self.output_sink = None
+        self.image_source = None
+        self.image_iterator = None
+        self.timer = LoggingTimer()
+        self.masks = []
+        self.exit_stack = None
+        self.bodypix_result_cache_time = None
+        self.bodypix_result_cache = None
+
+    @abstractmethod
+    def get_output_image(self, image_array: np.ndarray) -> np.ndarray:
+        pass
+
+    def get_mask(self, *args, **kwargs):
+        return get_mask(
+            *args, masks=self.masks, timer=self.timer, args=self.args, **kwargs
+        )
+
+    def get_bodypix_result(self, image_array: np.ndarray) -> BodyPixResultWrapper:
+        current_time = time()
+        if (
+            self.bodypix_result_cache is not None
+            and current_time < self.bodypix_result_cache_time + self.args.mask_cache_time
+        ):
+            return self.bodypix_result_cache
+        self.bodypix_result_cache = self.bodypix_model.predict_single(image_array)
+        self.bodypix_result_cache_time = current_time
+        return self.bodypix_result_cache
+
+    def __enter__(self):
+        self.exit_stack = ExitStack().__enter__()
+        self.bodypix_model = load_bodypix_model(self.args)
+        self.output_sink = self.exit_stack.enter_context(get_output_sink(self.args))
+        self.image_source = self.exit_stack.enter_context(get_image_source_for_args(self.args))
+        self.image_iterator = iter(self.image_source)
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.exit_stack.__exit__(*args, **kwargs)
+
+    def next_frame(self):
+        self.timer.on_frame_start(initial_step_name='in')
+        try:
+            image_array = next(self.image_iterator)
+        except StopIteration:
+            return False
+        self.timer.on_step_start('model')
+        output_image = self.get_output_image(image_array)
+        self.timer.on_step_start('out')
+        self.output_sink(output_image)
+        self.timer.on_frame_end()
+        return True
+
+    def run(self):
+        try:
+            self.timer.start()
+            while self.next_frame():
+                pass
+        except KeyboardInterrupt:
+            LOGGER.info('exiting')
+
+
 class AbstractWebcamFilterSubCommand(SubCommand):
     def add_arguments(self, parser: argparse.ArgumentParser):
         add_common_arguments(parser)
@@ -237,45 +314,42 @@ class AbstractWebcamFilterSubCommand(SubCommand):
         add_output_arguments(parser)
 
     @abstractmethod
-    def get_output_image(
-        self,
-        bodypix_model: BodyPixModelWrapper,
-        image_array: np.ndarray,
-        args: argparse.Namespace,
-        masks: List[np.ndarray],
-        timer: LoggingTimer
-    ) -> np.ndarray:
+    def get_app(self, args: argparse.Namespace) -> AbstractWebcamFilterApp:
         pass
 
-    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
-        bodypix_model = load_bodypix_model(args)
-        timer = LoggingTimer()
-        masks = []
-        try:
-            with ExitStack() as exit_stack:
-                output_sink = exit_stack.enter_context(get_output_sink(args))
-                image_source = exit_stack.enter_context(get_image_source_for_args(args))
-                image_iterator = iter(image_source)
-                timer.start()
-                while True:
-                    timer.on_frame_start(initial_step_name='in')
-                    try:
-                        image_array = next(image_iterator)
-                    except StopIteration:
-                        break
-                    timer.on_step_start('model')
-                    output_image = self.get_output_image(
-                        bodypix_model,
-                        image_array,
-                        args,
-                        masks=masks,
-                        timer=timer
-                    )
-                    timer.on_step_start('out')
-                    output_sink(output_image)
-                    timer.on_frame_end()
-        except KeyboardInterrupt:
-            LOGGER.info('exiting')
+    def run(self, args: argparse.Namespace):
+        with self.get_app(args) as app:
+            app.run()
+
+
+class DrawMaskApp(AbstractWebcamFilterApp):
+    def get_output_image(self, image_array: np.ndarray) -> np.ndarray:
+        result = self.get_bodypix_result(image_array)
+        self.timer.on_step_start('get_mask')
+        mask = self.get_mask(result)
+        if self.args.colored:
+            self.timer.on_step_start('get_cpart_mask')
+            mask = result.get_colored_part_mask(mask, part_names=self.args.parts)
+        elif self.args.parts:
+            self.timer.on_step_start('get_part_mask')
+            mask = result.get_part_mask(mask, part_names=self.args.parts)
+        if self.args.add_overlay_alpha is not None:
+            self.timer.on_step_start('overlay')
+            LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
+            alpha = self.args.add_overlay_alpha
+            if not self.args.colored:
+                alpha *= 255
+            try:
+                if mask.dtype == tf.int32:
+                    mask = tf.cast(mask, tf.float32)
+            except TypeError:
+                pass
+            output = np.clip(
+                image_array + mask * alpha,
+                0.0, 255.0
+            )
+            return output
+        return mask
 
 
 class DrawMaskSubCommand(AbstractWebcamFilterSubCommand):
@@ -301,40 +375,24 @@ class DrawMaskSubCommand(AbstractWebcamFilterSubCommand):
             help="Select the parts to output"
         )
 
-    def get_output_image(
-        self,
-        bodypix_model: BodyPixModelWrapper,
-        image_array: np.ndarray,
-        args: argparse.Namespace,
-        masks: List[np.ndarray],
-        timer: LoggingTimer
-    ) -> np.ndarray:
-        result = bodypix_model.predict_single(image_array)
-        timer.on_step_start('get_mask')
-        mask = get_mask(result, masks=masks, timer=timer, args=args)
-        if args.colored:
-            timer.on_step_start('get_cpart_mask')
-            mask = result.get_colored_part_mask(mask, part_names=args.parts)
-        elif args.parts:
-            timer.on_step_start('get_part_mask')
-            mask = result.get_part_mask(mask, part_names=args.parts)
-        if args.add_overlay_alpha is not None:
-            timer.on_step_start('overlay')
-            LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
-            alpha = args.add_overlay_alpha
-            if not args.colored:
-                alpha *= 255
-            try:
-                if mask.dtype == tf.int32:
-                    mask = tf.cast(mask, tf.float32)
-            except TypeError:
-                pass
-            output = np.clip(
-                image_array + mask * alpha,
-                0.0, 255.0
-            )
-            return output
-        return mask
+    def get_app(self, args: argparse.Namespace) -> AbstractWebcamFilterApp:
+        return DrawMaskApp(args)
+
+
+class BlurBackgroundApp(AbstractWebcamFilterApp):
+    def get_output_image(self, image_array: np.ndarray) -> np.ndarray:
+        result = self.get_bodypix_result(image_array)
+        self.timer.on_step_start('get_mask')
+        mask = self.get_mask(result)
+        self.timer.on_step_start('bblur')
+        background_image_array = box_blur_image(image_array, self.args.background_blur)
+        self.timer.on_step_start('compose')
+        output = np.clip(
+            background_image_array * (1 - mask)
+            + image_array * mask,
+            0.0, 255.0
+        )
+        return output
 
 
 class BlurBackgroundSubCommand(AbstractWebcamFilterSubCommand):
@@ -350,20 +408,33 @@ class BlurBackgroundSubCommand(AbstractWebcamFilterSubCommand):
             help="The blur radius for the background."
         )
 
-    def get_output_image(
-        self,
-        bodypix_model: BodyPixModelWrapper,
-        image_array: np.ndarray,
-        args: argparse.Namespace,
-        masks: List[np.ndarray],
-        timer: LoggingTimer
-    ) -> np.ndarray:
-        result = bodypix_model.predict_single(image_array)
-        timer.on_step_start('get_mask')
-        mask = get_mask(result, masks=masks, timer=timer, args=args)
-        timer.on_step_start('bblur')
-        background_image_array = box_blur_image(image_array, args.background_blur)
-        timer.on_step_start('compose')
+    def get_app(self, args: argparse.Namespace) -> AbstractWebcamFilterApp:
+        return BlurBackgroundApp(args)
+
+
+class ReplaceBackgroundApp(AbstractWebcamFilterApp):
+    def __init__(self, *args, **kwargs):
+        self.background_image_iterator = None
+        super().__init__(*args, **kwargs)
+
+    def get_next_background_image(self, image_array: np.ndarray) -> np.ndarray:
+        if self.background_image_iterator is None:
+            background_image_source = self.exit_stack.enter_context(get_image_source(
+                self.args.background,
+                image_size=get_image_size(image_array)
+            ))
+            self.background_image_iterator = iter(cycle(background_image_source))
+        return next(self.background_image_iterator)
+
+    def get_output_image(self, image_array: np.ndarray) -> np.ndarray:
+        background_image_array = self.get_next_background_image(image_array)
+        result = self.get_bodypix_result(image_array)
+        self.timer.on_step_start('get_mask')
+        mask = self.get_mask(result)
+        self.timer.on_step_start('compose')
+        background_image_array = resize_image_to(
+            background_image_array, get_image_size(image_array)
+        )
         output = np.clip(
             background_image_array * (1 - mask)
             + image_array * mask,
@@ -372,7 +443,7 @@ class BlurBackgroundSubCommand(AbstractWebcamFilterSubCommand):
         return output
 
 
-class ReplaceBackgroundSubCommand(SubCommand):
+class ReplaceBackgroundSubCommand(AbstractWebcamFilterSubCommand):
     def __init__(self):
         super().__init__("replace-background", "Replaces the background of a person")
 
@@ -389,68 +460,8 @@ class ReplaceBackgroundSubCommand(SubCommand):
 
         add_output_arguments(parser)
 
-    def get_output_image(
-        self,
-        bodypix_model: BodyPixModelWrapper,
-        image_array: np.ndarray,
-        args: argparse.Namespace,
-        masks: List[np.ndarray],
-        background_image_array: np.ndarray,
-        timer: LoggingTimer
-    ) -> np.ndarray:
-        result = bodypix_model.predict_single(image_array)
-        timer.on_step_start('get_mask')
-        mask = get_mask(result, masks=masks, timer=timer, args=args)
-        timer.on_step_start('compose')
-        background_image_array = resize_image_to(
-            background_image_array, get_image_size(image_array)
-        )
-        output = np.clip(
-            background_image_array * (1 - mask)
-            + image_array * mask,
-            0.0, 255.0
-        )
-        return output
-
-    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
-        bodypix_model = load_bodypix_model(args)
-        timer = LoggingTimer()
-        masks = []
-        try:
-            background_image_iterator = None
-            with ExitStack() as exit_stack:
-                output_sink = exit_stack.enter_context(get_output_sink(args))
-                image_source = exit_stack.enter_context(get_image_source_for_args(args))
-                image_iterator = iter(image_source)
-                timer.start()
-                while True:
-                    timer.on_frame_start(initial_step_name='in')
-                    try:
-                        image_array = next(image_iterator)
-                    except StopIteration:
-                        break
-                    timer.on_frame_start(initial_step_name='bg')
-                    if background_image_iterator is None:
-                        background_image_source = exit_stack.enter_context(get_image_source(
-                            args.background,
-                            image_size=get_image_size(image_array)
-                        ))
-                        background_image_iterator = iter(cycle(background_image_source))
-                    background_image_array = next(background_image_iterator)
-                    timer.on_step_start('model')
-                    output_image = self.get_output_image(
-                        bodypix_model,
-                        image_array,
-                        args,
-                        masks=masks,
-                        background_image_array=background_image_array,
-                        timer=timer
-                    )
-                    timer.on_step_start('out')
-                    output_sink(output_image)
-                    timer.on_frame_end()
-        except KeyboardInterrupt:
-            LOGGER.info('exiting')
+    def get_app(self, args: argparse.Namespace) -> AbstractWebcamFilterApp:
+        return ReplaceBackgroundApp(args)
 
 
 SUB_COMMANDS: List[SubCommand] = [
