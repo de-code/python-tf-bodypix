@@ -56,7 +56,7 @@ tf.keras.preprocessing.image.save_img(
     mask
 )
 
-colored_mask = result.get_colored_mask(mask)
+colored_mask = result.get_colored_part_mask(mask)
 tf.keras.preprocessing.image.save_img(
     '/path/to/output-colored-mask.jpg',
     colored_mask
