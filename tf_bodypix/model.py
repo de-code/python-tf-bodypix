@@ -347,7 +347,10 @@ def load_tflite_model(model_path: str):
         interpreter.allocate_tensors()
         interpreter.set_tensor(image_input['index'], image_data)
         # interpreter.
-        interpreter.set_tensor(input_details_map['image_size']['index'], np.array([height, width], dtype=np.float))
+        interpreter.set_tensor(
+            input_details_map['image_size']['index'],
+            np.array([height, width], dtype=np.float)
+        )
 
         interpreter.invoke()
 
