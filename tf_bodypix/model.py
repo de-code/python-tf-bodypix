@@ -224,10 +224,11 @@ class BodyPixResultWrapper:
             )
         return scaled_part_heatmap_argmax
 
-    def get_mask(self, threshold: float) -> np.ndarray:
+    def get_mask(self, threshold: float, **kwargs) -> np.ndarray:
         return to_mask_tensor(
             self.get_scaled_segment_scores(),
-            threshold
+            threshold,
+            **kwargs
         )
 
     def get_part_mask(
@@ -260,10 +261,14 @@ class BodyPixResultWrapper:
 
 
 class BodyPixModelWrapper:
-    def __init__(self, predict_fn: Callable[[np.ndarray], Dict[str, Any]]):
+    def __init__(
+            self,
+            predict_fn: Callable[[np.ndarray], Dict[str, Any]],
+            output_stride: int,
+            internal_resolution: float = 0.5):
         self.predict_fn = predict_fn
-        self.internal_resolution = 0.5
-        self.output_stride = 16
+        self.internal_resolution = internal_resolution
+        self.output_stride = output_stride
 
     def get_bodypix_input_size(self, original_size: ImageSize) -> ImageSize:
         return ImageSize(
@@ -416,7 +421,8 @@ def get_architecture_from_model_path(model_path: str) -> int:
 def load_model(
     model_path: str,
     output_stride: int = None,
-    architecture_name: str = None
+    architecture_name: str = None,
+    **kwargs
 ):
     if not output_stride:
         output_stride = get_output_stride_from_model_path(model_path)
@@ -430,5 +436,7 @@ def load_model(
     else:
         ValueError('unsupported architecture: %s' % architecture_name)
     return BodyPixModelWrapper(
-        architecture_wrapper
+        architecture_wrapper,
+        output_stride=output_stride,
+        **kwargs
     )
