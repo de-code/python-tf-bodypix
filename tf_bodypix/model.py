@@ -333,7 +333,11 @@ def load_tflite_model(model_path: str):
     output_names = [item['name'] for item in output_details]
     LOGGER.debug('output_names: %s', output_names)
 
-    image_input = input_details_map['image']
+    try:
+        image_input = input_details_map['image']
+    except KeyError:
+        assert len(input_details_map) == 1
+        image_input = list(input_details_map.values())[0]
     input_shape = image_input['shape']
     LOGGER.debug('input_shape: %s', input_shape)
 
