@@ -353,11 +353,9 @@ def load_tflite_model(model_path: str):
         image_data = to_number_of_dimensions(image_data, len(input_shape))
         LOGGER.debug('tflite predict, image_data.shape=%s (%s)', image_data.shape, image_data.dtype)
         height, width, *_ = image_data.shape
-        # input_data = np.array(np.random.random_sample(input_shape), dtype=np.float32)
         interpreter.resize_tensor_input(image_input['index'], list(image_data.shape))
         interpreter.allocate_tensors()
         interpreter.set_tensor(image_input['index'], image_data)
-        # interpreter.
         if 'image_size' in input_details_map:
             interpreter.set_tensor(
                 input_details_map['image_size']['index'],
@@ -372,15 +370,6 @@ def load_tflite_model(model_path: str):
             item['name']: interpreter.get_tensor(item['index'])
             for item in output_details
         }
-        # output_data = interpreter.get_tensor(output_details[0]['index'])
-        # LOGGER.debug('output_data: %s', output_data)
-
-        # loaded = tf.saved_model.load(model_path)
-        # LOGGER.debug('loaded: %s', loaded)
-        # LOGGER.debug('signature keys: %s', list(loaded.signatures.keys()))
-        # infer = loaded.signatures["serving_default"]
-        # LOGGER.info('structured_outputs: %s', infer.structured_outputs)
-        # return infer
     return predict
 
 
