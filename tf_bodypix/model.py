@@ -416,7 +416,7 @@ def get_architecture_from_model_path(model_path: str) -> int:
     model_path_lower = model_path.lower()
     if 'mobilenet' in model_path_lower:
         return ModelArchitectureNames.MOBILENET_V1
-    if 'resnet50' in model_path_lower:
+    if 'resnet' in model_path_lower:
         return ModelArchitectureNames.RESNET_50
     raise ValueError('cannot extract model architecture from model path: %r' % model_path)
 
