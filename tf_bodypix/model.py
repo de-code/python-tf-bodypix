@@ -317,6 +317,14 @@ def get_structured_output_names(structured_outputs: List[tf.Tensor]) -> List[str
     ]
 
 
+def to_number_of_dimensions(data: np.ndarray, dimension_count: int) -> np.ndarray:
+    while len(data.shape) > dimension_count:
+        data = data[0]
+    while len(data.shape) < dimension_count:
+        data = np.expand_dims(data, axis=0)
+    return data
+
+
 def load_tflite_model(model_path: str):
     # Load TFLite model and allocate tensors.
     interpreter = tf.lite.Interpreter(model_path=model_path)
@@ -342,19 +350,19 @@ def load_tflite_model(model_path: str):
     LOGGER.debug('input_shape: %s', input_shape)
 
     def predict(image_data: np.ndarray):
-        if len(image_data.shape) == 4:
-            image_data = image_data[0]
+        image_data = to_number_of_dimensions(image_data, len(input_shape))
         LOGGER.debug('tflite predict, image_data.shape=%s (%s)', image_data.shape, image_data.dtype)
-        height, width, _ = image_data.shape
+        height, width, *_ = image_data.shape
         # input_data = np.array(np.random.random_sample(input_shape), dtype=np.float32)
         interpreter.resize_tensor_input(image_input['index'], list(image_data.shape))
         interpreter.allocate_tensors()
         interpreter.set_tensor(image_input['index'], image_data)
         # interpreter.
-        interpreter.set_tensor(
-            input_details_map['image_size']['index'],
-            np.array([height, width], dtype=np.float)
-        )
+        if 'image_size' in input_details_map:
+            interpreter.set_tensor(
+                input_details_map['image_size']['index'],
+                np.array([height, width], dtype=np.float)
+            )
 
         interpreter.invoke()
 
