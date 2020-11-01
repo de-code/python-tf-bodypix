@@ -93,7 +93,8 @@ def remove_padding_and_resize_back(
     resized_and_padded: np.ndarray,
     original_height: int,
     original_width: int,
-    padding: Padding
+    padding: Padding,
+    resize_method: str = tf.image.ResizeMethod.BILINEAR
 ) -> np.ndarray:
     boxes = [[
         padding.top / (original_height + padding.top + padding.bottom - 1.0),
@@ -111,7 +112,8 @@ def remove_padding_and_resize_back(
         get_images_batch(resized_and_padded),
         boxes=boxes,
         box_indices=[0],
-        crop_size=[original_height, original_width]
+        crop_size=[original_height, original_width],
+        method=resize_method
     )[0]
 
 
@@ -119,11 +121,14 @@ def remove_padding_and_resize_back_simple(
     resized_and_padded: np.ndarray,
     original_height: int,
     original_width: int,
-    padding: Padding
+    padding: Padding,
+    resize_method: str = tf.image.ResizeMethod.BILINEAR
 ) -> np.ndarray:
     padded_height = padding.top + original_height + padding.bottom
     padded_width = padding.left + original_width + padding.right
-    padded = tf.image.resize(resized_and_padded, [padded_height, padded_width])
+    padded = tf.image.resize(
+        resized_and_padded, [padded_height, padded_width], method=resize_method
+    )
     cropped = tf.image.crop_to_bounding_box(
         padded,
         offset_height=padding.top,
@@ -142,13 +147,17 @@ def scale_and_crop_to_input_tensor_shape(
     resized_height: int,
     resized_width: int,
     padding: Padding,
-    apply_sigmoid_activation: bool = False
+    apply_sigmoid_activation: bool = False,
+    resize_method: str = tf.image.ResizeMethod.BILINEAR
 ) -> np.ndarray:
-    resized_and_padded = tf.image.resize(image, [resized_height, resized_width])
+    resized_and_padded = tf.image.resize(
+        image, [resized_height, resized_width], method=resize_method
+    )
     if apply_sigmoid_activation:
         resized_and_padded = tf.math.sigmoid(resized_and_padded)
     return remove_padding_and_resize_back(
         resized_and_padded,
         input_height, input_width,
-        padding
+        padding,
+        resize_method=resize_method
     )
