@@ -39,6 +39,9 @@ PART_CHANNEL_INDEX_BY_NAME = {
 }
 
 
+DEFAULT_RESIZE_METHOD = tf.image.ResizeMethod.BILINEAR
+
+
 ImageSize = namedtuple('ImageSize', ('height', 'width'))
 
 
@@ -178,7 +181,11 @@ class BodyPixResultWrapper:
         self.model_input_size = model_input_size
         self.padding = padding
 
-    def _get_scaled_scores(self, logits: np.ndarray) -> np.ndarray:
+    def _get_scaled_scores(
+        self,
+        logits: np.ndarray,
+        resize_method: str = DEFAULT_RESIZE_METHOD
+    ) -> np.ndarray:
         return scale_and_crop_to_input_tensor_shape(
             logits,
             self.original_size.height,
@@ -186,23 +193,25 @@ class BodyPixResultWrapper:
             self.model_input_size.height,
             self.model_input_size.width,
             padding=self.padding,
-            apply_sigmoid_activation=True
+            apply_sigmoid_activation=True,
+            resize_method=resize_method
         )
 
-    def get_scaled_segment_scores(self) -> np.ndarray:
-        return self._get_scaled_scores(self.segments_logits)
+    def get_scaled_segment_scores(self, **kwargs) -> np.ndarray:
+        return self._get_scaled_scores(self.segments_logits, **kwargs)
 
-    def get_scaled_part_heatmap_scores(self) -> np.ndarray:
-        return self._get_scaled_scores(self.part_heatmap_logits)
+    def get_scaled_part_heatmap_scores(self, **kwargs) -> np.ndarray:
+        return self._get_scaled_scores(self.part_heatmap_logits, **kwargs)
 
     def get_scaled_part_segmentation(
         self,
         mask: np.ndarray = None,
         part_names: List[str] = None,
-        outside_mask_value: int = -1
+        outside_mask_value: int = -1,
+        resize_method: str = DEFAULT_RESIZE_METHOD
     ) -> np.ndarray:
         scaled_part_heatmap_argmax = np.argmax(
-            self.get_scaled_part_heatmap_scores(),
+            self.get_scaled_part_heatmap_scores(resize_method=resize_method),
             -1
         )
         LOGGER.debug('scaled_part_heatmap_argmax.shape: %s', scaled_part_heatmap_argmax.shape)
@@ -224,9 +233,14 @@ class BodyPixResultWrapper:
             )
         return scaled_part_heatmap_argmax
 
-    def get_mask(self, threshold: float, **kwargs) -> np.ndarray:
+    def get_mask(
+        self,
+        threshold: float,
+        resize_method: str = DEFAULT_RESIZE_METHOD,
+        **kwargs
+    ) -> np.ndarray:
         return to_mask_tensor(
-            self.get_scaled_segment_scores(),
+            self.get_scaled_segment_scores(resize_method=resize_method),
             threshold,
             **kwargs
         )
@@ -234,11 +248,14 @@ class BodyPixResultWrapper:
     def get_part_mask(
         self,
         mask: np.ndarray,
-        part_names: List[str] = None
+        part_names: List[str] = None,
+        resize_method: str = DEFAULT_RESIZE_METHOD
     ) -> np.ndarray:
         if is_all_part_names(part_names):
             return mask
-        part_segmentation = self.get_scaled_part_segmentation(mask, part_names=part_names)
+        part_segmentation = self.get_scaled_part_segmentation(
+            mask, part_names=part_names, resize_method=resize_method
+        )
         part_mask = np.where(
             np.expand_dims(part_segmentation, -1) >= 0,
             mask,
@@ -251,9 +268,12 @@ class BodyPixResultWrapper:
         self,
         mask: np.ndarray,
         part_colors: List[tuple] = None,
-        part_names: List[str] = None
+        part_names: List[str] = None,
+        resize_method: str = DEFAULT_RESIZE_METHOD
     ) -> np.ndarray:
-        part_segmentation = self.get_scaled_part_segmentation(mask, part_names=part_names)
+        part_segmentation = self.get_scaled_part_segmentation(
+            mask, part_names=part_names, resize_method=resize_method
+        )
         return get_colored_part_mask_for_segmentation(
             part_segmentation,
             part_colors=part_colors
