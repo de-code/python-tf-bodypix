@@ -370,11 +370,15 @@ def load_tflite_model(model_path: str):
     LOGGER.debug('input_shape: %s', input_shape)
 
     def predict(image_data: np.ndarray):
+        nonlocal input_shape
         image_data = to_number_of_dimensions(image_data, len(input_shape))
         LOGGER.debug('tflite predict, image_data.shape=%s (%s)', image_data.shape, image_data.dtype)
         height, width, *_ = image_data.shape
-        interpreter.resize_tensor_input(image_input['index'], list(image_data.shape))
-        interpreter.allocate_tensors()
+        if tuple(image_data.shape) != tuple(input_shape):
+            LOGGER.info('resizing input tensor: %s -> %s', tuple(input_shape), image_data.shape)
+            interpreter.resize_tensor_input(image_input['index'], list(image_data.shape))
+            interpreter.allocate_tensors()
+            input_shape = image_data.shape
         interpreter.set_tensor(image_input['index'], image_data)
         if 'image_size' in input_details_map:
             interpreter.set_tensor(
