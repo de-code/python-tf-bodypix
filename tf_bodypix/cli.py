@@ -25,7 +25,13 @@ from tf_bodypix.utils.image import (
 )
 from tf_bodypix.utils.s3 import iter_s3_file_urls
 from tf_bodypix.download import download_model
-from tf_bodypix.model import load_model, PART_CHANNELS, BodyPixModelWrapper, BodyPixResultWrapper
+from tf_bodypix.model import (
+    load_model,
+    PART_CHANNELS,
+    DEFAULT_RESIZE_METHOD,
+    BodyPixModelWrapper,
+    BodyPixResultWrapper
+)
 from tf_bodypix.source import get_image_source, get_threaded_image_source, T_ImageSource
 from tf_bodypix.sink import (
     T_OutputSink,
@@ -221,9 +227,10 @@ def get_mask(
     bodypix_result: BodyPixResultWrapper,
     masks: List[np.ndarray],
     timer: LoggingTimer,
-    args: argparse.Namespace
+    args: argparse.Namespace,
+    resize_method: str = DEFAULT_RESIZE_METHOD
 ) -> np.ndarray:
-    mask = bodypix_result.get_mask(args.threshold, dtype=np.float32)
+    mask = bodypix_result.get_mask(args.threshold, dtype=np.float32, resize_method=resize_method)
     if args.mask_blur:
         timer.on_step_start('mblur')
         mask = box_blur_image(mask, args.mask_blur)
@@ -343,15 +350,20 @@ class AbstractWebcamFilterSubCommand(SubCommand):
 
 class DrawMaskApp(AbstractWebcamFilterApp):
     def get_output_image(self, image_array: np.ndarray) -> np.ndarray:
+        resize_method = DEFAULT_RESIZE_METHOD
         result = self.get_bodypix_result(image_array)
         self.timer.on_step_start('get_mask')
-        mask = self.get_mask(result)
+        mask = self.get_mask(result, resize_method=resize_method)
         if self.args.colored:
             self.timer.on_step_start('get_cpart_mask')
-            mask = result.get_colored_part_mask(mask, part_names=self.args.parts)
+            mask = result.get_colored_part_mask(
+                mask, part_names=self.args.parts, resize_method=resize_method
+            )
         elif self.args.parts:
             self.timer.on_step_start('get_part_mask')
-            mask = result.get_part_mask(mask, part_names=self.args.parts)
+            mask = result.get_part_mask(
+                mask, part_names=self.args.parts, resize_method=resize_method
+            )
         if self.args.add_overlay_alpha is not None:
             self.timer.on_step_start('overlay')
             LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
