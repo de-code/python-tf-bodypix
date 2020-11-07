@@ -24,9 +24,9 @@ def to_valid_input_resolution(
     input_resolution: int, output_stride: int
 ) -> int:
     if is_valid_input_resolution(input_resolution, output_stride):
-        return input_resolution
+        return int(input_resolution)
 
-    return math.floor(input_resolution / output_stride) * output_stride + 1
+    return int(math.floor(input_resolution / output_stride) * output_stride + 1)
 
 
 # see toInputResolutionHeightAndWidth
