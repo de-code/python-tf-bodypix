@@ -301,6 +301,10 @@ class BodyPixModelWrapper:
     def get_padded_and_resized(
         self, image: np.ndarray, model_input_size: ImageSize
     ) -> Tuple[np.ndarray, Padding]:
+        LOGGER.debug(
+            'pad_and_resize_to: image.shape=%s, model_input_size=%s',
+            image.shape, model_input_size
+        )
         return pad_and_resize_to(
             image,
             model_input_size.height,
