@@ -78,7 +78,7 @@ def download_model(model_path: str) -> str:
     for weights_manifest_path in weights_manifest_paths:
         local_model_json_path = tf.keras.utils.get_file(
             os.path.basename(weights_manifest_path),
-            os.path.join(model_base_path, weights_manifest_path),
+            model_base_path + '/' + weights_manifest_path,
             cache_subdir=cache_subdir,
         )
     return local_model_path
