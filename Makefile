@@ -2,6 +2,8 @@ VENV = venv
 PIP = $(VENV)/bin/pip
 PYTHON = $(VENV)/bin/python
 
+SYSTEM_PYTHON = python3
+
 VENV_TEMP = venv_temp
 
 ARGS =
@@ -30,7 +32,7 @@ venv-clean:
 
 
 venv-create:
-	python3 -m venv $(VENV)
+	$(SYSTEM_PYTHON) -m venv $(VENV)
 
 
 dev-install:
