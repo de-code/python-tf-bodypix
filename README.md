@@ -180,7 +180,7 @@ python -m tf_bodypix \
 
 The model path may also point to a TensorFlow Lite model (`.tflite` extension). Whether that actually improves performance may depend on the platform and available hardware.
 
-You could convert one of the available TensorFlow Lite models using the following command:
+You could convert one of the available TensorFlow JS models to TensorFlow Lite using the following command:
 
 ```bash
 python -m tf_bodypix \
@@ -192,8 +192,14 @@ python -m tf_bodypix \
     --output-model-file "./mobilenet-float16-stride16.tflite"
 ```
 
-See [TF Lite post_training_quantization](https://www.tensorflow.org/lite/performance/post_training_quantization),
-  [TF GitHub #40183](https://github.com/tensorflow/tensorflow/issues/40183).
+The above command is provided for convenience.
+You may use alternative methods depending on your preference and requirements.
+
+Relevant links:
+
+* [TensorFlow Lite converter](https://www.tensorflow.org/lite/convert/)
+* [TF Lite post_training_quantization](https://www.tensorflow.org/lite/performance/post_training_quantization)
+* [TF GitHub #40183](https://github.com/tensorflow/tensorflow/issues/40183).
 
 ## Acknowledgements
 
