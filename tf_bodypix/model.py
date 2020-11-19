@@ -341,6 +341,66 @@ def get_structured_output_names(structured_outputs: List[tf.Tensor]) -> List[str
     ]
 
 
+def to_number_of_dimensions(data: np.ndarray, dimension_count: int) -> np.ndarray:
+    while len(data.shape) > dimension_count:
+        data = data[0]
+    while len(data.shape) < dimension_count:
+        data = np.expand_dims(data, axis=0)
+    return data
+
+
+def load_tflite_model(model_path: str):
+    # Load TFLite model and allocate tensors.
+    interpreter = tf.lite.Interpreter(model_path=model_path)
+    interpreter.allocate_tensors()
+
+    input_details = interpreter.get_input_details()
+    LOGGER.debug('input_details: %s', input_details)
+    input_names = [item['name'] for item in input_details]
+    LOGGER.debug('input_names: %s', input_names)
+    input_details_map = dict(zip(input_names, input_details))
+
+    output_details = interpreter.get_output_details()
+    LOGGER.debug('output_details: %s', output_details)
+    output_names = [item['name'] for item in output_details]
+    LOGGER.debug('output_names: %s', output_names)
+
+    try:
+        image_input = input_details_map['image']
+    except KeyError:
+        assert len(input_details_map) == 1
+        image_input = list(input_details_map.values())[0]
+    input_shape = image_input['shape']
+    LOGGER.debug('input_shape: %s', input_shape)
+
+    def predict(image_data: np.ndarray):
+        nonlocal input_shape
+        image_data = to_number_of_dimensions(image_data, len(input_shape))
+        LOGGER.debug('tflite predict, image_data.shape=%s (%s)', image_data.shape, image_data.dtype)
+        height, width, *_ = image_data.shape
+        if tuple(image_data.shape) != tuple(input_shape):
+            LOGGER.info('resizing input tensor: %s -> %s', tuple(input_shape), image_data.shape)
+            interpreter.resize_tensor_input(image_input['index'], list(image_data.shape))
+            interpreter.allocate_tensors()
+            input_shape = image_data.shape
+        interpreter.set_tensor(image_input['index'], image_data)
+        if 'image_size' in input_details_map:
+            interpreter.set_tensor(
+                input_details_map['image_size']['index'],
+                np.array([height, width], dtype=np.float)
+            )
+
+        interpreter.invoke()
+
+        # The function `get_tensor()` returns a copy of the tensor data.
+        # Use `tensor()` in order to get a pointer to the tensor.
+        return {
+            item['name']: interpreter.get_tensor(item['index'])
+            for item in output_details
+        }
+    return predict
+
+
 def load_using_saved_model_and_get_predict_function(model_path):
     loaded = tf.saved_model.load(model_path)
     LOGGER.debug('loaded: %s', loaded)
@@ -366,6 +426,8 @@ def load_using_tfjs_graph_converter_and_get_predict_function(
 def load_model_and_get_predict_function(
     model_path: str
 ) -> Callable[[np.ndarray], dict]:
+    if model_path.endswith('.tflite'):
+        return load_tflite_model(model_path)
     try:
         return load_using_saved_model_and_get_predict_function(model_path)
     except OSError:
@@ -373,17 +435,17 @@ def load_model_and_get_predict_function(
 
 
 def get_output_stride_from_model_path(model_path: str) -> int:
-    match = re.search(r'stride(\d+)', model_path)
+    match = re.search(r'stride(\d+)|_(\d+)_quant', model_path)
     if not match:
         raise ValueError('cannot extract output stride from model path: %r' % model_path)
-    return int(match.group(1))
+    return int(match.group(1) or match.group(2))
 
 
 def get_architecture_from_model_path(model_path: str) -> int:
     model_path_lower = model_path.lower()
     if 'mobilenet' in model_path_lower:
         return ModelArchitectureNames.MOBILENET_V1
-    if 'resnet50' in model_path_lower:
+    if 'resnet' in model_path_lower:
         return ModelArchitectureNames.RESNET_50
     raise ValueError('cannot extract model architecture from model path: %r' % model_path)
 

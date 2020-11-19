@@ -5,6 +5,7 @@ import re
 from abc import ABC, abstractmethod
 from contextlib import ExitStack
 from itertools import cycle
+from pathlib import Path
 from time import time
 from typing import Dict, List
 
@@ -25,8 +26,10 @@ from tf_bodypix.utils.image import (
 )
 from tf_bodypix.utils.s3 import iter_s3_file_urls
 from tf_bodypix.download import download_model
+from tf_bodypix.tflite import get_tflite_converter_for_model_path
 from tf_bodypix.model import (
     load_model,
+    VALID_MODEL_ARCHITECTURE_NAMES,
     PART_CHANNELS,
     DEFAULT_RESIZE_METHOD,
     BodyPixModelWrapper,
@@ -76,6 +79,14 @@ def add_model_arguments(parser: argparse.ArgumentParser):
         "--model-path",
         default=DEFAULT_MODEL_PATH,
         help="The path or URL to the bodypix model."
+    )
+    parser.add_argument(
+        "--model-architecture",
+        choices=VALID_MODEL_ARCHITECTURE_NAMES,
+        help=(
+            "The model architecture."
+            " It will be guessed from the model path if not specified."
+        )
     )
     parser.add_argument(
         "--output-stride",
@@ -219,7 +230,8 @@ def load_bodypix_model(args: argparse.Namespace) -> BodyPixModelWrapper:
     return load_model(
         local_model_path,
         internal_resolution=args.internal_resolution,
-        output_stride=args.output_stride
+        output_stride=args.output_stride,
+        architecture_name=args.model_architecture
     )
 
 
@@ -264,6 +276,52 @@ class ListModelsSubCommand(SubCommand):
             if re.match(r'.*/bodypix/.*/model.*\.json', file_url)
         ]
         print('\n'.join(bodypix_model_json_files))
+
+
+class ConvertToTFLiteSubCommand(SubCommand):
+    def __init__(self):
+        super().__init__("convert-to-tflite", "Converts the model to a tflite model")
+
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        add_common_arguments(parser)
+        parser.add_argument(
+            "--model-path",
+            default=DEFAULT_MODEL_PATH,
+            help="The path or URL to the bodypix model."
+        )
+        parser.add_argument(
+            "--output-model-file",
+            required=True,
+            help="The path to the output file (tflite model)."
+        )
+        parser.add_argument(
+            "--optimize",
+            action='store_true',
+            help="Enable optimization (quantization)."
+        )
+        parser.add_argument(
+            "--quantization-type",
+            choices=['float16', 'float32', 'int8'],
+            help="The quantization type to use."
+        )
+
+    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
+        LOGGER.info('converting model: %s', args.model_path)
+        converter = get_tflite_converter_for_model_path(download_model(
+            args.model_path
+        ))
+        tflite_model = converter.convert()
+        if args.optimize:
+            LOGGER.info('enabled optimization')
+            converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        if args.quantization_type:
+            LOGGER.info('quanization type: %s', args.quantization_type)
+            quantization_type = getattr(tf, args.quantization_type)
+            converter.target_spec.supported_types = [quantization_type]
+            converter.inference_input_type = quantization_type
+            converter.inference_output_type = quantization_type
+        LOGGER.info('saving tflite model to: %s', args.output_model_file)
+        Path(args.output_model_file).write_bytes(tflite_model)
 
 
 class AbstractWebcamFilterApp(ABC):
@@ -497,6 +555,7 @@ class ReplaceBackgroundSubCommand(AbstractWebcamFilterSubCommand):
 
 SUB_COMMANDS: List[SubCommand] = [
     ListModelsSubCommand(),
+    ConvertToTFLiteSubCommand(),
     DrawMaskSubCommand(),
     BlurBackgroundSubCommand(),
     ReplaceBackgroundSubCommand()
