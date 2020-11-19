@@ -180,7 +180,7 @@ python -m tf_bodypix \
 
 The model path may also point to a TensorFlow Lite model (`.tflite` extension). Whether that actually improves performance may depend on the platform and available hardware.
 
-You could convert any a TensorFlow Lite model using the following command:
+You could convert one of the available TensorFlow Lite models using the following command:
 
 ```bash
 python -m tf_bodypix \
