@@ -6,8 +6,8 @@ else
 	VENV_BIN = $(VENV)/bin
 endif
 
-PIP = $(VENV_BIN)/pip
 PYTHON = $(VENV_BIN)/python
+PIP = $(VENV_BIN)/python -m pip
 
 SYSTEM_PYTHON = python3
 
