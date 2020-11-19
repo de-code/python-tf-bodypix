@@ -87,3 +87,18 @@ class TestMain:
         LOGGER.debug('output_urls: %s', output_urls)
         missing_urls = set(expected_urls) - set(output_urls)
         assert not missing_urls
+
+    def test_should_be_able_to_convert_to_tflite_and_use_model(self, temp_dir: Path):
+        output_model_file = temp_dir / 'mobilenet-model.tflite'
+        main([
+            'convert-to-tflite',
+            '--output-model-file=%s' % output_model_file
+        ])
+        output_image_path = temp_dir / 'mask.jpg'
+        main([
+            'draw-mask',
+            '--model-path=%s' % output_model_file,
+            '--output-stride=16',
+            '--source=%s' % EXAMPLE_IMAGE_URL,
+            '--output=%s' % output_image_path
+        ])

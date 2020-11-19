@@ -5,6 +5,7 @@ import re
 from abc import ABC, abstractmethod
 from contextlib import ExitStack
 from itertools import cycle
+from pathlib import Path
 from time import time
 from typing import Dict, List
 
@@ -25,6 +26,7 @@ from tf_bodypix.utils.image import (
 )
 from tf_bodypix.utils.s3 import iter_s3_file_urls
 from tf_bodypix.download import download_model
+from tf_bodypix.tflite import get_tflite_converter_for_model_path
 from tf_bodypix.model import (
     load_model,
     PART_CHANNELS,
@@ -266,6 +268,31 @@ class ListModelsSubCommand(SubCommand):
         print('\n'.join(bodypix_model_json_files))
 
 
+class ConvertToTFLiteSubCommand(SubCommand):
+    def __init__(self):
+        super().__init__("convert-to-tflite", "Converts the model to a tflite model")
+
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        add_common_arguments(parser)
+        parser.add_argument(
+            "--model-path",
+            default=DEFAULT_MODEL_PATH,
+            help="The path or URL to the bodypix model."
+        )
+        parser.add_argument(
+            "--output-model-file",
+            required=True,
+            help="The path to the output file (tflite model)."
+        )
+
+    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
+        converter = get_tflite_converter_for_model_path(download_model(
+            args.model_path
+        ))
+        tflite_model = converter.convert()
+        Path(args.output_model_file).write_bytes(tflite_model)
+
+
 class AbstractWebcamFilterApp(ABC):
     def __init__(self, args: argparse.Namespace):
         self.args = args
@@ -497,6 +524,7 @@ class ReplaceBackgroundSubCommand(AbstractWebcamFilterSubCommand):
 
 SUB_COMMANDS: List[SubCommand] = [
     ListModelsSubCommand(),
+    ConvertToTFLiteSubCommand(),
     DrawMaskSubCommand(),
     BlurBackgroundSubCommand(),
     ReplaceBackgroundSubCommand()
