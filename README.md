@@ -176,6 +176,25 @@ python -m tf_bodypix \
     --threshold=0.75
 ```
 
+## TensorFlow Lite support (experimental)
+
+The model path may also point to a TensorFlow Lite model (`.tflite` extension). Whether that actually improves performance may depend on the platform and available hardware.
+
+You could convert any a TensorFlow Lite model using the following command:
+
+```bash
+python -m tf_bodypix \
+    convert-to-tflite \
+    --model-path \
+    "https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/075/model-stride16.json" \
+    --optimize \
+    --quantization-type=float16 \
+    --output-model-file "./mobilenet-float16-stride16.tflite"
+```
+
+See [TF Lite post_training_quantization](https://www.tensorflow.org/lite/performance/post_training_quantization),
+  [TF GitHub #40183](https://github.com/tensorflow/tensorflow/issues/40183).
+
 ## Acknowledgements
 
 * [Original TensorFlow JS Implementation of BodyPix](https://github.com/tensorflow/tfjs-models/tree/body-pix-v2.0.4/body-pix)
