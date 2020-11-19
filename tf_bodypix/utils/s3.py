@@ -17,6 +17,8 @@ S3_NEXT_MARKER = S3_PREFIX + 'NextMarker'
 
 
 def iter_s3_file_urls(base_url: str) -> Iterable[str]:
+    if not base_url.endswith('/'):
+        base_url += '/'
     marker = None
     while True:
         current_url = base_url
@@ -29,7 +31,7 @@ def iter_s3_file_urls(base_url: str) -> Iterable[str]:
         for item in root.findall(S3_CONTENTS):
             key = item.findtext(S3_KEY)
             LOGGER.debug('key: %s', key)
-            yield os.path.join(base_url, key)
+            yield base_url + key
         next_marker = root.findtext(S3_NEXT_MARKER)
         if not next_marker or next_marker == marker:
             break
