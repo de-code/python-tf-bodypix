@@ -93,6 +93,9 @@ class TestMain:
         output_model_file = temp_dir / 'model.tflite'
         main([
             'convert-to-tflite',
+            '--model-path=%s' % BodyPixModelPaths.MOBILENET_FLOAT_75_STRIDE_16,
+            '--optimize',
+            '--quantization-type=int8',
             '--output-model-file=%s' % output_model_file
         ])
         output_image_path = temp_dir / 'mask.jpg'

@@ -294,12 +294,33 @@ class ConvertToTFLiteSubCommand(SubCommand):
             required=True,
             help="The path to the output file (tflite model)."
         )
+        parser.add_argument(
+            "--optimize",
+            action='store_true',
+            help="Enable optimization (quantization)."
+        )
+        parser.add_argument(
+            "--quantization-type",
+            choices=['float16', 'float32', 'int8'],
+            help="The quantization type to use."
+        )
 
     def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
+        LOGGER.info('converting model: %s', args.model_path)
         converter = get_tflite_converter_for_model_path(download_model(
             args.model_path
         ))
         tflite_model = converter.convert()
+        if args.optimize:
+            LOGGER.info('enabled optimization')
+            converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        if args.quantization_type:
+            LOGGER.info('quanization type: %s', args.quantization_type)
+            quantization_type = getattr(tf, args.quantization_type)
+            converter.target_spec.supported_types = [quantization_type]
+            converter.inference_input_type = quantization_type
+            converter.inference_output_type = quantization_type
+        LOGGER.info('saving tflite model to: %s', args.output_model_file)
         Path(args.output_model_file).write_bytes(tflite_model)
 
 
