@@ -253,7 +253,7 @@ class ListModelsSubCommand(SubCommand):
         add_common_arguments(parser)
         parser.add_argument(
             "--storage-url",
-            default="https://storage.googleapis.com/tfjs-models/",
+            default="https://storage.googleapis.com/tfjs-models",
             help="The base URL for the storage containing the models"
         )
 
