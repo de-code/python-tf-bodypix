@@ -1,6 +1,11 @@
+import logging
 from pathlib import Path
 
+from tf_bodypix.download import BodyPixModelPaths
 from tf_bodypix.cli import main
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 EXAMPLE_IMAGE_URL = (
@@ -69,3 +74,16 @@ class TestMain:
             '--background=%s' % EXAMPLE_IMAGE_URL,
             '--output=%s' % output_image_path
         ])
+
+    def test_should_list_all_default_model_urls(self, capsys):
+        expected_urls = [
+            value
+            for key, value in BodyPixModelPaths.__dict__.items()
+            if not key.startswith('_')
+        ]
+        main(['list-models'])
+        captured = capsys.readouterr()
+        output_urls = captured.out.splitlines()
+        LOGGER.debug('output_urls: %s', output_urls)
+        missing_urls = set(expected_urls) - set(output_urls)
+        assert not missing_urls
