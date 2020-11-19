@@ -1,6 +1,13 @@
 VENV = venv
-PIP = $(VENV)/bin/pip
-PYTHON = $(VENV)/bin/python
+
+ifeq ($(OS),Windows_NT)
+	VENV_BIN = $(VENV)/Scripts
+else
+	VENV_BIN = $(VENV)/bin
+endif
+
+PIP = $(VENV_BIN)/pip
+PYTHON = $(VENV_BIN)/python
 
 SYSTEM_PYTHON = python3
 
