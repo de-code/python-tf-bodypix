@@ -11,10 +11,18 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [ubuntu-latest]
         python-version: [3.6, 3.7, 3.8]
+        include:
+        - python-version: 3.8
+          push-package: true
+        - os: windows-latest
+          python-version: 3.8
+        - os: macos-latest
+          python-version: 3.8
 
     steps:
       - uses: actions/checkout@v2
@@ -24,7 +32,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          make dev-venv
+          make dev-venv SYSTEM_PYTHON=python
       - name: Lint
         run: |
           make dev-lint
@@ -32,17 +40,17 @@ jobs:
         run: |
           make dev-pytest
       - name: Build dist
-        if: matrix.python-version == '3.8'
+        if: matrix.push-package == true
         run: |
           make dev-remove-dist dev-build-dist dev-list-dist-contents dev-test-install-dist
       - name: Publish distribution to Test PyPI
-        if: matrix.python-version == '3.8'
+        if: matrix.push-package == true
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.test_pypi_password }}
           repository_url: https://test.pypi.org/legacy/
       - name: Publish distribution to PyPI
-        if: matrix.python-version == '3.8' && startsWith(github.ref, 'refs/tags')
+        if: matrix.push-package == true && startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.pypi_password }}
