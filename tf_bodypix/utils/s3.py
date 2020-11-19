@@ -1,6 +1,5 @@
 import logging
 
-import os
 import urllib.request
 from xml.etree import ElementTree
 from typing import Iterable
