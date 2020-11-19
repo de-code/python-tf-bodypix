@@ -29,6 +29,7 @@ from tf_bodypix.download import download_model
 from tf_bodypix.tflite import get_tflite_converter_for_model_path
 from tf_bodypix.model import (
     load_model,
+    VALID_MODEL_ARCHITECTURE_NAMES,
     PART_CHANNELS,
     DEFAULT_RESIZE_METHOD,
     BodyPixModelWrapper,
@@ -78,6 +79,14 @@ def add_model_arguments(parser: argparse.ArgumentParser):
         "--model-path",
         default=DEFAULT_MODEL_PATH,
         help="The path or URL to the bodypix model."
+    )
+    parser.add_argument(
+        "--model-architecture",
+        choices=VALID_MODEL_ARCHITECTURE_NAMES,
+        help=(
+            "The model architecture."
+            " It will be guessed from the model path if not specified."
+        )
     )
     parser.add_argument(
         "--output-stride",
@@ -221,7 +230,8 @@ def load_bodypix_model(args: argparse.Namespace) -> BodyPixModelWrapper:
     return load_model(
         local_model_path,
         internal_resolution=args.internal_resolution,
-        output_stride=args.output_stride
+        output_stride=args.output_stride,
+        architecture_name=args.model_architecture
     )
 
 

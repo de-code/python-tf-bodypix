@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 
 from tf_bodypix.download import BodyPixModelPaths
+from tf_bodypix.model import ModelArchitectureNames
 from tf_bodypix.cli import main
 
 
@@ -89,7 +90,7 @@ class TestMain:
         assert not missing_urls
 
     def test_should_be_able_to_convert_to_tflite_and_use_model(self, temp_dir: Path):
-        output_model_file = temp_dir / 'mobilenet-model.tflite'
+        output_model_file = temp_dir / 'model.tflite'
         main([
             'convert-to-tflite',
             '--output-model-file=%s' % output_model_file
@@ -98,6 +99,7 @@ class TestMain:
         main([
             'draw-mask',
             '--model-path=%s' % output_model_file,
+            '--model-architecture=%s' % ModelArchitectureNames.MOBILENET_V1,
             '--output-stride=16',
             '--source=%s' % EXAMPLE_IMAGE_URL,
             '--output=%s' % output_image_path
