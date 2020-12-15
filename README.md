@@ -201,6 +201,25 @@ Relevant links:
 * [TF Lite post_training_quantization](https://www.tensorflow.org/lite/performance/post_training_quantization)
 * [TF GitHub #40183](https://github.com/tensorflow/tensorflow/issues/40183).
 
+## Docker Usage
+
+You could also use the Docker image if you prefer.
+The entrypoint will by default delegate to the CLI, except for `python` or `bash` commands.
+
+```bash
+docker pull de4code/tf-bodypix
+
+docker run --rm \
+    --device /dev/video0 \
+    --device /dev/video2 \
+    de4code/tf-bodypix \
+    blur-background \
+    --source /dev/video0 \
+    --output /dev/video2 \
+    --background-blur 20 \
+    --threshold=0.75
+```
+
 ## Acknowledgements
 
 * [Original TensorFlow JS Implementation of BodyPix](https://github.com/tensorflow/tfjs-models/tree/body-pix-v2.0.4/body-pix)

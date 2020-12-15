@@ -31,6 +31,9 @@ SELECTED_PARTS = left_face right_face
 WEBCAM_PATH = webcam:0
 VIRTUAL_VIDEO_DEVICE = /dev/video2
 
+IMAGE_NAME = de4code/tf-bodypix_unstable
+IMAGE_TAG = develop
+
 
 venv-clean:
 	@if [ -d "$(VENV)" ]; then \
@@ -229,3 +232,15 @@ webcam-v4l2-replace-background:
 		--output=$(VIRTUAL_VIDEO_DEVICE) \
 		--threshold=$(MASK_THRESHOLD) \
 		$(ARGS)
+
+
+docker-build:
+	docker build . -t $(IMAGE_NAME):$(IMAGE_TAG)
+
+
+docker-run:
+	docker run \
+		-v /tmp/.X11-unix:/tmp/.X11-unix \
+		-e DISPLAY=unix$$DISPLAY \
+		-v /dev/shm:/dev/shm \
+		--rm $(IMAGE_NAME):$(IMAGE_TAG) $(ARGS)
