@@ -63,7 +63,7 @@ jobs:
       - name: Set tags
         id: set_tags
         run: |
-          DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/tf-bodypix
+          DOCKER_IMAGE=de4code/tf-bodypix
           VERSION=""
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
             VERSION=${GITHUB_REF#refs/tags/v}
@@ -80,7 +80,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Login to DockerHub
-        if: ${{ secrets.DOCKERHUB_USERNAME != '' }}
+        env:
+            DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        if: ${{ env.DOCKERHUB_USERNAME != '' }}
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
