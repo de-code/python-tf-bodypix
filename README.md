@@ -220,6 +220,10 @@ docker run --rm \
     --threshold=0.75
 ```
 
+## Experimental Downstream Projects
+
+* [Layered Vision](https://github.com/de-code/layered-vision) is an experimental project using the `tf-bodypix` Python API.
+
 ## Acknowledgements
 
 * [Original TensorFlow JS Implementation of BodyPix](https://github.com/tensorflow/tfjs-models/tree/body-pix-v2.0.4/body-pix)
