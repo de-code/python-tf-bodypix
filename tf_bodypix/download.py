@@ -41,7 +41,6 @@ class BodyPixModelPaths:
         _DOWNLOAD_URL_PREFIX + 'resnet50/float/model-stride32.json'
     )
 
-
     # deprecated (shouldn't have mobilenet in the name)
     MOBILENET_RESNET50_FLOAT_STRIDE_16 = (
         _DOWNLOAD_URL_PREFIX + 'resnet50/float/model-stride16.json'
