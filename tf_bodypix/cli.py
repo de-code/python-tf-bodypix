@@ -332,8 +332,8 @@ class AbstractWebcamFilterApp(ABC):
         self.image_source = None
         self.image_iterator = None
         self.timer = LoggingTimer()
-        self.masks = []
-        self.exit_stack = None
+        self.masks: List[np.ndarray] = []
+        self.exit_stack = ExitStack()
         self.bodypix_result_cache_time = None
         self.bodypix_result_cache = None
 
@@ -347,6 +347,7 @@ class AbstractWebcamFilterApp(ABC):
         )
 
     def get_bodypix_result(self, image_array: np.ndarray) -> BodyPixResultWrapper:
+        assert self.bodypix_model is not None
         current_time = time()
         if (
             self.bodypix_result_cache is not None
@@ -358,7 +359,7 @@ class AbstractWebcamFilterApp(ABC):
         return self.bodypix_result_cache
 
     def __enter__(self):
-        self.exit_stack = ExitStack().__enter__()
+        self.exit_stack.__enter__()
         self.bodypix_model = load_bodypix_model(self.args)
         self.output_sink = self.exit_stack.enter_context(get_output_sink(self.args))
         self.image_source = self.exit_stack.enter_context(get_image_source_for_args(self.args))

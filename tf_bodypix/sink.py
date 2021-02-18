@@ -2,7 +2,7 @@ import os
 import logging
 from contextlib import contextmanager
 from functools import partial
-from typing import Callable
+from typing import Callable, Iterator
 
 import numpy as np
 import tensorflow as tf
@@ -28,7 +28,7 @@ def get_v4l2_output_sink(device_name: str) -> T_OutputSink:
 
 
 @contextmanager
-def get_image_file_output_sink(path: str) -> T_OutputSink:
+def get_image_file_output_sink(path: str) -> Iterator[T_OutputSink]:
     yield partial(write_image_to, path=path)
 
 

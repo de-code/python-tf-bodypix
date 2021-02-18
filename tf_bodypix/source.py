@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from hashlib import md5
 from queue import Queue
 from threading import Thread
-from typing import ContextManager, Iterable
+from typing import ContextManager, Iterable, Iterator, Optional
 
 import tensorflow as tf
 
@@ -31,7 +31,7 @@ def get_file(file_path: str) -> str:
     return local_path
 
 
-def get_webcam_number(path: str) -> int:
+def get_webcam_number(path: str) -> Optional[int]:
     match = re.match(r'(?:/dev/video|webcam:)(\d+)', path)
     if not match:
         return None
@@ -48,7 +48,7 @@ def get_simple_image_source(
     path: str,
     image_size: ImageSize = None,
     **_
-) -> T_ImageSource:
+) -> Iterator[Iterable[ImageArray]]:
     local_image_path = get_file(path)
     LOGGER.debug('local_image_path: %r', local_image_path)
     image = tf.keras.preprocessing.image.load_img(
@@ -71,7 +71,7 @@ class ThreadedImageSource:
     def __init__(self, image_source: T_ImageSource, queue_size: int = 1):
         self.image_source = image_source
         self.image_source_iterator = None
-        self.queue = Queue(queue_size)
+        self.queue: 'Queue[ImageArray]' = Queue(queue_size)
         self.thread = None
         self.stopped = False
 
