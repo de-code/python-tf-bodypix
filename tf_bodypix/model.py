@@ -1,7 +1,8 @@
 import logging
 import re
+from abc import ABC, abstractmethod
 from collections import namedtuple
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import tensorflow as tf
@@ -45,6 +46,9 @@ DEFAULT_RESIZE_METHOD = tf.image.ResizeMethod.BILINEAR
 ImageSize = namedtuple('ImageSize', ('height', 'width'))
 
 
+T_Color = Union[Tuple[int, int, int], Tuple[int, int, int, int]]
+
+
 class ModelArchitectureNames:
     MOBILENET_V1 = 'mobilenet_v1'
     RESNET_50 = 'resnet50'
@@ -60,7 +64,7 @@ VALID_MODEL_ARCHITECTURE_NAMES = {
 IMAGE_NET_MEAN = [-123.15, -115.90, -103.06]
 
 
-class DictPredictWrapper(Callable[[np.ndarray], dict]):
+class DictPredictWrapper:
     def __init__(
         self,
         wrapped: Callable[[np.ndarray], Union[dict, list]],
@@ -76,9 +80,13 @@ class DictPredictWrapper(Callable[[np.ndarray], dict]):
         return result
 
 
-class BodyPixArchitecture(Callable[[np.ndarray], dict]):
+class BodyPixArchitecture(ABC):
     def __init__(self, architecture_name: str):
         self.architecture_name = architecture_name
+
+    @abstractmethod
+    def __call__(self, image: np.ndarray) -> dict:
+        pass
 
 
 class MobileNetBodyPixPredictWrapper(BodyPixArchitecture):
@@ -114,12 +122,14 @@ class ResNet50BodyPixPredictWrapper(BodyPixArchitecture):
 
 def get_colored_part_mask_for_segmentation(
     part_segmentation: np.ndarray,
-    part_colors: List[tuple] = None,
-    default_color: tuple = None
+    part_colors: Optional[List[T_Color]] = None,
+    default_color: Optional[T_Color] = None
 ):
-    if part_colors is None:
-        part_colors = RAINBOW_PART_COLORS
-    part_colors_array = np.asarray(part_colors)
+    _part_colors = (
+        part_colors if part_colors is not None
+        else RAINBOW_PART_COLORS
+    )
+    part_colors_array = np.asarray(_part_colors)
     if default_color is None:
         default_color = (0, 0, 0)
     # np.take will take the last value if the index is -1
@@ -139,7 +149,7 @@ def get_colored_part_mask_for_segmentation(
     return part_segmentation_colored
 
 
-def is_all_part_names(part_names: List[str]) -> bool:
+def is_all_part_names(part_names: Optional[List[str]]) -> bool:
     if not part_names:
         return True
     part_names_set = set(part_names)
@@ -154,6 +164,7 @@ def get_filtered_part_segmentation(
 ):
     if is_all_part_names(part_names):
         return part_segmentation
+    assert part_names
     part_names_set = set(part_names)
     part_filter_mask = np.asarray([
         (
@@ -267,7 +278,7 @@ class BodyPixResultWrapper:
     def get_colored_part_mask(
         self,
         mask: np.ndarray,
-        part_colors: List[tuple] = None,
+        part_colors: List[T_Color] = None,
         part_names: List[str] = None,
         resize_method: str = DEFAULT_RESIZE_METHOD
     ) -> np.ndarray:
@@ -441,7 +452,7 @@ def get_output_stride_from_model_path(model_path: str) -> int:
     return int(match.group(1) or match.group(2))
 
 
-def get_architecture_from_model_path(model_path: str) -> int:
+def get_architecture_from_model_path(model_path: str) -> str:
     model_path_lower = model_path.lower()
     if 'mobilenet' in model_path_lower:
         return ModelArchitectureNames.MOBILENET_V1
@@ -461,6 +472,7 @@ def load_model(
     if not architecture_name:
         architecture_name = get_architecture_from_model_path(model_path)
     predict_fn = load_model_and_get_predict_function(model_path)
+    architecture_wrapper: BodyPixArchitecture
     if architecture_name == ModelArchitectureNames.MOBILENET_V1:
         architecture_wrapper = MobileNetBodyPixPredictWrapper(predict_fn)
     elif architecture_name == ModelArchitectureNames.RESNET_50:

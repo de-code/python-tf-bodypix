@@ -13,7 +13,11 @@ import cv2
 LOGGER = logging.getLogger(__name__)
 
 
-def create_fakewebcam(device_name: str, preferred_width: int, preferred_height: int):
+def create_fakewebcam(
+    device_name: str,
+    preferred_width: int,
+    preferred_height: int
+) -> FakeWebcam:
     fakewebcam_instance = FakeWebcam(
         device_name,
         width=preferred_width,
@@ -61,15 +65,17 @@ class VideoLoopbackImageSink:
             close_fakewebcam(self.fakewebcam_instance)
 
     def initialize_fakewebcam(self, preferred_width: int, preferred_height: int):
-        self.fakewebcam_instance = create_fakewebcam(
+        fakewebcam_instance = create_fakewebcam(
             self.device_name,
             preferred_width=preferred_width,
             preferred_height=preferred_height
         )
-        self.width = self.fakewebcam_instance._settings.fmt.pix.width
-        self.height = self.fakewebcam_instance._settings.fmt.pix.height
+        self.fakewebcam_instance = fakewebcam_instance
+        self.width = fakewebcam_instance._settings.fmt.pix.width
+        self.height = fakewebcam_instance._settings.fmt.pix.height
 
     def __call__(self, image_array: np.ndarray):
+        assert self.fakewebcam_instance is not None
         image_array = np.asarray(image_array).astype(np.uint8)
         height, width, *_ = image_array.shape
         if self.fakewebcam_instance is None:

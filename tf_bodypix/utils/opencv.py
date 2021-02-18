@@ -1,6 +1,6 @@
 import logging
 from contextlib import contextmanager
-from typing import ContextManager, Iterable
+from typing import Iterable, Iterator
 
 import cv2
 import numpy as np
@@ -36,7 +36,7 @@ def get_webcam_image_source(
     image_size: ImageSize = None,
     fourcc: str = None,
     fps: int = None
-) -> ContextManager[Iterable[np.ndarray]]:
+) -> Iterator[Iterable[np.ndarray]]:
     cam = cv2.VideoCapture(webcam_number)
     if fourcc:
         LOGGER.info('setting camera fourcc to %r', fourcc)

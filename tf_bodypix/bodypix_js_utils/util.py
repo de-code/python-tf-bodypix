@@ -3,7 +3,7 @@
 
 import math
 from collections import namedtuple
-from typing import Tuple
+from typing import Tuple, Union
 
 import tensorflow as tf
 import numpy as np
@@ -14,14 +14,14 @@ Padding = namedtuple('Padding', ('top', 'bottom', 'left', 'right'))
 
 # see isValidInputResolution
 def is_valid_input_resolution(
-    resolution: int, output_stride: int
+    resolution: Union[int, float], output_stride: int
 ) -> bool:
     return (resolution - 1) % output_stride == 0
 
 
 # see toValidInputResolution
 def to_valid_input_resolution(
-    input_resolution: int, output_stride: int
+    input_resolution: Union[int, float], output_stride: int
 ) -> int:
     if is_valid_input_resolution(input_resolution, output_stride):
         return int(input_resolution)

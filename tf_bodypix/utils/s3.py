@@ -30,7 +30,8 @@ def iter_s3_file_urls(base_url: str) -> Iterable[str]:
         for item in root.findall(S3_CONTENTS):
             key = item.findtext(S3_KEY)
             LOGGER.debug('key: %s', key)
-            yield base_url + key
+            if key:
+                yield base_url + key
         next_marker = root.findtext(S3_NEXT_MARKER)
         if not next_marker or next_marker == marker:
             break

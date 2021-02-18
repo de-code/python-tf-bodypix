@@ -1,5 +1,6 @@
 import logging
 from collections import namedtuple
+from typing import Tuple, Union
 
 import numpy as np
 import tensorflow as tf
@@ -15,7 +16,15 @@ LOGGER = logging.getLogger(__name__)
 
 ImageSize = namedtuple('ImageSize', ('height', 'width'))
 
-ImageArray = np.ndarray
+
+class SimpleImageArray:
+    shape: Tuple[int, ...]
+
+    def __getitem__(self, *args) -> Union['SimpleImageArray', int, float]:
+        pass
+
+
+ImageArray = Union[np.ndarray, SimpleImageArray]
 
 
 def require_opencv():
