@@ -59,6 +59,16 @@ class TestMain:
             '--colored'
         ])
 
+    def test_should_not_fail_to_draw_single_person_pose(self, temp_dir: Path):
+        output_image_path = temp_dir / 'output.jpg'
+        main([
+            'draw-pose',
+            '--source=%s' % EXAMPLE_IMAGE_URL,
+            '--output=%s' % output_image_path,
+            '--parts', 'left_face', 'right_face'
+        ])
+        assert False
+
     def test_should_not_fail_to_blur_background(self, temp_dir: Path):
         output_image_path = temp_dir / 'output.jpg'
         main([

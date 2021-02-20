@@ -41,6 +41,7 @@ from tf_bodypix.sink import (
     get_image_output_sink_for_path,
     get_show_image_output_sink
 )
+from tf_bodypix.draw import draw_poses
 
 
 LOGGER = logging.getLogger(__name__)
@@ -413,6 +414,12 @@ class DrawMaskApp(AbstractWebcamFilterApp):
         result = self.get_bodypix_result(image_array)
         self.timer.on_step_start('get_mask')
         mask = self.get_mask(result, resize_method=resize_method)
+        # if self.args.pose:
+        #     self.timer.on_step_start('get_cpart_mask')
+        #     mask = result.get_colored_part_mask(
+        #         mask, part_names=self.args.parts, resize_method=resize_method
+        #     )
+        #     result.get_pose()
         if self.args.colored:
             self.timer.on_step_start('get_cpart_mask')
             mask = result.get_colored_part_mask(
@@ -453,11 +460,17 @@ class DrawMaskSubCommand(AbstractWebcamFilterSubCommand):
             type=float,
             help="The opacity of mask overlay to add."
         )
-        parser.add_argument(
+        mode_group = parser.add_mutually_exclusive_group()
+        mode_group.add_argument(
             "--colored",
             action="store_true",
             help="Enable generating the colored part mask"
         )
+        # mode_group.add_argument(
+        #     "--pose",
+        #     action="store_true",
+        #     help="Enable pose display"
+        # )
         parser.add_argument(
             "--parts",
             nargs="*",
@@ -467,6 +480,56 @@ class DrawMaskSubCommand(AbstractWebcamFilterSubCommand):
 
     def get_app(self, args: argparse.Namespace) -> AbstractWebcamFilterApp:
         return DrawMaskApp(args)
+
+
+class DrawPoseApp(AbstractWebcamFilterApp):
+    def get_output_image(self, image_array: np.ndarray) -> np.ndarray:
+        # resize_method = DEFAULT_RESIZE_METHOD
+        result = self.get_bodypix_result(image_array)
+        # self.timer.on_step_start('get_mask')
+        # mask = self.get_mask(result, resize_method=resize_method)
+        self.timer.on_step_start('get_pose')
+        poses = result.get_poses()
+        LOGGER.debug('number of poses: %d', len(poses))
+        output_image = draw_poses(
+            image_array.copy(), poses,
+            keypoints_color=(255, 100, 100),
+            skeleton_color=(100, 100, 255)
+        )
+        return output_image
+
+
+class DrawPoseSubCommand(AbstractWebcamFilterSubCommand):
+    def __init__(self):
+        super().__init__("draw-pose", "Draws the pose estimation")
+
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        super().add_arguments(parser)
+        # parser.add_argument(
+        #     "--add-overlay-alpha",
+        #     type=float,
+        #     help="The opacity of mask overlay to add."
+        # )
+        # mode_group = parser.add_mutually_exclusive_group()
+        # mode_group.add_argument(
+        #     "--colored",
+        #     action="store_true",
+        #     help="Enable generating the colored part mask"
+        # )
+        # mode_group.add_argument(
+        #     "--pose",
+        #     action="store_true",
+        #     help="Enable pose display"
+        # )
+        parser.add_argument(
+            "--parts",
+            nargs="*",
+            choices=PART_CHANNELS,
+            help="Select the parts to output"
+        )
+
+    def get_app(self, args: argparse.Namespace) -> AbstractWebcamFilterApp:
+        return DrawPoseApp(args)
 
 
 class BlurBackgroundApp(AbstractWebcamFilterApp):
@@ -558,6 +621,7 @@ SUB_COMMANDS: List[SubCommand] = [
     ListModelsSubCommand(),
     ConvertToTFLiteSubCommand(),
     DrawMaskSubCommand(),
+    DrawPoseSubCommand(),
     BlurBackgroundSubCommand(),
     ReplaceBackgroundSubCommand()
 ]

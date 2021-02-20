@@ -27,7 +27,14 @@ from tf_bodypix.bodypix_js_utils.util import (
     get_bodypix_input_resolution_height_and_width,
     pad_and_resize_to,
     scale_and_crop_to_input_tensor_shape,
+    scaleAndFlipPoses,
     Padding
+)
+
+from tf_bodypix.bodypix_js_utils.types import Pose
+
+from tf_bodypix.bodypix_js_utils.multi_person.decode_multiple_poses import (
+    decodeMultiplePoses
 )
 
 
@@ -183,11 +190,23 @@ class BodyPixResultWrapper:
             self,
             segments_logits: np.ndarray,
             part_heatmap_logits: np.ndarray,
+            short_offsets: Optional[np.ndarray],
+            long_offsets: Optional[np.ndarray],
+            part_offsets: Optional[np.ndarray],
+            displacement_fwd: Optional[np.ndarray],
+            displacement_bwd: Optional[np.ndarray],
+            output_stride: int,
             original_size: ImageSize,
             model_input_size: ImageSize,
             padding: Padding):
         self.segments_logits = segments_logits
         self.part_heatmap_logits = part_heatmap_logits
+        self.short_offsets = short_offsets
+        self.long_offsets = long_offsets
+        self.part_offsets = part_offsets
+        self.displacement_fwd = displacement_fwd
+        self.displacement_bwd = displacement_bwd
+        self.output_stride = output_stride
         self.original_size = original_size
         self.model_input_size = model_input_size
         self.padding = padding
@@ -290,6 +309,27 @@ class BodyPixResultWrapper:
             part_colors=part_colors
         )
 
+    def get_poses(self) -> List[Pose]:
+        assert self.part_heatmap_logits is not None
+        poses = decodeMultiplePoses(
+            scoresBuffer=np.asarray(self.part_heatmap_logits[0]),
+            offsetsBuffer=np.asarray(self.short_offsets[0]),
+            displacementsFwdBuffer=np.asarray(self.displacement_fwd[0]),
+            displacementsBwdBuffer=np.asarray(self.displacement_bwd[0]),
+            outputStride=self.output_stride,
+            maxPoseDetections=2
+        )
+        scaled_poses = scaleAndFlipPoses(
+            poses,
+            height=self.original_size.height,
+            width=self.original_size.width,
+            inputResolutionHeight=self.model_input_size.height,
+            inputResolutionWidth=self.model_input_size.width,
+            padding=self.padding,
+            flipHorizontal=False
+        )
+        return scaled_poses
+
 
 class BodyPixModelWrapper:
     def __init__(
@@ -322,6 +362,23 @@ class BodyPixModelWrapper:
             model_input_size.width
         )
 
+    def find_tensor_in_map(
+        self,
+        tensor_map: Dict[str, np.ndarray],
+        name: str,
+        required: bool = True
+    ) -> Optional[np.ndarray]:
+        if name in tensor_map:
+            return tensor_map[name]
+        for key, value in tensor_map.items():
+            if name in key:
+                return value
+        if required:
+            raise ValueError('tensor with name %r not found in %s' % (
+                name, tensor_map.keys()
+            ))
+        return None
+
     def predict_single(self, image: np.ndarray) -> BodyPixResultWrapper:
         original_size = ImageSize(*image.shape[:2])
         model_input_size = self.get_bodypix_input_size(original_size)
@@ -339,8 +396,24 @@ class BodyPixModelWrapper:
         return BodyPixResultWrapper(
             segments_logits=tensor_map['float_segments'],
             part_heatmap_logits=tensor_map['float_part_heatmaps'],
+            short_offsets=self.find_tensor_in_map(
+                tensor_map, 'float_short_offsets'
+            ),
+            long_offsets=self.find_tensor_in_map(
+                tensor_map, 'float_long_offsets'
+            ),
+            part_offsets=self.find_tensor_in_map(
+                tensor_map, 'float_part_offsets'
+            ),
+            displacement_fwd=self.find_tensor_in_map(
+                tensor_map, 'displacement_fwd'
+            ),
+            displacement_bwd=self.find_tensor_in_map(
+                tensor_map, 'displacement_bwd'
+            ),
             original_size=original_size,
             model_input_size=model_input_size,
+            output_stride=self.output_stride,
             padding=padding
         )
 
