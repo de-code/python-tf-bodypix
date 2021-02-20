@@ -22,6 +22,19 @@ class TestBodyPixModelWrapper:
             output_stride=output_stride,
             internal_resolution=internal_resolution
         )
+        default_tensor_names = {
+            'float_segments',
+            'float_part_heatmaps',
+            'float_short_offsets',
+            'float_long_offsets',
+            'float_part_offsets',
+            'displacement_fwd',
+            'displacement_bwd'
+        }
+        predict_fn.return_value = {
+            key: np.array([])
+            for key in default_tensor_names
+        }
         resolution_matching_output_stride_plus_1 = int(
             (output_stride * ANY_INT_FACTOR_1 + 1) / internal_resolution
         )
