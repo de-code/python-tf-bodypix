@@ -112,7 +112,7 @@ def decodePose(
     # numParts = scores.shape[2]
     numEdges = len(parentToChildEdges)
 
-    instanceKeypoints: Dict[Keypoint] = {}
+    instanceKeypoints: Dict[int, Keypoint] = {}
     # Start a new detection instance at the position of the root.
     # const {part: rootPart, score: rootScore} = root;
     rootPoint = getImageCoords(root.part, outputStride, offsets)

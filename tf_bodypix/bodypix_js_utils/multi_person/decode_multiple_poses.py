@@ -25,7 +25,7 @@ kLocalMaximumRadius = 1
 
 def withinNmsRadiusOfCorrespondingPoint(
     poses: List[Pose],
-    squaredNmsRadius: int,
+    squaredNmsRadius: float,
     vector: Vector2D,
     keypointId: int
 ) -> bool:
@@ -38,7 +38,8 @@ def withinNmsRadiusOfCorrespondingPoint(
 
 
 def getInstanceScore(
-    existingPoses: List[Pose], squaredNmsRadius: int,
+    existingPoses: List[Pose],
+    squaredNmsRadius: float,
     instanceKeypoints: Dict[int, Keypoint]
 ) -> float:
     LOGGER.debug('instanceKeypoints: %s', instanceKeypoints)

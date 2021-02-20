@@ -4,12 +4,7 @@
 from collections import deque
 from typing import Deque
 
-import numpy as np
-
-from tf_bodypix.bodypix_js_utils.types import PartWithScore, Part
-
-
-T_Tensor_3D = np.ndarray
+from tf_bodypix.bodypix_js_utils.types import PartWithScore, Part, T_ArrayLike_3D
 
 
 def score_is_maximum_in_local_window(
@@ -18,14 +13,14 @@ def score_is_maximum_in_local_window(
     heatmap_y: int,
     heatmap_x: int,
     local_maximum_radius: float,
-    scores: T_Tensor_3D
+    scores: T_ArrayLike_3D
 ) -> bool:
     height, width = scores.shape[:2]
-    y_start = max(heatmap_y - local_maximum_radius, 0)
-    y_end = min(heatmap_y + local_maximum_radius + 1, height)
+    y_start = int(max(heatmap_y - local_maximum_radius, 0))
+    y_end = int(min(heatmap_y + local_maximum_radius + 1, height))
     for y_current in range(y_start, y_end):
-        x_start = max(heatmap_x - local_maximum_radius, 0)
-        x_end = min(heatmap_x + local_maximum_radius + 1, width)
+        x_start = int(max(heatmap_x - local_maximum_radius, 0))
+        x_end = int(min(heatmap_x + local_maximum_radius + 1, width))
         for x_current in range(x_start, x_end):
             if scores[y_current, x_current, keypoint_id] > score:
                 return False
@@ -35,7 +30,7 @@ def score_is_maximum_in_local_window(
 def build_part_with_score_queue(
     score_threshold: float,
     local_maximum_radius: float,
-    scores: T_Tensor_3D
+    scores: T_ArrayLike_3D
 ) -> Deque[PartWithScore]:
     height, width, num_keypoints = scores.shape[:3]
     part_with_scores = []

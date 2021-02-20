@@ -19,6 +19,7 @@ class Vector2D(NamedTuple):
 
 
 TensorBuffer3D = np.ndarray
+T_ArrayLike_3D = TensorBuffer3D
 
 
 class PartWithScore(NamedTuple):

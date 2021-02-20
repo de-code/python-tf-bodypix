@@ -11,11 +11,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 def getOffsetPoint(
-    y: int, x: int, keypoint_id: int, offsets: TensorBuffer3D
+    y: float, x: float, keypoint_id: int, offsets: TensorBuffer3D
 ) -> Vector2D:
     return Vector2D(
-        y=offsets[y, x, keypoint_id],
-        x=offsets[y, x, keypoint_id + NUM_KEYPOINTS]
+        y=offsets[int(y), int(x), keypoint_id],
+        x=offsets[int(y), int(x), keypoint_id + NUM_KEYPOINTS]
     )
 
 
@@ -39,14 +39,14 @@ def clamp(a: int, min_value: int, max_value: int) -> int:
 
 
 def squaredDistance(
-    y1: int, x1: int, y2: int, x2: int
-) -> int:
+    y1: float, x1: float, y2: float, x2: float
+) -> float:
     dy = y2 - y1
     dx = x2 - x1
     return dy * dy + dx * dx
 
 
-def squared_distance_vector(a: Vector2D, b: Vector2D) -> int:
+def squared_distance_vector(a: Vector2D, b: Vector2D) -> float:
     return squaredDistance(a.y, a.x, b.y, b.x)
 
 

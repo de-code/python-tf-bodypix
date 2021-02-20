@@ -311,6 +311,9 @@ class BodyPixResultWrapper:
 
     def get_poses(self) -> List[Pose]:
         assert self.part_heatmap_logits is not None
+        assert self.short_offsets is not None
+        assert self.displacement_fwd is not None
+        assert self.displacement_bwd is not None
         poses = decodeMultiplePoses(
             scoresBuffer=np.asarray(self.part_heatmap_logits[0]),
             offsetsBuffer=np.asarray(self.short_offsets[0]),

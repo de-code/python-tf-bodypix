@@ -1,6 +1,6 @@
 import logging
 from collections import namedtuple
-from typing import Tuple, Union
+from typing import Protocol, Tuple, Union
 
 import numpy as np
 import tensorflow as tf
@@ -17,8 +17,11 @@ LOGGER = logging.getLogger(__name__)
 ImageSize = namedtuple('ImageSize', ('height', 'width'))
 
 
-class SimpleImageArray:
+class SimpleImageArray(Protocol):
     shape: Tuple[int, ...]
+
+    def astype(self, dtype, **_) -> 'SimpleImageArray':
+        pass
 
     def __getitem__(self, *args) -> Union['SimpleImageArray', int, float]:
         pass

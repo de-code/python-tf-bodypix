@@ -27,8 +27,8 @@ def get_filtered_keypoints_by_score(
 
 
 def get_adjacent_keypoints(
-    keypoints: List[Keypoint]
-) -> List[Tuple[Keypoint]]:
+    keypoints: Iterable[Keypoint]
+) -> List[Tuple[Keypoint, Keypoint]]:
     keypoint_by_name = {
         keypoint.part: keypoint
         for keypoint in keypoints
