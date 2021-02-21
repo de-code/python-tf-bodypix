@@ -313,6 +313,10 @@ Images:
 
 * [Serious black businesswoman sitting at desk in office](https://www.dropbox.com/s/7tsaqgdp149d8aj/serious-black-businesswoman-sitting-at-desk-in-office-5669603.jpg?dl=1) ([Source](https://www.pexels.com/photo/serious-black-businesswoman-sitting-at-desk-in-office-5669603/))
 
+Videos:
+
+* [Video Of A Man Laughing And Happy](https://www.dropbox.com/s/s7jga3f0dreavlb/video-of-a-man-laughing-and-happy-1608393-360p.mp4?dl=1) ([Source](https://www.pexels.com/video/video-of-a-man-laughing-and-happy-1608393/))
+
 Background:
 
 * [Brown Landscape Under Grey Sky](https://www.dropbox.com/s/b22ss59j6pp83zy/brown-landscape-under-grey-sky-3244513.jpg?dl=1) ([Source](https://www.pexels.com/photo/brown-landscape-under-grey-sky-3244513/))
