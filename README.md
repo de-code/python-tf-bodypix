@@ -32,8 +32,8 @@ when using this project as a library:
 | tf         | TensorFlow (required). But you may use your own build.
 | tfjs       | TensorFlow JS Model support
 | image      | Image loading via Pillow, required by the CLI.
-| webcam     | Webcam support via OpenCV and pyfakewebcam
 | video      | Video support via OpenCV
+| webcam     | Webcam support via OpenCV and pyfakewebcam
 | all        | All of the libraries
 
 ## Python API
