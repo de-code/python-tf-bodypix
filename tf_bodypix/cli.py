@@ -170,13 +170,18 @@ def add_source_arguments(parser: argparse.ArgumentParser):
         "--source-fourcc",
         type=_fourcc_type,
         default="MJPG",
-        help="the fourcc code to select the source to, e.g. MJPG"
+        help="The fourcc code to select the source to, e.g. MJPG"
     )
     source_group.add_argument(
         "--source-fps",
         type=int,
-        default=0,
-        help="the desired FPS for the source (this may not be supported)"
+        default=None,
+        help=(
+            "Limit the source frame rate to desired FPS."
+            " If provided, it will attempt to set the frame rate on the source device if supported."
+            " Otherwise it will slow down the frame rate."
+            " Use '0' for a fast as possible fps."
+        )
     )
     source_group.add_argument(
         "--source-threaded",

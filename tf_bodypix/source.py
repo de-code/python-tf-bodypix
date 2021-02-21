@@ -1,5 +1,6 @@
 import logging
 import re
+import os
 from contextlib import contextmanager
 from queue import Queue
 from threading import Thread
@@ -8,7 +9,7 @@ from typing import ContextManager, Iterable, Iterator, Optional
 import tensorflow as tf
 
 from tf_bodypix.utils.image import resize_image_to, ImageSize, ImageArray
-from tf_bodypix.utils.io import get_file
+from tf_bodypix.utils.io import get_file, strip_url_suffix
 
 
 # pylint: disable=import-outside-toplevel
@@ -20,11 +21,22 @@ LOGGER = logging.getLogger(__name__)
 T_ImageSource = ContextManager[Iterable[ImageArray]]
 
 
+def is_video_path(path: str) -> bool:
+    ext = os.path.splitext(os.path.basename(strip_url_suffix(path)))[-1]
+    LOGGER.debug('ext: %s', ext)
+    return ext.lower() in {'.webm', '.mkv', '.mp4'}
+
+
 def get_webcam_number(path: str) -> Optional[int]:
     match = re.match(r'(?:/dev/video|webcam:)(\d+)', path)
     if not match:
         return None
     return int(match.group(1))
+
+
+def get_video_image_source(path: str, **kwargs) -> T_ImageSource:
+    from tf_bodypix.utils.opencv import get_video_image_source as _get_video_image_source
+    return _get_video_image_source(path, **kwargs)
 
 
 def get_webcam_image_source(webcam_number: int, **kwargs) -> T_ImageSource:
@@ -53,6 +65,8 @@ def get_image_source(path: str, **kwargs) -> T_ImageSource:
     webcam_number = get_webcam_number(path)
     if webcam_number is not None:
         return get_webcam_image_source(webcam_number, **kwargs)
+    if is_video_path(path):
+        return get_video_image_source(path, **kwargs)
     return get_simple_image_source(path, **kwargs)
 
 

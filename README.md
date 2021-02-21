@@ -124,6 +124,21 @@ python -m tf_bodypix \
     --colored
 ```
 
+#### Render a Video, while adding mask overlay, showing the result in an image
+
+```bash
+python -m tf_bodypix \
+    draw-mask \
+    --source \
+    "https://www.dropbox.com/s/s7jga3f0dreavlb/video-of-a-man-laughing-and-happy-1608393-360p.mp4?dl=1" \
+    --show-output \
+    --threshold=0.75 \
+    --add-overlay-alpha=0.5 \
+    --colored
+```
+
+Video Source: [Video Of A Man Laughing And Happy](https://www.pexels.com/video/video-of-a-man-laughing-and-happy-1608393/)
+
 #### Capture Webcam and adding mask overlay, showing the result in an image
 
 ```bash
