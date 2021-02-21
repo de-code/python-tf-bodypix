@@ -75,7 +75,6 @@ class VideoLoopbackImageSink:
         self.height = fakewebcam_instance._settings.fmt.pix.height
 
     def __call__(self, image_array: np.ndarray):
-        assert self.fakewebcam_instance is not None
         image_array = np.asarray(image_array).astype(np.uint8)
         height, width, *_ = image_array.shape
         if self.fakewebcam_instance is None:
@@ -92,4 +91,5 @@ class VideoLoopbackImageSink:
                 interpolation=cv2.INTER_AREA
             )
             LOGGER.info('resized image_array.shape=%s', image_array.shape)
+        assert self.fakewebcam_instance is not None
         self.fakewebcam_instance.schedule_frame(image_array)
