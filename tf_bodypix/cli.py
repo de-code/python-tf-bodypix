@@ -472,10 +472,7 @@ class DrawMaskSubCommand(AbstractWebcamFilterSubCommand):
 
 class DrawPoseApp(AbstractWebcamFilterApp):
     def get_output_image(self, image_array: np.ndarray) -> np.ndarray:
-        # resize_method = DEFAULT_RESIZE_METHOD
         result = self.get_bodypix_result(image_array)
-        # self.timer.on_step_start('get_mask')
-        # mask = self.get_mask(result, resize_method=resize_method)
         self.timer.on_step_start('get_pose')
         poses = result.get_poses()
         LOGGER.debug('number of poses: %d', len(poses))
@@ -490,31 +487,6 @@ class DrawPoseApp(AbstractWebcamFilterApp):
 class DrawPoseSubCommand(AbstractWebcamFilterSubCommand):
     def __init__(self):
         super().__init__("draw-pose", "Draws the pose estimation")
-
-    def add_arguments(self, parser: argparse.ArgumentParser):
-        super().add_arguments(parser)
-        # parser.add_argument(
-        #     "--add-overlay-alpha",
-        #     type=float,
-        #     help="The opacity of mask overlay to add."
-        # )
-        # mode_group = parser.add_mutually_exclusive_group()
-        # mode_group.add_argument(
-        #     "--colored",
-        #     action="store_true",
-        #     help="Enable generating the colored part mask"
-        # )
-        # mode_group.add_argument(
-        #     "--pose",
-        #     action="store_true",
-        #     help="Enable pose display"
-        # )
-        parser.add_argument(
-            "--parts",
-            nargs="*",
-            choices=PART_CHANNELS,
-            help="Select the parts to output"
-        )
 
     def get_app(self, args: argparse.Namespace) -> AbstractWebcamFilterApp:
         return DrawPoseApp(args)
