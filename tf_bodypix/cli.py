@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from contextlib import ExitStack
 from itertools import cycle
 from pathlib import Path
-from time import time
+from time import time, sleep
 from typing import Dict, List
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = "3"
@@ -392,6 +392,10 @@ class AbstractWebcamFilterApp(ABC):
             self.timer.start()
             while self.next_frame():
                 pass
+            if self.args.show_output:
+                LOGGER.info('waiting for window to be closed')
+                while not self.output_sink.is_closed:
+                    sleep(0.5)
         except KeyboardInterrupt:
             LOGGER.info('exiting')
 
