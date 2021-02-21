@@ -414,12 +414,6 @@ class DrawMaskApp(AbstractWebcamFilterApp):
         result = self.get_bodypix_result(image_array)
         self.timer.on_step_start('get_mask')
         mask = self.get_mask(result, resize_method=resize_method)
-        # if self.args.pose:
-        #     self.timer.on_step_start('get_cpart_mask')
-        #     mask = result.get_colored_part_mask(
-        #         mask, part_names=self.args.parts, resize_method=resize_method
-        #     )
-        #     result.get_pose()
         if self.args.colored:
             self.timer.on_step_start('get_cpart_mask')
             mask = result.get_colored_part_mask(
@@ -460,17 +454,11 @@ class DrawMaskSubCommand(AbstractWebcamFilterSubCommand):
             type=float,
             help="The opacity of mask overlay to add."
         )
-        mode_group = parser.add_mutually_exclusive_group()
-        mode_group.add_argument(
+        parser.add_argument(
             "--colored",
             action="store_true",
             help="Enable generating the colored part mask"
         )
-        # mode_group.add_argument(
-        #     "--pose",
-        #     action="store_true",
-        #     help="Enable pose display"
-        # )
         parser.add_argument(
             "--parts",
             nargs="*",
