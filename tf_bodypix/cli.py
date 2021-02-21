@@ -573,12 +573,16 @@ SUB_COMMAND_BY_NAME: Dict[str, SubCommand] = {
 
 
 def parse_args(argv: List[str] = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        'TensorFlow BodyPix (TF BodyPix)',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     subparsers = parser.add_subparsers(dest="command")
     subparsers.required = True
     for sub_command in SUB_COMMANDS:
         sub_parser = subparsers.add_parser(
-            sub_command.name, help=sub_command.description
+            sub_command.name, help=sub_command.description,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
         )
         sub_command.add_arguments(sub_parser)
 
