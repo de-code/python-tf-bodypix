@@ -90,6 +90,32 @@ Those URLs can be passed as the `--model-path` arguments below, or to the `downl
 
 The CLI will download and cache the model from the provided path. If no `--model-path` is provided, it will use a default model (mobilenet).
 
+### Inputs and Outputs
+
+Most commands will work with inputs (source) and outputs.
+
+The source path can be specified via the `--source` parameter.
+
+The following inputs are supported:
+
+| type | description |
+| -----| ----------- |
+| image | Static image (e.g. `.png`) |
+| video | Video (e.g. `.mp4`) |
+| webcam | Linux Webcam (`/dev/videoN` or `webcam:0`) |
+
+If the source path points to an external file (e.g. `https://`), then it will be downloaded and locally cached.
+
+The output path can be specified via `--output`, unless `--show-output` is used.
+
+The following outpus are supported:
+
+| type | description |
+| -----| ----------- |
+| image_writer | Write to a static image (e.g. `.png`) |
+| v4l2 | Linux Virtual Webcam (`/dev/videoN`) |
+| window | Display a window (by using `--show-output`) |
+
 ### Example commands
 
 #### Creating a simple body mask
