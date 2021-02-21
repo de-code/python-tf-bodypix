@@ -1,8 +1,6 @@
 import logging
-import os
 import re
 from contextlib import contextmanager
-from hashlib import md5
 from queue import Queue
 from threading import Thread
 from typing import ContextManager, Iterable, Iterator, Optional
@@ -10,6 +8,7 @@ from typing import ContextManager, Iterable, Iterator, Optional
 import tensorflow as tf
 
 from tf_bodypix.utils.image import resize_image_to, ImageSize, ImageArray
+from tf_bodypix.utils.io import get_file
 
 
 # pylint: disable=import-outside-toplevel
@@ -19,16 +18,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 T_ImageSource = ContextManager[Iterable[ImageArray]]
-
-
-def get_file(file_path: str) -> str:
-    if os.path.exists(file_path):
-        return file_path
-    local_path = tf.keras.utils.get_file(
-        md5(file_path.encode('utf-8')).hexdigest() + '-' + os.path.basename(file_path),
-        file_path
-    )
-    return local_path
 
 
 def get_webcam_number(path: str) -> Optional[int]:
