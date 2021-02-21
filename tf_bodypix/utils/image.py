@@ -1,6 +1,6 @@
 import logging
 from collections import namedtuple
-from typing import Protocol, Tuple, Union
+from typing import Tuple, Union
 
 import numpy as np
 import tensorflow as tf
@@ -9,6 +9,8 @@ try:
     import cv2
 except ImportError:
     cv2 = None
+
+from tf_bodypix.utils.typing import Protocol
 
 
 LOGGER = logging.getLogger(__name__)
