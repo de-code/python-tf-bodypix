@@ -33,6 +33,7 @@ when using this project as a library:
 | tfjs       | TensorFlow JS Model support
 | image      | Image loading via Pillow, required by the CLI.
 | webcam     | Webcam support via OpenCV and pyfakewebcam
+| video      | Video support via OpenCV
 | all        | All of the libraries
 
 ## Python API
