@@ -123,35 +123,44 @@ The following outpus are supported:
 ```bash
 python -m tf_bodypix \
     draw-mask \
-    --source /path/to/input-image.jpg \
-    --output /path/to/output-mask.jpg \
+    --source \
+    "https://www.dropbox.com/s/7tsaqgdp149d8aj/serious-black-businesswoman-sitting-at-desk-in-office-5669603.jpg?dl=1" \
+    --show-output \
     --threshold=0.75
 ```
+
+Image Source: [Serious black businesswoman sitting at desk in office](https://www.pexels.com/photo/serious-black-businesswoman-sitting-at-desk-in-office-5669603/)
 
 #### Colorize the body mask depending on the body part
 
 ```bash
 python -m tf_bodypix \
     draw-mask \
-    --source /path/to/input-image.jpg \
-    --output /path/to/output-colored-mask.jpg \
+    --source \
+    "https://www.dropbox.com/s/7tsaqgdp149d8aj/serious-black-businesswoman-sitting-at-desk-in-office-5669603.jpg?dl=1" \
+    --show-output \
     --threshold=0.75 \
     --colored
 ```
+
+Image Source: [Serious black businesswoman sitting at desk in office](https://www.pexels.com/photo/serious-black-businesswoman-sitting-at-desk-in-office-5669603/)
 
 #### Additionally select the body parts
 
 ```bash
 python -m tf_bodypix \
     draw-mask \
-    --source /path/to/input-image.jpg \
-    --output /path/to/output-colored-mask.jpg \
+    --source \
+    "https://www.dropbox.com/s/7tsaqgdp149d8aj/serious-black-businesswoman-sitting-at-desk-in-office-5669603.jpg?dl=1" \
+    --show-output \
     --threshold=0.75 \
     --parts left_face right_face \
     --colored
 ```
 
-#### Render a Video, while adding mask overlay, showing the result in an image
+Image Source: [Serious black businesswoman sitting at desk in office](https://www.pexels.com/photo/serious-black-businesswoman-sitting-at-desk-in-office-5669603/)
+
+#### Add mask overlay to a video
 
 ```bash
 python -m tf_bodypix \
@@ -166,7 +175,40 @@ python -m tf_bodypix \
 
 Video Source: [Video Of A Man Laughing And Happy](https://www.pexels.com/video/video-of-a-man-laughing-and-happy-1608393/)
 
-#### Capture Webcam and adding mask overlay, showing the result in an image
+#### Blur background of a video
+
+```bash
+python -m tf_bodypix \
+    blur-background \
+    --source \
+    "https://www.dropbox.com/s/s7jga3f0dreavlb/video-of-a-man-laughing-and-happy-1608393-360p.mp4?dl=1" \
+    --show-output \
+    --threshold=0.75 \
+    --mask-blur=5 \
+    --background-blur=20
+```
+
+Video Source: [Video Of A Man Laughing And Happy](https://www.pexels.com/video/video-of-a-man-laughing-and-happy-1608393/)
+
+#### Replace the background of a video
+
+```bash
+python -m tf_bodypix \
+    replace-background \
+    --source \
+    "https://www.dropbox.com/s/s7jga3f0dreavlb/video-of-a-man-laughing-and-happy-1608393-360p.mp4?dl=1" \
+    --background \
+    "https://www.dropbox.com/s/b22ss59j6pp83zy/brown-landscape-under-grey-sky-3244513.jpg?dl=1" \
+    --show-output \
+    --threshold=0.75 \
+    --mask-blur=5
+```
+
+Video Source: [Video Of A Man Laughing And Happy](https://www.pexels.com/video/video-of-a-man-laughing-and-happy-1608393/)
+
+Background: [Brown Landscape Under Grey Sky](https://www.pexels.com/photo/brown-landscape-under-grey-sky-3244513/)
+
+#### Capture Webcam and adding mask overlay
 
 ```bash
 python -m tf_bodypix \
@@ -213,9 +255,10 @@ python -m tf_bodypix \
 python -m tf_bodypix \
     replace-background \
     --source webcam:0 \
-    --background /path/to/background-image.jpg \
-    --output /dev/videoN \
-    --threshold=0.75
+    --background \
+    "https://www.dropbox.com/s/b22ss59j6pp83zy/brown-landscape-under-grey-sky-3244513.jpg?dl=1" \
+    --threshold=0.75 \
+    --output /dev/videoN
 ```
 
 ## TensorFlow Lite support (experimental)
@@ -261,6 +304,18 @@ docker run --rm \
     --background-blur 20 \
     --threshold=0.75
 ```
+
+## Example Media
+
+Here are a few example media files you could try.
+
+Images:
+
+* [Serious black businesswoman sitting at desk in office](https://www.dropbox.com/s/7tsaqgdp149d8aj/serious-black-businesswoman-sitting-at-desk-in-office-5669603.jpg?dl=1) ([Source](https://www.pexels.com/photo/serious-black-businesswoman-sitting-at-desk-in-office-5669603/))
+
+Background:
+
+* [Brown Landscape Under Grey Sky](https://www.dropbox.com/s/b22ss59j6pp83zy/brown-landscape-under-grey-sky-3244513.jpg?dl=1) ([Source](https://www.pexels.com/photo/brown-landscape-under-grey-sky-3244513/))
 
 ## Experimental Downstream Projects
 
