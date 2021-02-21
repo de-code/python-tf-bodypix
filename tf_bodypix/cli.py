@@ -415,31 +415,31 @@ class DrawMaskApp(AbstractWebcamFilterApp):
         mask = self.get_mask(result, resize_method=resize_method)
         if self.args.colored:
             self.timer.on_step_start('get_cpart_mask')
-            mask = result.get_colored_part_mask(
+            mask_image = result.get_colored_part_mask(
                 mask, part_names=self.args.parts, resize_method=resize_method
             )
         elif self.args.parts:
             self.timer.on_step_start('get_part_mask')
-            mask = result.get_part_mask(
+            mask_image = result.get_part_mask(
                 mask, part_names=self.args.parts, resize_method=resize_method
-            )
+            ) * 255
+        else:
+            mask_image = mask * 255
         if self.args.add_overlay_alpha is not None:
             self.timer.on_step_start('overlay')
             LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
             alpha = self.args.add_overlay_alpha
-            if not self.args.colored:
-                alpha *= 255
             try:
-                if mask.dtype == tf.int32:
-                    mask = tf.cast(mask, tf.float32)
+                if mask_image.dtype == tf.int32:
+                    mask_image = tf.cast(mask, tf.float32)
             except TypeError:
                 pass
             output = np.clip(
-                image_array + mask * alpha,
+                image_array + mask_image * alpha,
                 0.0, 255.0
             )
             return output
-        return mask
+        return mask_image
 
 
 class DrawMaskSubCommand(AbstractWebcamFilterSubCommand):
