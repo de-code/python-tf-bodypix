@@ -277,6 +277,8 @@ python -m tf_bodypix \
     --output /dev/videoN
 ```
 
+Background: [Brown Landscape Under Grey Sky](https://www.pexels.com/photo/brown-landscape-under-grey-sky-3244513/)
+
 ## TensorFlow Lite support (experimental)
 
 The model path may also point to a TensorFlow Lite model (`.tflite` extension). Whether that actually improves performance may depend on the platform and available hardware.
