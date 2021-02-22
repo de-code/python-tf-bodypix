@@ -434,17 +434,17 @@ class DrawMaskApp(AbstractWebcamFilterApp):
             ) * 255
         else:
             mask_image = mask * 255
-        if self.args.add_overlay_alpha is not None:
+        if self.args.mask_alpha is not None:
             self.timer.on_step_start('overlay')
             LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
-            alpha = self.args.add_overlay_alpha
+            alpha = self.args.mask_alpha
             try:
                 if mask_image.dtype == tf.int32:
                     mask_image = tf.cast(mask, tf.float32)
             except TypeError:
                 pass
             output = np.clip(
-                image_array + mask_image * alpha,
+                image_array * (1 - alpha) + mask_image * alpha,
                 0.0, 255.0
             )
             return output
@@ -458,9 +458,15 @@ class DrawMaskSubCommand(AbstractWebcamFilterSubCommand):
     def add_arguments(self, parser: argparse.ArgumentParser):
         super().add_arguments(parser)
         parser.add_argument(
-            "--add-overlay-alpha",
+            "--mask-alpha",
             type=float,
             help="The opacity of mask overlay to add."
+        )
+        parser.add_argument(
+            "--add-overlay-alpha",
+            dest='mask_alpha',
+            type=float,
+            help="Deprecated, please use --mask-alpha instead."
         )
         parser.add_argument(
             "--colored",

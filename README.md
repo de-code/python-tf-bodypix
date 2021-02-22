@@ -134,7 +134,7 @@ python -m tf_bodypix \
     "https://www.dropbox.com/s/s7jga3f0dreavlb/video-of-a-man-laughing-and-happy-1608393-360p.mp4?dl=1" \
     --show-output \
     --threshold=0.75 \
-    --add-overlay-alpha=0.5 \
+    --mask-alpha=0.5 \
     --colored
 ```
 
@@ -148,7 +148,7 @@ python -m tf_bodypix \
     --source webcam:0 \
     --show-output \
     --threshold=0.75 \
-    --add-overlay-alpha=0.5 \
+    --mask-alpha=0.5 \
     --colored
 ```
 
@@ -162,7 +162,7 @@ python -m tf_bodypix \
     --source webcam:0 \
     --output /dev/videoN \
     --threshold=0.75 \
-    --add-overlay-alpha=0.5 \
+    --mask-alpha=0.5 \
     --colored
 ```
 
