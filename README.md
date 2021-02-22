@@ -131,6 +131,20 @@ python -m tf_bodypix \
 
 Image Source: [Serious black businesswoman sitting at desk in office](https://www.pexels.com/photo/serious-black-businesswoman-sitting-at-desk-in-office-5669603/)
 
+#### Add the mask over the original image using `--mask-alpha`
+
+```bash
+python -m tf_bodypix \
+    draw-mask \
+    --source \
+    "https://www.dropbox.com/s/7tsaqgdp149d8aj/serious-black-businesswoman-sitting-at-desk-in-office-5669603.jpg?dl=1" \
+    --show-output \
+    --threshold=0.75 \
+    --mask-alpha=0.5
+```
+
+Image Source: [Serious black businesswoman sitting at desk in office](https://www.pexels.com/photo/serious-black-businesswoman-sitting-at-desk-in-office-5669603/)
+
 #### Colorize the body mask depending on the body part
 
 ```bash
@@ -140,6 +154,7 @@ python -m tf_bodypix \
     "https://www.dropbox.com/s/7tsaqgdp149d8aj/serious-black-businesswoman-sitting-at-desk-in-office-5669603.jpg?dl=1" \
     --show-output \
     --threshold=0.75 \
+    --mask-alpha=0.5 \
     --colored
 ```
 
@@ -154,6 +169,7 @@ python -m tf_bodypix \
     "https://www.dropbox.com/s/7tsaqgdp149d8aj/serious-black-businesswoman-sitting-at-desk-in-office-5669603.jpg?dl=1" \
     --show-output \
     --threshold=0.75 \
+    --mask-alpha=0.5 \
     --parts left_face right_face \
     --colored
 ```
