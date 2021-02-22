@@ -40,4 +40,7 @@ def get_image_output_sink_for_path(path: str) -> T_OutputSink:
 
 def get_show_image_output_sink() -> T_OutputSink:
     from tf_bodypix.utils.opencv import ShowImageSink
-    return ShowImageSink('image')
+    return ShowImageSink(
+        window_name='image',
+        window_title='tf-bodypix'
+    )
