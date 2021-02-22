@@ -202,23 +202,32 @@ def get_webcam_image_source(
 class ShowImageSink:
     def __init__(self, window_name: str):
         self.window_name = window_name
+        self.was_opened = False
 
     def __enter__(self):
-        cv2.namedWindow(self.window_name, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(self.window_name, 600, 600)
         return self
 
     def __exit__(self, *_, **__):
-        cv2.destroyAllWindows()
+        if self.was_opened:
+            cv2.destroyAllWindows()
 
     @property
     def is_closed(self):
+        if not self.was_opened:
+            return False
         cv2.waitKey(1)
         return cv2.getWindowProperty(self.window_name, cv2.WND_PROP_VISIBLE) <= 0
+
+    def create_window(self, image_size: ImageSize):
+        cv2.namedWindow(self.window_name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(self.window_name, image_size.width, image_size.height)
+        self.was_opened = True
 
     def __call__(self, image_array: np.ndarray):
         if self.is_closed:
             LOGGER.info('window closed')
             raise KeyboardInterrupt('window closed')
         image_array = np.asarray(image_array).astype(np.uint8)
+        if not self.was_opened:
+            self.create_window(get_image_size(image_array))
         cv2.imshow(self.window_name, rgb_to_bgr(image_array))
