@@ -200,8 +200,13 @@ def get_webcam_image_source(
 
 
 class ShowImageSink:
-    def __init__(self, window_name: str):
+    def __init__(
+        self,
+        window_name: str,
+        window_title: str = ''
+    ):
         self.window_name = window_name
+        self.window_title = window_title
         self.was_opened = False
 
     def __enter__(self):
@@ -221,6 +226,8 @@ class ShowImageSink:
     def create_window(self, image_size: ImageSize):
         cv2.namedWindow(self.window_name, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(self.window_name, image_size.width, image_size.height)
+        if self.window_title:
+            cv2.setWindowTitle(self.window_name, self.window_title)
         self.was_opened = True
 
     def __call__(self, image_array: np.ndarray):
