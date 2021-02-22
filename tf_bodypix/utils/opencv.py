@@ -209,7 +209,7 @@ class ShowImageSink:
 
     def __exit__(self, *_, **__):
         if self.was_opened:
-            cv2.destroyAllWindows()
+            cv2.destroyWindow(self.window_name)
 
     @property
     def is_closed(self):
