@@ -444,7 +444,7 @@ class DrawMaskApp(AbstractWebcamFilterApp):
             except TypeError:
                 pass
             output = np.clip(
-                image_array + mask_image * alpha,
+                image_array * (1 - alpha) + mask_image * alpha,
                 0.0, 255.0
             )
             return output
