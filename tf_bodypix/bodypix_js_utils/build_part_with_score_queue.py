@@ -1,10 +1,14 @@
 # based on;
 # https://github.com/tensorflow/tfjs-models/blob/body-pix-v2.0.5/body-pix/src/multi_person/build_part_with_score_queue.ts
 
+import logging
 from collections import deque
 from typing import Deque
 
 from tf_bodypix.bodypix_js_utils.types import PartWithScore, Part, T_ArrayLike_3D
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def score_is_maximum_in_local_window(
@@ -30,10 +34,13 @@ def score_is_maximum_in_local_window(
 def build_part_with_score_queue(
     score_threshold: float,
     local_maximum_radius: float,
-    scores: T_ArrayLike_3D
+    scores: T_ArrayLike_3D,
+    num_keypoints: int
 ) -> Deque[PartWithScore]:
-    height, width, num_keypoints = scores.shape[:3]
+    height, width, _ = scores.shape[:3]
     part_with_scores = []
+
+    LOGGER.debug('num_keypoints=%s', num_keypoints)
 
     for heatmap_y in range(height):
         for heatmap_x in range(width):

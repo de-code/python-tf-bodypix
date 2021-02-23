@@ -15,6 +15,7 @@ from tf_bodypix.bodypix_js_utils.build_part_with_score_queue import (
 
 from .util import getImageCoords, squared_distance_vector
 from .decode_pose import decodePose
+from ..keypoints import NUM_KEYPOINTS
 
 
 LOGGER = logging.getLogger(__name__)
@@ -64,7 +65,8 @@ def decodeMultiplePoses(
     poses: List[Pose] = []
 
     queue = build_part_with_score_queue(
-        scoreThreshold, kLocalMaximumRadius, scoresBuffer
+        scoreThreshold, kLocalMaximumRadius, scoresBuffer,
+        num_keypoints=NUM_KEYPOINTS
     )
     # LOGGER.debug('queue: %s', queue)
 
