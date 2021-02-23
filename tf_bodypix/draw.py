@@ -104,7 +104,7 @@ def draw_pose(
 def draw_poses(image: ImageArray, poses: List[Pose], **kwargs):
     if not poses:
         return image
-    output_image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_BGR2RGB)
+    output_image = image.astype(np.uint8)
     for pose in poses:
         output_image = draw_pose(output_image, pose, **kwargs)
     return output_image
