@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from contextlib import ExitStack
 from itertools import cycle
 from pathlib import Path
-from time import time
+from time import time, sleep
 from typing import Dict, List
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = "3"
@@ -171,13 +171,18 @@ def add_source_arguments(parser: argparse.ArgumentParser):
         "--source-fourcc",
         type=_fourcc_type,
         default="MJPG",
-        help="the fourcc code to select the source to, e.g. MJPG"
+        help="The fourcc code to select the source to, e.g. MJPG"
     )
     source_group.add_argument(
         "--source-fps",
         type=int,
-        default=0,
-        help="the desired FPS for the source (this may not be supported)"
+        default=None,
+        help=(
+            "Limit the source frame rate to desired FPS."
+            " If provided, it will attempt to set the frame rate on the source device if supported."
+            " Otherwise it will slow down the frame rate."
+            " Use '0' for a fast as possible fps."
+        )
     )
     source_group.add_argument(
         "--source-threaded",
@@ -388,6 +393,10 @@ class AbstractWebcamFilterApp(ABC):
             self.timer.start()
             while self.next_frame():
                 pass
+            if self.args.show_output:
+                LOGGER.info('waiting for window to be closed')
+                while not self.output_sink.is_closed:
+                    sleep(0.5)
         except KeyboardInterrupt:
             LOGGER.info('exiting')
 
@@ -426,17 +435,17 @@ class DrawMaskApp(AbstractWebcamFilterApp):
             ) * 255
         else:
             mask_image = mask * 255
-        if self.args.add_overlay_alpha is not None:
+        if self.args.mask_alpha is not None:
             self.timer.on_step_start('overlay')
             LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
-            alpha = self.args.add_overlay_alpha
+            alpha = self.args.mask_alpha
             try:
                 if mask_image.dtype == tf.int32:
                     mask_image = tf.cast(mask, tf.float32)
             except TypeError:
                 pass
             output = np.clip(
-                image_array + mask_image * alpha,
+                image_array * (1 - alpha) + mask_image * alpha,
                 0.0, 255.0
             )
             return output
@@ -450,9 +459,15 @@ class DrawMaskSubCommand(AbstractWebcamFilterSubCommand):
     def add_arguments(self, parser: argparse.ArgumentParser):
         super().add_arguments(parser)
         parser.add_argument(
-            "--add-overlay-alpha",
+            "--mask-alpha",
             type=float,
             help="The opacity of mask overlay to add."
+        )
+        parser.add_argument(
+            "--add-overlay-alpha",
+            dest='mask_alpha',
+            type=float,
+            help="Deprecated, please use --mask-alpha instead."
         )
         parser.add_argument(
             "--colored",
@@ -592,12 +607,16 @@ SUB_COMMAND_BY_NAME: Dict[str, SubCommand] = {
 
 
 def parse_args(argv: List[str] = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        'TensorFlow BodyPix (TF BodyPix)',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     subparsers = parser.add_subparsers(dest="command")
     subparsers.required = True
     for sub_command in SUB_COMMANDS:
         sub_parser = subparsers.add_parser(
-            sub_command.name, help=sub_command.description
+            sub_command.name, help=sub_command.description,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
         )
         sub_command.add_arguments(sub_parser)
 

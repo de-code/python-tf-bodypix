@@ -7,7 +7,7 @@ def get_requirement_groups(requirement):
     if 'pillow' in requirement_lower:
         return ['image']
     if 'opencv' in requirement_lower:
-        return ['webcam']
+        return ['webcam', 'video']
     if 'pyfakewebcam' in requirement_lower:
         return ['webcam']
     return [None]
