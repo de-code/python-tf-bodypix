@@ -310,8 +310,12 @@ You could also use the Docker image if you prefer.
 The entrypoint will by default delegate to the CLI, except for `python` or `bash` commands.
 
 ```bash
+# pull latest image (you may also use tags)
 docker pull de4code/tf-bodypix
+```
 
+```bash
+# mount real and virtual webcam devices on linux
 docker run --rm \
     --device /dev/video0 \
     --device /dev/video2 \
@@ -321,6 +325,24 @@ docker run --rm \
     --output /dev/video2 \
     --background-blur 20 \
     --threshold=0.75
+```
+
+```bash
+# mount x11 display on linux
+docker run --rm \
+    --net=host \
+    --volume /tmp/.X11-unix:/tmp/.X11-unix \
+    --volume ${HOME}/.Xauthority:/root/.Xauthority \
+    --env DISPLAY \
+    de4code/tf-bodypix \
+    replace-background \
+    --source \
+    "https://www.dropbox.com/s/s7jga3f0dreavlb/video-of-a-man-laughing-and-happy-1608393-360p.mp4?dl=1" \
+    --background \
+    "https://www.dropbox.com/s/b22ss59j6pp83zy/brown-landscape-under-grey-sky-3244513.jpg?dl=1" \
+    --show-output \
+    --threshold=0.75 \
+    --mask-blur=5
 ```
 
 ## Example Media
