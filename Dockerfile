@@ -1,5 +1,7 @@
-FROM python:3.8.8-slim-buster
+FROM python:3.8.8-slim-buster as base
 
+
+# shared between builder and runtime image
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         dumb-init \
@@ -10,11 +12,21 @@ RUN apt-get update \
 
 WORKDIR /opt/tf-bodypix
 
+
+# builder
+FROM base as builder
+
 COPY requirements.build.txt ./
 RUN pip install --disable-pip-version-check --no-warn-script-location --user -r requirements.build.txt
 
 COPY requirements.txt ./
 RUN pip install --disable-pip-version-check --no-warn-script-location --user -r requirements.txt
+
+
+# runtime image
+FROM base
+
+COPY --from=builder /root/.local /root/.local
 
 COPY tf_bodypix ./tf_bodypix
 
