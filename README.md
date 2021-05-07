@@ -191,6 +191,17 @@ python -m tf_bodypix \
 
 Video Source: [Video Of A Man Laughing And Happy](https://www.pexels.com/video/video-of-a-man-laughing-and-happy-1608393/)
 
+#### Add pose overlay to a video
+
+```bash
+python -m tf_bodypix \
+    draw-pose \
+    --source \
+    "https://www.dropbox.com/s/pv5v8dkpj5wung7/an-old-man-doing-a-tai-chi-exercise-2882799-360p.mp4?dl=1" \
+    --show-output \
+    --threshold=0.75
+```
+
 #### Blur background of a video
 
 ```bash
@@ -364,6 +375,8 @@ Images:
 Videos:
 
 * [Video Of A Man Laughing And Happy](https://www.dropbox.com/s/s7jga3f0dreavlb/video-of-a-man-laughing-and-happy-1608393-360p.mp4?dl=1) ([Source](https://www.pexels.com/video/video-of-a-man-laughing-and-happy-1608393/))
+* [A Group Of People In A Business Meeting](https://www.dropbox.com/s/6pc6m9b0zd2mpsv/a-group-of-people-in-a-business-meeting-6774216-360p.mp4?dl=1) ([Source](https://www.pexels.com/video/a-group-of-people-in-a-business-meeting-6774216/))
+* [An Old Man Doing A Tai Chi Exercise](https://www.dropbox.com/s/pv5v8dkpj5wung7/an-old-man-doing-a-tai-chi-exercise-2882799-360p.mp4?dl=1) ([Source](https://www.pexels.com/video/an-old-man-doing-a-tai-chi-exercise-2882799/))
 
 Background:
 

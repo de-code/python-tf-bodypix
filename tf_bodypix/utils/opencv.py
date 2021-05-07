@@ -122,7 +122,7 @@ def iter_read_video_images(
     video_capture: cv2.VideoCapture,
     image_size: ImageSize = None,
     interpolation: int = cv2.INTER_LINEAR,
-    repeat: bool = False,
+    repeat: bool = True,
     fps: float = None
 ) -> Iterable[np.ndarray]:
     video_images: Iterable[np.ndarray]

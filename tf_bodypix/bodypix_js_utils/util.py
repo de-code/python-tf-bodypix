@@ -1,12 +1,18 @@
 # based on:
 # https://github.com/tensorflow/tfjs-models/blob/body-pix-v2.0.4/body-pix/src/util.ts
 
+import logging
 import math
 from collections import namedtuple
-from typing import Tuple, Union
+from typing import List, Tuple, Union
 
 import tensorflow as tf
 import numpy as np
+
+from .types import Keypoint, Pose, Vector2D
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 Padding = namedtuple('Padding', ('top', 'bottom', 'left', 'right'))
@@ -161,3 +167,97 @@ def scale_and_crop_to_input_tensor_shape(
         padding,
         resize_method=resize_method
     )
+
+
+ZERO_VECTOR_2D = Vector2D(x=0, y=0)
+
+
+def _scale_and_offset_vector(
+    vector: Vector2D, scale_vector: Vector2D, offset_vector: Vector2D
+) -> Vector2D:
+    return Vector2D(
+        x=vector.x * scale_vector.x + offset_vector.x,
+        y=vector.y * scale_vector.y + offset_vector.y
+    )
+
+
+def scalePose(
+    pose: Pose, scale_vector: Vector2D, offset_vector: Vector2D
+) -> Pose:
+    return Pose(
+        score=pose.score,
+        keypoints={
+            keypoint_id: Keypoint(
+                score=keypoint.score,
+                part=keypoint.part,
+                position=_scale_and_offset_vector(
+                    keypoint.position,
+                    scale_vector,
+                    offset_vector
+                )
+            )
+            for keypoint_id, keypoint in pose.keypoints.items()
+        }
+    )
+
+
+def scalePoses(
+    poses: List[Pose], scale_vector: Vector2D, offset_vector: Vector2D
+) -> List[Pose]:
+    if (
+        scale_vector.x == 1
+        and scale_vector.y == 1
+        and offset_vector.x == 0
+        and offset_vector.y == 0
+    ):
+        return poses
+    return [
+        scalePose(pose, scale_vector, offset_vector)
+        for pose in poses
+    ]
+
+
+def flipPosesHorizontal(poses: List[Pose], imageWidth: int) -> List[Pose]:
+    if imageWidth <= 0:
+        return poses
+    scale_vector = Vector2D(x=-1, y=1)
+    offset_vector = Vector2D(x=imageWidth - 1, y=0)
+    return scalePoses(
+        poses,
+        scale_vector,
+        offset_vector
+    )
+
+
+def scaleAndFlipPoses(
+    poses: List[Pose],
+    height: int,
+    width: int,
+    inputResolutionHeight: int,
+    inputResolutionWidth: int,
+    padding: Padding,
+    flipHorizontal: bool
+) -> List[Pose]:
+    scale_vector = Vector2D(
+        y=(height + padding.top + padding.bottom) / (inputResolutionHeight),
+        x=(width + padding.left + padding.right) / (inputResolutionWidth)
+    )
+    offset_vector = Vector2D(
+        x=-padding.left,
+        y=-padding.top
+    )
+
+    LOGGER.debug('height: %s', height)
+    LOGGER.debug('width: %s', width)
+    LOGGER.debug('inputResolutionHeight: %s', inputResolutionHeight)
+    LOGGER.debug('inputResolutionWidth: %s', inputResolutionWidth)
+    LOGGER.debug('scale_vector: %s', scale_vector)
+    LOGGER.debug('offset_vector: %s', offset_vector)
+
+    scaledPoses = scalePoses(
+        poses, scale_vector, offset_vector
+    )
+
+    if flipHorizontal:
+        return flipPosesHorizontal(scaledPoses, width)
+    return scaledPoses

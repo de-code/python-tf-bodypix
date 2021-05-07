@@ -63,7 +63,8 @@ dev-pylint:
 
 
 dev-mypy:
-	$(PYTHON) -m mypy --ignore-missing-imports tf_bodypix tests setup.py
+	$(PYTHON) -m mypy --ignore-missing-imports --show-error-codes \
+		tf_bodypix tests setup.py
 
 
 dev-lint: dev-flake8 dev-pylint dev-mypy
