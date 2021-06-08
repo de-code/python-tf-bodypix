@@ -1,4 +1,4 @@
-opencv-python==4.5.2.52 
+opencv-python==4.5.2.54 
 Pillow==8.2.0
 pyfakewebcam==0.1.0
 tensorflow==2.5.0
