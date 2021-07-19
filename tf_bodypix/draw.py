@@ -45,7 +45,7 @@ def get_cv_keypoints(keypoints: Iterable[Keypoint]) -> List[cv2.KeyPoint]:
         cv2.KeyPoint(
             x=keypoint.position.x,
             y=keypoint.position.y,
-            _size=3
+            size=3
         )
         for keypoint in keypoints
     ]
