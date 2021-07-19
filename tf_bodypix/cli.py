@@ -45,7 +45,7 @@ try:
     from tf_bodypix.draw import draw_poses
 except ImportError as exc:
     _draw_import_exc = exc
-    def draw_poses(*_, **__):
+    def draw_poses(*_, **__):  # type: ignore
         raise _draw_import_exc
 
 
