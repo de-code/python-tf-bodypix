@@ -41,7 +41,12 @@ from tf_bodypix.sink import (
     get_image_output_sink_for_path,
     get_show_image_output_sink
 )
-from tf_bodypix.draw import draw_poses
+try:
+    from tf_bodypix.draw import draw_poses
+except ImportError as exc:
+    _draw_import_exc = exc
+    def draw_poses(*_, **__):
+        raise _draw_import_exc
 
 
 LOGGER = logging.getLogger(__name__)
