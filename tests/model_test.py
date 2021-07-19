@@ -25,6 +25,7 @@ class TestBodyPixModelWrapper:
         default_tensor_names = {
             'float_segments',
             'float_part_heatmaps',
+            'float_heatmaps',
             'float_short_offsets',
             'float_long_offsets',
             'float_part_offsets',

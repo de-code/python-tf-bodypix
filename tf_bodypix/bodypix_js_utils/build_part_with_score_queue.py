@@ -34,10 +34,9 @@ def score_is_maximum_in_local_window(
 def build_part_with_score_queue(
     score_threshold: float,
     local_maximum_radius: float,
-    scores: T_ArrayLike_3D,
-    num_keypoints: int
+    scores: T_ArrayLike_3D
 ) -> Deque[PartWithScore]:
-    height, width, _ = scores.shape[:3]
+    height, width, num_keypoints = scores.shape[:3]
     part_with_scores = []
 
     LOGGER.debug('num_keypoints=%s', num_keypoints)
