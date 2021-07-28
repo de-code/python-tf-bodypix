@@ -41,6 +41,12 @@ from tf_bodypix.sink import (
     get_image_output_sink_for_path,
     get_show_image_output_sink
 )
+try:
+    from tf_bodypix.draw import draw_poses
+except ImportError as exc:
+    _draw_import_exc = exc
+    def draw_poses(*_, **__):  # type: ignore
+        raise _draw_import_exc
 
 
 LOGGER = logging.getLogger(__name__)
@@ -484,6 +490,28 @@ class DrawMaskSubCommand(AbstractWebcamFilterSubCommand):
         return DrawMaskApp(args)
 
 
+class DrawPoseApp(AbstractWebcamFilterApp):
+    def get_output_image(self, image_array: np.ndarray) -> np.ndarray:
+        result = self.get_bodypix_result(image_array)
+        self.timer.on_step_start('get_pose')
+        poses = result.get_poses()
+        LOGGER.debug('number of poses: %d', len(poses))
+        output_image = draw_poses(
+            image_array.copy(), poses,
+            keypoints_color=(255, 100, 100),
+            skeleton_color=(100, 100, 255)
+        )
+        return output_image
+
+
+class DrawPoseSubCommand(AbstractWebcamFilterSubCommand):
+    def __init__(self):
+        super().__init__("draw-pose", "Draws the pose estimation")
+
+    def get_app(self, args: argparse.Namespace) -> AbstractWebcamFilterApp:
+        return DrawPoseApp(args)
+
+
 class BlurBackgroundApp(AbstractWebcamFilterApp):
     def get_output_image(self, image_array: np.ndarray) -> np.ndarray:
         result = self.get_bodypix_result(image_array)
@@ -573,6 +601,7 @@ SUB_COMMANDS: List[SubCommand] = [
     ListModelsSubCommand(),
     ConvertToTFLiteSubCommand(),
     DrawMaskSubCommand(),
+    DrawPoseSubCommand(),
     BlurBackgroundSubCommand(),
     ReplaceBackgroundSubCommand()
 ]
