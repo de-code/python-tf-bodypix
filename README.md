@@ -51,16 +51,34 @@ image = tf.keras.preprocessing.image.load_img(
 )
 image_array = tf.keras.preprocessing.image.img_to_array(image)
 result = bodypix_model.predict_single(image_array)
+
+# simple mask
 mask = result.get_mask(threshold=0.75)
 tf.keras.preprocessing.image.save_img(
     '/path/to/output-mask.jpg',
     mask
 )
 
+# colored mask (separate colour for each body part)
 colored_mask = result.get_colored_part_mask(mask)
 tf.keras.preprocessing.image.save_img(
     '/path/to/output-colored-mask.jpg',
     colored_mask
+)
+
+# poses
+from tf_bodypix.draw import draw_poses
+
+poses = result.get_poses()
+image_with_poses = draw_poses(
+    image_array.copy(),
+    poses,
+    keypoints_color=(255, 100, 100),
+    skeleton_color=(100, 100, 255)
+)
+tf.keras.preprocessing.image.save_img(
+    '/path/to/output-poses.jpg',
+    image_with_poses
 )
 ```
 
