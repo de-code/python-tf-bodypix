@@ -80,7 +80,7 @@ from tf_bodypix.draw import draw_poses  # utility function using OpenCV
 
 poses = result.get_poses()
 image_with_poses = draw_poses(
-    image_array.copy(),
+    image_array.copy(),  # create a copy to ensure we are not modifing the source image
     poses,
     keypoints_color=(255, 100, 100),
     skeleton_color=(100, 100, 255)
