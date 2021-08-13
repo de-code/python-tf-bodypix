@@ -9,8 +9,20 @@ on:
     branches: [ develop ]
 
 jobs:
-  build:
+  # https://github.com/actions/runner/issues/1138
+  check_secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      HAS_TEST_PYPI_PASSWORD: ${{ steps.check.outputs.HAS_TEST_PYPI_PASSWORD }}
+    steps:
+      - run: >
+          echo "::set-output name=HAS_TEST_PYPI_PASSWORD::${{ env.TEST_PYPI_PASSWORD != '' }}";
+        id: check
+        env:
+          TEST_PYPI_PASSWORD: ${{ secrets.test_pypi_password }}
 
+  build:
+    needs: ["check_secrets"]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -44,7 +56,9 @@ jobs:
         run: |
           make dev-remove-dist dev-build-dist dev-list-dist-contents dev-test-install-dist
       - name: Publish distribution to Test PyPI
-        if: matrix.push-package == true
+        if: >
+          matrix.push-package == true
+          && needs.check_secrets.outputs.HAS_TEST_PYPI_PASSWORD == 'true'
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.test_pypi_password }}
