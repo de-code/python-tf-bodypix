@@ -44,7 +44,7 @@ jobs:
         run: |
           make dev-remove-dist dev-build-dist dev-list-dist-contents dev-test-install-dist
       - name: Publish distribution to Test PyPI
-        if: matrix.push-package == true
+        if: matrix.push-package == true && secrets.test_pypi_password != ''
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.test_pypi_password }}
