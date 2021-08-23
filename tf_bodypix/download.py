@@ -74,7 +74,7 @@ def download_model(model_path: str) -> str:
     )
     local_model_path = os.path.dirname(local_model_json_path)
     LOGGER.debug('local_model_json_path: %r', local_model_json_path)
-    with open(local_model_json_path, 'r') as model_json_fp:
+    with open(local_model_json_path, 'r', encoding='utf-8') as model_json_fp:
         model_json = json.load(model_json_fp)
     LOGGER.debug('model_json.keys: %s', model_json.keys())
     weights_manifest = model_json['weightsManifest']

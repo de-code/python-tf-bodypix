@@ -8,11 +8,11 @@ from tf_bodypix.utils.dist import (
 )
 
 
-with open('requirements.txt', 'r') as f:
+with open('requirements.txt', 'r', encoding='utf-8') as f:
     REQUIRED_PACKAGES = f.readlines()
 
 
-with open('README.md', 'r') as f:
+with open('README.md', 'r', encoding='utf-8') as f:
     LONG_DESCRIPTION = '\n'.join([
         line.rstrip()
         for line in f
