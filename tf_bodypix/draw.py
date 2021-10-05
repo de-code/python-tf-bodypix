@@ -41,14 +41,24 @@ def get_adjacent_keypoints(
 
 
 def get_cv_keypoints(keypoints: Iterable[Keypoint]) -> List[cv2.KeyPoint]:
-    return [
-        cv2.KeyPoint(
-            x=keypoint.position.x,
-            y=keypoint.position.y,
-            _size=3
-        )
-        for keypoint in keypoints
-    ]
+    try:
+        return [
+            cv2.KeyPoint(
+                x=keypoint.position.x,
+                y=keypoint.position.y,
+                size=3
+            )
+            for keypoint in keypoints
+        ]
+    except Exception:
+        return [
+            cv2.KeyPoint(
+                x=keypoint.position.x,
+                y=keypoint.position.y,
+                _size=3
+            )
+            for keypoint in keypoints
+        ]
 
 
 def draw_skeleton(
