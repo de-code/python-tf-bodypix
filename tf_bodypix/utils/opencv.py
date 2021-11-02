@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from time import monotonic, sleep
 from typing import Callable, ContextManager, Deque, Iterable, Iterator, Union
 
-import cv2
+from cv2 import cv2
 import numpy as np
 
 from tf_bodypix.utils.io import get_file
