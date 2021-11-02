@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 
 try:
-    import cv2
+    from cv2 import cv2
 except ImportError:
     cv2 = None
 
