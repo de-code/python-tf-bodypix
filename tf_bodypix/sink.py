@@ -2,7 +2,7 @@ import os
 import logging
 from contextlib import contextmanager
 from functools import partial
-from typing import Callable, Iterator
+from typing import Callable, ContextManager, Iterator
 
 import numpy as np
 import tensorflow as tf
@@ -22,7 +22,7 @@ def write_image_to(image_array: np.ndarray, path: str):
     tf.keras.preprocessing.image.save_img(path, image_array)
 
 
-def get_v4l2_output_sink(device_name: str) -> T_OutputSink:
+def get_v4l2_output_sink(device_name: str) -> ContextManager[T_OutputSink]:
     from tf_bodypix.utils.v4l2 import VideoLoopbackImageSink
     return VideoLoopbackImageSink(device_name)
 
@@ -32,13 +32,13 @@ def get_image_file_output_sink(path: str) -> Iterator[T_OutputSink]:
     yield partial(write_image_to, path=path)
 
 
-def get_image_output_sink_for_path(path: str) -> T_OutputSink:
+def get_image_output_sink_for_path(path: str) -> ContextManager[T_OutputSink]:
     if path.startswith('/dev/video'):
         return get_v4l2_output_sink(path)
     return get_image_file_output_sink(path)
 
 
-def get_show_image_output_sink() -> T_OutputSink:
+def get_show_image_output_sink() -> ContextManager[T_OutputSink]:
     from tf_bodypix.utils.opencv import ShowImageSink
     return ShowImageSink(
         window_name='image',
