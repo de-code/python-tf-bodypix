@@ -1,6 +1,5 @@
 import logging
 from collections import namedtuple
-from typing import Tuple, Union
 
 import numpy as np
 import tensorflow as tf
@@ -10,8 +9,6 @@ try:
 except ImportError:
     cv2 = None
 
-from tf_bodypix.utils.typing import Protocol
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,17 +16,7 @@ LOGGER = logging.getLogger(__name__)
 ImageSize = namedtuple('ImageSize', ('height', 'width'))
 
 
-class SimpleImageArray(Protocol):
-    shape: Tuple[int, ...]
-
-    def astype(self, dtype, **_) -> 'SimpleImageArray':
-        pass
-
-    def __getitem__(self, *args) -> Union['SimpleImageArray', int, float]:
-        pass
-
-
-ImageArray = Union[np.ndarray, SimpleImageArray]
+ImageArray = np.ndarray
 
 
 def require_opencv():
