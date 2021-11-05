@@ -1,5 +1,5 @@
 opencv-python==4.5.4.58 
 Pillow==8.4.0
 pyfakewebcam==0.1.0
-tensorflow==2.6.1
+tensorflow==2.7.0
 tfjs-graph-converter==1.4.2
