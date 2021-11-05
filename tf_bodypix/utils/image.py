@@ -24,7 +24,7 @@ def require_opencv():
         raise ImportError('OpenCV is required')
 
 
-def box_blur_image(image: ImageArray, blur_size: int) -> ImageArray:
+def box_blur_image(image: np.ndarray, blur_size: int) -> np.ndarray:
     if not blur_size:
         return image
     require_opencv()
