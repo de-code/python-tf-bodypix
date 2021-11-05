@@ -1,6 +1,5 @@
 import logging
 from collections import namedtuple
-from typing import Tuple, Union
 
 import numpy as np
 import tensorflow as tf
@@ -10,8 +9,6 @@ try:
 except ImportError:
     cv2 = None
 
-from tf_bodypix.utils.typing import Protocol
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,17 +16,7 @@ LOGGER = logging.getLogger(__name__)
 ImageSize = namedtuple('ImageSize', ('height', 'width'))
 
 
-class SimpleImageArray(Protocol):
-    shape: Tuple[int, ...]
-
-    def astype(self, dtype, **_) -> 'SimpleImageArray':
-        pass
-
-    def __getitem__(self, *args) -> Union['SimpleImageArray', int, float]:
-        pass
-
-
-ImageArray = Union[np.ndarray, SimpleImageArray]
+ImageArray = np.ndarray
 
 
 def require_opencv():
@@ -37,7 +24,7 @@ def require_opencv():
         raise ImportError('OpenCV is required')
 
 
-def box_blur_image(image: ImageArray, blur_size: int) -> ImageArray:
+def box_blur_image(image: np.ndarray, blur_size: int) -> np.ndarray:
     if not blur_size:
         return image
     require_opencv()
@@ -50,12 +37,12 @@ def box_blur_image(image: ImageArray, blur_size: int) -> ImageArray:
     return result
 
 
-def get_image_size(image: ImageArray):
+def get_image_size(image: np.ndarray):
     height, width, *_ = image.shape
     return ImageSize(height=height, width=width)
 
 
-def resize_image_to(image: ImageArray, size: ImageSize) -> ImageArray:
+def resize_image_to(image: np.ndarray, size: ImageSize) -> np.ndarray:
     if get_image_size(image) == size:
         LOGGER.debug('image has already desired size: %s', size)
         return image
@@ -63,10 +50,10 @@ def resize_image_to(image: ImageArray, size: ImageSize) -> ImageArray:
     return tf.image.resize([image], (size.height, size.width))[0]
 
 
-def bgr_to_rgb(image: ImageArray) -> ImageArray:
+def bgr_to_rgb(image: np.ndarray) -> np.ndarray:
     # see https://www.scivision.dev/numpy-image-bgr-to-rgb/
     return image[..., ::-1]
 
 
-def rgb_to_bgr(image: ImageArray) -> ImageArray:
+def rgb_to_bgr(image: np.ndarray) -> np.ndarray:
     return bgr_to_rgb(image)

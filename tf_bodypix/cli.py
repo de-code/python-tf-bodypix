@@ -7,7 +7,7 @@ from contextlib import ExitStack
 from itertools import cycle
 from pathlib import Path
 from time import time, sleep
-from typing import Dict, List
+from typing import ContextManager, Dict, List
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = "3"
 
@@ -224,7 +224,7 @@ def get_image_source_for_args(args: argparse.Namespace) -> T_ImageSource:
     return image_source
 
 
-def get_output_sink(args: argparse.Namespace) -> T_OutputSink:
+def get_output_sink(args: argparse.Namespace) -> ContextManager[T_OutputSink]:
     if args.show_output:
         return get_show_image_output_sink()
     if args.output:
