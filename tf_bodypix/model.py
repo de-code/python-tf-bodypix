@@ -490,7 +490,7 @@ def load_tflite_model(model_path: str):
         if 'image_size' in input_details_map:
             interpreter.set_tensor(
                 input_details_map['image_size']['index'],
-                np.array([height, width], dtype=np.float)
+                np.array([height, width], dtype=np.float_)
             )
 
         interpreter.invoke()
