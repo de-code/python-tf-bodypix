@@ -35,7 +35,9 @@ def download_file_to(
         return local_path
     response = requests.get(source_url)
     response.raise_for_status()
-    Path(local_path).write_bytes(response.content)
+    local_path_path = Path(local_path)
+    local_path_path.parent.mkdir(parents=True, exist_ok=True)
+    local_path_path.write_bytes(response.content)
     return local_path
 
 
