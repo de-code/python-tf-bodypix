@@ -84,7 +84,7 @@ def download_model(model_path: str) -> str:
     except UnicodeDecodeError as exc:
         LOGGER.error(
             'failed to process %r due to %r',
-            local_model_json_path, exc, exc_info=1
+            local_model_json_path, exc, exc_info=True
         )
         raise DownloadError(
             'failed to process %r due to %r' % (
