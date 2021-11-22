@@ -50,6 +50,10 @@ class BodyPixModelPaths:
     )
 
 
+class DownloadError(RuntimeError):
+    pass
+
+
 def download_model(model_path: str) -> str:
     if os.path.exists(model_path):
         return model_path
@@ -74,8 +78,19 @@ def download_model(model_path: str) -> str:
     )
     local_model_path = os.path.dirname(local_model_json_path)
     LOGGER.debug('local_model_json_path: %r', local_model_json_path)
-    with open(local_model_json_path, 'r', encoding='utf-8') as model_json_fp:
-        model_json = json.load(model_json_fp)
+    try:
+        with open(local_model_json_path, 'r', encoding='utf-8') as model_json_fp:
+            model_json = json.load(model_json_fp)
+    except UnicodeDecodeError as exc:
+        LOGGER.error(
+            'failed to process %r due to %r',
+            local_model_json_path, exc, exc_info=1
+        )
+        raise DownloadError(
+            'failed to process %r due to %r' % (
+                local_model_json_path, exc
+            )
+        ) from exc
     LOGGER.debug('model_json.keys: %s', model_json.keys())
     weights_manifest = model_json['weightsManifest']
     weights_manifest_paths = sorted({
