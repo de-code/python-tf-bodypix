@@ -6,3 +6,4 @@ tensorflow==2.7.0; python_version >= "3.7"
 tensorflow-estimator==2.6.0; python_version < "3.7"
 tensorflow-estimator==2.7.0; python_version >= "3.7"
 tfjs-graph-converter==1.4.2
+requests>=2.26.0
