@@ -5,8 +5,6 @@ from typing import Optional
 
 import requests
 
-import tensorflow as tf
-
 
 DEFAULT_KERAS_CACHE_DIR = '~/.keras'
 
@@ -46,12 +44,16 @@ def get_file(file_path: str, download: bool = True) -> str:
         return file_path
     if os.path.exists(file_path):
         return file_path
-    local_path = tf.keras.utils.get_file(
+    cache_dir = get_default_cache_dir()
+    local_path = os.path.join(
+        cache_dir,
         (
             md5(file_path.encode('utf-8')).hexdigest()
             + '-'
             + os.path.basename(strip_url_suffix(file_path))
-        ),
-        file_path
+        )
     )
-    return local_path
+    return download_file_to(
+        source_url=file_path,
+        local_path=local_path
+    )
