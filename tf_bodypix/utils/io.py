@@ -7,6 +7,7 @@ import requests
 
 
 DEFAULT_KERAS_CACHE_DIR = '~/.keras'
+DEFAULT_USER_AGENT = 'tf-bodypix'
 
 
 def strip_url_suffix(path: str) -> str:
@@ -29,11 +30,14 @@ def get_default_cache_dir(
 def download_file_to(
     source_url: str,
     local_path: str,
+    user_agent: str = DEFAULT_USER_AGENT,
     skip_if_exists: bool = True
 ):
     if skip_if_exists and os.path.exists(local_path):
         return local_path
-    response = requests.get(source_url)
+    response = requests.get(source_url, headers={
+        'User-Agent': user_agent
+    })
     response.raise_for_status()
     local_path_path = Path(local_path)
     local_path_path.parent.mkdir(parents=True, exist_ok=True)
