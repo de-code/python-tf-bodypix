@@ -31,9 +31,11 @@ def getDisplacement(
 ) -> Vector2D:
     numEdges = displacements.shape[2] // 2
     # LOGGER.debug('point=%s, edgeId=%s, numEdges=%s', point, edgeId, numEdges)
+    x_int = int(point.x)
+    y_int = int(point.y)
     return Vector2D(
-        y=displacements[point.y, point.x, edgeId],
-        x=displacements[point.y, point.x, numEdges + edgeId]
+        y=displacements[y_int, x_int, edgeId],
+        x=displacements[y_int, x_int, numEdges + edgeId]
     )
 
 
@@ -94,7 +96,7 @@ def traverseToTargetKeypoint(  # pylint: disable=too-many-locals
         targetKeypoint, outputStride, height, width
     )
     score = scoresBuffer[
-        targetKeyPointIndices.y, targetKeyPointIndices.x, targetKeypointId
+        int(targetKeyPointIndices.y), int(targetKeyPointIndices.x), targetKeypointId
     ]
 
     return Keypoint(
