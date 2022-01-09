@@ -49,7 +49,12 @@ dev-install:
 	$(PIP) install -r requirements.build.txt
 	$(PIP) install \
 		-r requirements.dev.txt \
+		-r requirements.tflite.txt \
 		-r requirements.txt
+
+
+dev-run-pip:
+	$(PIP) $(ARGS)
 
 
 dev-venv: venv-create dev-install
