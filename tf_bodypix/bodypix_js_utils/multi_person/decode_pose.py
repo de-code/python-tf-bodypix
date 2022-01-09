@@ -96,7 +96,7 @@ def traverseToTargetKeypoint(  # pylint: disable=too-many-locals
         targetKeypoint, outputStride, height, width
     )
     score = scoresBuffer[
-        targetKeyPointIndices.y, targetKeyPointIndices.x, targetKeypointId
+        int(targetKeyPointIndices.y), int(targetKeyPointIndices.x), targetKeypointId
     ]
 
     return Keypoint(
