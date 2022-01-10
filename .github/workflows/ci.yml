@@ -40,7 +40,7 @@ jobs:
       - name: Install dependencies
         run: |
           make venv-create SYSTEM_PYTHON=python
-          make dev-run-pip ARGS='install --use-feature=in-tree-build .[tflite]'
+          make dev-install-tflite
 
   build:
     needs: ["check_secrets"]
