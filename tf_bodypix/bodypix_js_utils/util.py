@@ -178,12 +178,12 @@ def remove_padding_and_resize_back_simple(
     padding: Padding,
     resize_method: Optional[str] = None
 ) -> np.ndarray:
-    if not resize_method:
-        resize_method = tf.image.ResizeMethod.BILINEAR
     padded_height = padding.top + original_height + padding.bottom
     padded_width = padding.left + original_width + padding.right
-    padded = tf.image.resize(
-        resized_and_padded, [padded_height, padded_width], method=resize_method
+    padded = resize_image_to(
+        resized_and_padded,
+        ImageSize(height=padded_height, width=padded_width),
+        resize_method=resize_method
     )
     cropped = tf.image.crop_to_bounding_box(
         padded,
