@@ -5,10 +5,13 @@ from collections import namedtuple
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+
 try:
     import tensorflow as tf
+    tflite = tf.lite
 except ImportError:
     tf = None
+    import tflite_runtime.interpreter as tflite  # type: ignore
 
 try:
     import tfjs_graph_converter
@@ -454,7 +457,7 @@ def to_number_of_dimensions(data: np.ndarray, dimension_count: int) -> np.ndarra
 
 def load_tflite_model(model_path: str):
     # Load TFLite model and allocate tensors.
-    interpreter = tf.lite.Interpreter(model_path=model_path)
+    interpreter = tflite.Interpreter(model_path=model_path)
     interpreter.allocate_tensors()
 
     input_details = interpreter.get_input_details()
