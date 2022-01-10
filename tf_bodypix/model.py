@@ -106,7 +106,10 @@ class MobileNetBodyPixPredictWrapper(BodyPixArchitecture):
 
     def __call__(self, image: np.ndarray) -> dict:
         if len(image.shape) == 3:
-            image = image[tf.newaxis, ...]
+            if tf is not None:
+                image = image[tf.newaxis, ...]
+            else:
+                image = np.expand_dims(image, axis=0)
         return self.predict_fn(
             tf.keras.applications.mobilenet.preprocess_input(image)
         )
