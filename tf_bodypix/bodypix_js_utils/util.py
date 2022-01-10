@@ -10,7 +10,10 @@ try:
     import tensorflow as tf
 except ImportError:
     tf = None
+
 import numpy as np
+
+from tf_bodypix.utils.image import resize_image_to, ImageSize
 
 from .types import Keypoint, Pose, Vector2D
 
@@ -53,6 +56,40 @@ def get_bodypix_input_resolution_height_and_width(
     )
 
 
+def _pad_image_like_tensorflow(
+    image: np.ndarray,
+    padding: Padding
+) -> np.ndarray:
+    """
+    This is my padding function to replace with tf.image.pad_to_bounding_box
+    :param image:
+    :param padding:
+    :return:
+    """
+
+    padded = np.copy(image)
+    dims = padded.shape
+
+    if padding.top != 0:
+        top_zero_row = np.zeros(shape=(padding.top, dims[1], dims[2]))
+        padded = np.vstack([top_zero_row, padded])
+
+    if padding.bottom != 0:
+        bottom_zero_row = np.zeros(shape=(padding.top, dims[1], dims[2]))
+        padded = np.vstack([padded, bottom_zero_row])
+
+    dims = padded.shape
+    if padding.left != 0:
+        left_zero_column = np.zeros(shape=(dims[0], padding.left, dims[2]))
+        padded = np.hstack([left_zero_column, padded])
+
+    if padding.right != 0:
+        right_zero_column = np.zeros(shape=(dims[0], padding.right, dims[2]))
+        padded = np.hstack([padded, right_zero_column])
+
+    return padded
+
+
 # see padAndResizeTo
 def pad_and_resize_to(
     image: np.ndarray,
@@ -78,14 +115,20 @@ def pad_and_resize_to(
             right=0
         )
 
-    padded = tf.image.pad_to_bounding_box(
-        image,
-        offset_height=padding.top,
-        offset_width=padding.left,
-        target_height=padding.top + input_height + padding.bottom,
-        target_width=padding.left + input_width + padding.right
-    )
-    resized = tf.image.resize([padded], [target_height, target_width])[0]
+    if tf is not None:
+        padded = tf.image.pad_to_bounding_box(
+            image,
+            offset_height=padding.top,
+            offset_width=padding.left,
+            target_height=padding.top + input_height + padding.bottom,
+            target_width=padding.left + input_width + padding.right
+        )
+        resized = tf.image.resize([padded], [target_height, target_width])[0]
+    else:
+        padded = _pad_image_like_tensorflow(image, padding)
+        resized = resize_image_to(
+            padded, ImageSize(width=target_width, height=target_height)
+        )
     return resized, padding
 
 
