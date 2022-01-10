@@ -61,3 +61,16 @@ def bgr_to_rgb(image: np.ndarray) -> np.ndarray:
 
 def rgb_to_bgr(image: np.ndarray) -> np.ndarray:
     return bgr_to_rgb(image)
+
+
+def load_image(
+    local_image_path: str,
+    image_size: ImageSize = None
+) -> np.ndarray:
+    image = tf.keras.preprocessing.image.load_img(
+        local_image_path
+    )
+    image_array = tf.keras.preprocessing.image.img_to_array(image)
+    if image_size is not None:
+        image_array = resize_image_to(image_array, image_size)
+    return image_array
