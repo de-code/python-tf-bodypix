@@ -43,7 +43,7 @@ jobs:
           make dev-install-tflite
       - name: Test with pytest
         run: |
-          make dev-pytest ARGS='tests/cli_test.py -k test_should_not_fail_to_draw_mask'
+          make dev-pytest-tflite
 
   build:
     needs: ["check_secrets"]

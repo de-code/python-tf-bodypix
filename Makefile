@@ -87,6 +87,10 @@ dev-pytest:
 	$(PYTHON) -m pytest -p no:cacheprovider $(ARGS)
 
 
+dev-pytest-tflite:
+	$(MAKE) dev-pytest ARGS='tests/cli_test.py -k test_should_not_fail_to_draw_mask'
+
+
 dev-watch:
 	$(PYTHON) -m pytest_watch -- -p no:cacheprovider -p no:warnings $(ARGS)
 
