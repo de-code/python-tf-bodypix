@@ -63,7 +63,7 @@ def rgb_to_bgr(image: np.ndarray) -> np.ndarray:
     return bgr_to_rgb(image)
 
 
-def load_image(
+def _load_image_using_tf(
     local_image_path: str,
     image_size: ImageSize = None
 ) -> np.ndarray:
@@ -74,3 +74,24 @@ def load_image(
     if image_size is not None:
         image_array = resize_image_to(image_array, image_size)
     return image_array
+
+
+def _load_image_using_pillow(
+    local_image_path: str,
+    image_size: ImageSize = None
+) -> np.ndarray:
+    import PIL.Image  # pylint: disable=import-outside-toplevel
+    with PIL.Image.open(local_image_path) as image:
+        image_array = np.asarray(image)
+        if image_size is not None:
+            image_array = resize_image_to(image_array, image_size)
+        return image_array
+
+
+def load_image(
+    local_image_path: str,
+    image_size: ImageSize = None
+) -> np.ndarray:
+    if tf is not None:
+        return _load_image_using_tf(local_image_path, image_size=image_size)
+    return _load_image_using_pillow(local_image_path, image_size=image_size)
