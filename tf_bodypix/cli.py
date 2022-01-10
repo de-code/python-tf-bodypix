@@ -7,14 +7,17 @@ from contextlib import ExitStack
 from itertools import cycle
 from pathlib import Path
 from time import time, sleep
-from typing import ContextManager, Dict, List
+from typing import ContextManager, Dict, List, Optional
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = "3"
 
 # pylint: disable=wrong-import-position
 # flake8: noqa: E402
 
-import tensorflow as tf
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
 import numpy as np
 
 from tf_bodypix.utils.timer import LoggingTimer
@@ -31,7 +34,6 @@ from tf_bodypix.model import (
     load_model,
     VALID_MODEL_ARCHITECTURE_NAMES,
     PART_CHANNELS,
-    DEFAULT_RESIZE_METHOD,
     BodyPixModelWrapper,
     BodyPixResultWrapper
 )
@@ -251,7 +253,7 @@ def get_mask(
     masks: List[np.ndarray],
     timer: LoggingTimer,
     args: argparse.Namespace,
-    resize_method: str = DEFAULT_RESIZE_METHOD
+    resize_method: Optional[str] = None
 ) -> np.ndarray:
     mask = bodypix_result.get_mask(args.threshold, dtype=np.float32, resize_method=resize_method)
     if args.mask_blur:
@@ -424,7 +426,7 @@ class AbstractWebcamFilterSubCommand(SubCommand):
 
 class DrawMaskApp(AbstractWebcamFilterApp):
     def get_output_image(self, image_array: np.ndarray) -> np.ndarray:
-        resize_method = DEFAULT_RESIZE_METHOD
+        resize_method = None
         result = self.get_bodypix_result(image_array)
         self.timer.on_step_start('get_mask')
         mask = self.get_mask(result, resize_method=resize_method)

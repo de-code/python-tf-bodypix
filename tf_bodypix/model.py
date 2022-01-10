@@ -5,7 +5,10 @@ from collections import namedtuple
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-import tensorflow as tf
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
 
 try:
     import tfjs_graph_converter
@@ -45,9 +48,6 @@ PART_CHANNEL_INDEX_BY_NAME = {
     name: index
     for index, name in enumerate(PART_CHANNELS)
 }
-
-
-DEFAULT_RESIZE_METHOD = tf.image.ResizeMethod.BILINEAR
 
 
 ImageSize = namedtuple('ImageSize', ('height', 'width'))
@@ -216,7 +216,7 @@ class BodyPixResultWrapper:
     def _get_scaled_scores(
         self,
         logits: np.ndarray,
-        resize_method: str = DEFAULT_RESIZE_METHOD
+        resize_method: Optional[str] = None
     ) -> np.ndarray:
         return scale_and_crop_to_input_tensor_shape(
             logits,
@@ -240,7 +240,7 @@ class BodyPixResultWrapper:
         mask: np.ndarray = None,
         part_names: List[str] = None,
         outside_mask_value: int = -1,
-        resize_method: str = DEFAULT_RESIZE_METHOD
+        resize_method: Optional[str] = None
     ) -> np.ndarray:
         scaled_part_heatmap_argmax = np.argmax(
             self.get_scaled_part_heatmap_scores(resize_method=resize_method),
@@ -268,7 +268,7 @@ class BodyPixResultWrapper:
     def get_mask(
         self,
         threshold: float,
-        resize_method: str = DEFAULT_RESIZE_METHOD,
+        resize_method: Optional[str] = None,
         **kwargs
     ) -> np.ndarray:
         return to_mask_tensor(
@@ -281,7 +281,7 @@ class BodyPixResultWrapper:
         self,
         mask: np.ndarray,
         part_names: List[str] = None,
-        resize_method: str = DEFAULT_RESIZE_METHOD
+        resize_method: Optional[str] = None
     ) -> np.ndarray:
         if is_all_part_names(part_names):
             return mask
@@ -301,7 +301,7 @@ class BodyPixResultWrapper:
         mask: np.ndarray,
         part_colors: List[T_Color] = None,
         part_names: List[str] = None,
-        resize_method: str = DEFAULT_RESIZE_METHOD
+        resize_method: Optional[str] = None
     ) -> np.ndarray:
         part_segmentation = self.get_scaled_part_segmentation(
             mask, part_names=part_names, resize_method=resize_method
@@ -437,7 +437,7 @@ class BodyPixModelWrapper:
         )
 
 
-def get_structured_output_names(structured_outputs: List[tf.Tensor]) -> List[str]:
+def get_structured_output_names(structured_outputs: List['tf.Tensor']) -> List[str]:
     return [
         tensor.name.replace(':0', '')
         for tensor in structured_outputs

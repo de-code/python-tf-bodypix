@@ -4,9 +4,12 @@
 import logging
 import math
 from collections import namedtuple
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
-import tensorflow as tf
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
 import numpy as np
 
 from .types import Keypoint, Pose, Vector2D
@@ -100,8 +103,10 @@ def remove_padding_and_resize_back(
     original_height: int,
     original_width: int,
     padding: Padding,
-    resize_method: str = tf.image.ResizeMethod.BILINEAR
+    resize_method: Optional[str] = None
 ) -> np.ndarray:
+    if not resize_method:
+        resize_method = tf.image.ResizeMethod.BILINEAR
     boxes = [[
         padding.top / (original_height + padding.top + padding.bottom - 1.0),
         padding.left / (original_width + padding.left + padding.right - 1.0),
@@ -128,8 +133,10 @@ def remove_padding_and_resize_back_simple(
     original_height: int,
     original_width: int,
     padding: Padding,
-    resize_method: str = tf.image.ResizeMethod.BILINEAR
+    resize_method: Optional[str] = None
 ) -> np.ndarray:
+    if not resize_method:
+        resize_method = tf.image.ResizeMethod.BILINEAR
     padded_height = padding.top + original_height + padding.bottom
     padded_width = padding.left + original_width + padding.right
     padded = tf.image.resize(
@@ -154,8 +161,10 @@ def scale_and_crop_to_input_tensor_shape(
     resized_width: int,
     padding: Padding,
     apply_sigmoid_activation: bool = False,
-    resize_method: str = tf.image.ResizeMethod.BILINEAR
+    resize_method: Optional[str] = None
 ) -> np.ndarray:
+    if not resize_method:
+        resize_method = tf.image.ResizeMethod.BILINEAR
     resized_and_padded = tf.image.resize(
         image, [resized_height, resized_width], method=resize_method
     )

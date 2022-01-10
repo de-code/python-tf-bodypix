@@ -5,7 +5,11 @@ from functools import partial
 from typing import Callable, ContextManager, Iterator
 
 import numpy as np
-import tensorflow as tf
+
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
 
 # pylint: disable=import-outside-toplevel
 

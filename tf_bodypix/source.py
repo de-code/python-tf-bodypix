@@ -6,7 +6,10 @@ from queue import Queue
 from threading import Thread
 from typing import ContextManager, Iterable, Iterator, Optional
 
-import tensorflow as tf
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
 
 from tf_bodypix.utils.image import resize_image_to, ImageSize, ImageArray
 from tf_bodypix.utils.io import get_file, strip_url_suffix
