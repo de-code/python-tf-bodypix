@@ -115,3 +115,15 @@ class TestMain:
             '--source=%s' % EXAMPLE_IMAGE_URL,
             '--output=%s' % output_image_path
         ])
+
+    def test_should_be_able_to_use_existing_tflite_model(self, temp_dir: Path):
+        existing_model_file = 'bodypix_tflite/models/mobilenet_075_stride16/model.tflite'
+        output_image_path = temp_dir / 'mask.jpg'
+        main([
+            'draw-mask',
+            '--model-path=%s' % existing_model_file,
+            '--model-architecture=%s' % ModelArchitectureNames.MOBILENET_V1,
+            '--output-stride=16',
+            '--source=%s' % EXAMPLE_IMAGE_URL,
+            '--output=%s' % output_image_path
+        ])

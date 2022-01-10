@@ -88,7 +88,8 @@ dev-pytest:
 
 
 dev-pytest-tflite:
-	$(MAKE) dev-pytest ARGS='tests/cli_test.py -k test_should_not_fail_to_draw_mask'
+	$(MAKE) dev-pytest \
+		ARGS='tests/cli_test.py -k test_should_be_able_to_use_existing_tflite_model'
 
 
 dev-watch:
