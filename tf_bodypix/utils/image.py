@@ -46,12 +46,36 @@ def get_image_size(image: np.ndarray):
     return ImageSize(height=height, width=width)
 
 
+def _resize_image_to_using_tf(
+    image_array: np.ndarray,
+    image_size: ImageSize
+) -> np.ndarray:
+    return tf.image.resize([image_array], (image_size.height, image_size.width))[0]
+
+
+def _resize_image_to_using_pillow(
+    image_array: np.ndarray,
+    image_size: ImageSize
+) -> np.ndarray:
+    import PIL.Image  # pylint: disable=import-outside-toplevel
+    image_array = image_array.astype(np.int8)
+    pil_image = PIL.Image.fromarray(image_array, 'RGB')
+    resized_pil_image = pil_image.resize(
+        size=[image_size.width, image_size.height],
+        resample=PIL.Image.BILINEAR
+    )
+    resized_image_array = np.asarray(resized_pil_image, dtype=np.float32)
+    return resized_image_array
+
+
 def resize_image_to(image: np.ndarray, size: ImageSize) -> np.ndarray:
     if get_image_size(image) == size:
         LOGGER.debug('image has already desired size: %s', size)
         return image
 
-    return tf.image.resize([image], (size.height, size.width))[0]
+    if tf is not None:
+        return _resize_image_to_using_tf(image, size)
+    return _resize_image_to_using_pillow(image, size)
 
 
 def bgr_to_rgb(image: np.ndarray) -> np.ndarray:
