@@ -21,6 +21,27 @@ jobs:
         env:
           TEST_PYPI_PASSWORD: ${{ secrets.test_pypi_password }}
 
+  build_tflite:
+    needs: []
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.8]
+        include:
+        - python-version: 3.8
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          make venv-create SYSTEM_PYTHON=python
+          make dev-run-pip ARGS='install --use-feature=in-tree-build .[tflite]'
+
   build:
     needs: ["check_secrets"]
     runs-on: ${{ matrix.os }}
@@ -68,27 +89,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.pypi_password }}
-
-  build_tflite:
-    needs: ["check_secrets"]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python-version: [3.8]
-        include:
-        - python-version: 3.8
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          make venv-create SYSTEM_PYTHON=python
-          make dev-run-pip ARGS='install --use-feature=in-tree-build .[tflite]'
 
   docker-build:
 
