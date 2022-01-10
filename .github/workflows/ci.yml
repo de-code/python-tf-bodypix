@@ -41,6 +41,9 @@ jobs:
         run: |
           make venv-create SYSTEM_PYTHON=python
           make dev-install-tflite
+      - name: Test with pytest
+        run: |
+          make dev-pytest ARGS='tests/cli_test.py -k test_should_not_fail_to_draw_mask'
 
   build:
     needs: ["check_secrets"]
