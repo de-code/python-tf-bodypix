@@ -68,8 +68,11 @@ def _resize_image_to_using_pillow(
 ) -> np.ndarray:
     assert not resize_method or resize_method == 'bilinear'
     import PIL.Image  # pylint: disable=import-outside-toplevel
+    if len(image_array.shape) == 4:
+        assert image_array.shape[0] == 1
+        image_array = image_array[0]
     image_array = image_array.astype(np.int8)
-    pil_image = PIL.Image.fromarray(image_array, 'RGB')
+    pil_image = PIL.Image.fromarray(image_array)
     resized_pil_image = pil_image.resize(
         size=[image_size.width, image_size.height],
         resample=PIL.Image.BILINEAR
