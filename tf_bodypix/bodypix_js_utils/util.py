@@ -206,10 +206,10 @@ def scale_and_crop_to_input_tensor_shape(
     apply_sigmoid_activation: bool = False,
     resize_method: Optional[str] = None
 ) -> np.ndarray:
-    if not resize_method:
-        resize_method = tf.image.ResizeMethod.BILINEAR
-    resized_and_padded = tf.image.resize(
-        image, [resized_height, resized_width], method=resize_method
+    resized_and_padded = resize_image_to(
+        image,
+        ImageSize(height=resized_height, width=resized_width),
+        resize_method=resize_method
     )
     if apply_sigmoid_activation:
         resized_and_padded = tf.math.sigmoid(resized_and_padded)

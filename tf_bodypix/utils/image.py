@@ -1,5 +1,6 @@
 import logging
 from collections import namedtuple
+from typing import Optional
 
 import numpy as np
 
@@ -48,15 +49,24 @@ def get_image_size(image: np.ndarray):
 
 def _resize_image_to_using_tf(
     image_array: np.ndarray,
-    image_size: ImageSize
+    image_size: ImageSize,
+    resize_method: Optional[str] = None
 ) -> np.ndarray:
-    return tf.image.resize([image_array], (image_size.height, image_size.width))[0]
+    if not resize_method:
+        resize_method = tf.image.ResizeMethod.BILINEAR
+    return tf.image.resize(
+        image_array,
+        (image_size.height, image_size.width),
+        method=resize_method
+    )
 
 
 def _resize_image_to_using_pillow(
     image_array: np.ndarray,
-    image_size: ImageSize
+    image_size: ImageSize,
+    resize_method: Optional[str] = None
 ) -> np.ndarray:
+    assert not resize_method or resize_method == 'bilinear'
     import PIL.Image  # pylint: disable=import-outside-toplevel
     image_array = image_array.astype(np.int8)
     pil_image = PIL.Image.fromarray(image_array, 'RGB')
@@ -68,14 +78,18 @@ def _resize_image_to_using_pillow(
     return resized_image_array
 
 
-def resize_image_to(image: np.ndarray, size: ImageSize) -> np.ndarray:
-    if get_image_size(image) == size:
-        LOGGER.debug('image has already desired size: %s', size)
-        return image
+def resize_image_to(
+    image_array: np.ndarray,
+    image_size: ImageSize,
+    resize_method: Optional[str] = None
+) -> np.ndarray:
+    if get_image_size(image_array) == image_size:
+        LOGGER.debug('image has already desired size: %s', image_size)
+        return image_array
 
     if tf is not None:
-        return _resize_image_to_using_tf(image, size)
-    return _resize_image_to_using_pillow(image, size)
+        return _resize_image_to_using_tf(image_array, image_size, resize_method)
+    return _resize_image_to_using_pillow(image_array, image_size, resize_method)
 
 
 def bgr_to_rgb(image: np.ndarray) -> np.ndarray:
