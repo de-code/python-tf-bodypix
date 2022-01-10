@@ -195,6 +195,20 @@ def remove_padding_and_resize_back_simple(
     return cropped[0]
 
 
+def _get_sigmoid_using_tf(x: np.ndarray):
+    return tf.math.sigmoid(x)
+
+
+def _get_sigmoid_using_numpy(x: np.ndarray):
+    return 1/(1 + np.exp(-x))
+
+
+def get_sigmoid(x: np.ndarray):
+    if tf is not None:
+        return _get_sigmoid_using_tf(x)
+    return _get_sigmoid_using_numpy(x)
+
+
 # see scaleAndCropToInputTensorShape
 def scale_and_crop_to_input_tensor_shape(
     image: np.ndarray,
@@ -212,7 +226,7 @@ def scale_and_crop_to_input_tensor_shape(
         resize_method=resize_method
     )
     if apply_sigmoid_activation:
-        resized_and_padded = tf.math.sigmoid(resized_and_padded)
+        resized_and_padded = get_sigmoid(resized_and_padded)
     return remove_padding_and_resize_back(
         resized_and_padded,
         input_height, input_width,
