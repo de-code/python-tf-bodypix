@@ -99,6 +99,20 @@ class BodyPixArchitecture(ABC):
         pass
 
 
+def _get_imagenet_preprocessed_image_using_numpy(
+    image_array: np.ndarray
+) -> np.ndarray:
+    return (image_array / 127.5) - 1.
+
+
+def _get_mobilenet_preprocessed_image(
+    image_array: np.ndarray
+) -> np.ndarray:
+    if tf is not None:
+        return tf.keras.applications.mobilenet.preprocess_input(image_array)
+    return _get_imagenet_preprocessed_image_using_numpy(image_array)
+
+
 class MobileNetBodyPixPredictWrapper(BodyPixArchitecture):
     def __init__(self, predict_fn: Callable[[np.ndarray], dict]):
         super().__init__(ModelArchitectureNames.MOBILENET_V1)
@@ -111,7 +125,7 @@ class MobileNetBodyPixPredictWrapper(BodyPixArchitecture):
             else:
                 image = np.expand_dims(image, axis=0)
         return self.predict_fn(
-            tf.keras.applications.mobilenet.preprocess_input(image)
+            _get_mobilenet_preprocessed_image(image)
         )
 
 
