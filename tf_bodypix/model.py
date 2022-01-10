@@ -413,7 +413,9 @@ class BodyPixModelWrapper:
 
     def predict_single(self, image: np.ndarray) -> BodyPixResultWrapper:
         original_size = ImageSize(*image.shape[:2])
+        LOGGER.debug('original_size: %r', original_size)
         model_input_size = self.get_bodypix_input_size(original_size)
+        LOGGER.debug('model_input_size: %r', model_input_size)
         model_input_image, padding = self.get_padded_and_resized(image, model_input_size)
 
         tensor_map = self.predict_fn(model_input_image)
