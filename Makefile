@@ -96,6 +96,11 @@ dev-watch:
 	$(PYTHON) -m pytest_watch -- -p no:cacheprovider -p no:warnings $(ARGS)
 
 
+dev-watch-tflite:
+	$(MAKE) dev-watch \
+		ARGS='tests/cli_test.py -k test_should_be_able_to_use_existing_tflite_model'
+
+
 dev-test: dev-lint dev-pytest
 
 
