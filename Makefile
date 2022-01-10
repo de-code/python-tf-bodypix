@@ -49,8 +49,12 @@ dev-install:
 	$(PIP) install -r requirements.build.txt
 	$(PIP) install \
 		-r requirements.dev.txt \
-		-r requirements.tflite.txt \
 		-r requirements.txt
+
+
+dev-install-tflite:
+	$(PIP) install \
+		-r requirements.tflite.txt
 
 
 dev-run-pip:
