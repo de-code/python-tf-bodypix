@@ -31,10 +31,11 @@ when using this project as a library:
 | ---------- | -----------
 | tf         | [TensorFlow](https://pypi.org/project/tensorflow/) (required). But you may use your own build.
 | tfjs       | TensorFlow JS Model support, using [tfjs-graph-converter](https://pypi.org/project/tfjs-graph-converter/)
+| tflite     | [tflite-runtime](https://pypi.org/project/tflite-runtime/)
 | image      | Image loading via [Pillow](https://pypi.org/project/Pillow/), required by the CLI.
 | video      | Video support via [OpenCV](https://pypi.org/project/opencv-python/)
 | webcam     | Webcam support via [OpenCV](https://pypi.org/project/opencv-python/) and [pyfakewebcam](https://pypi.org/project/pyfakewebcam/)
-| all        | All of the libraries
+| all        | All of the libraries (except `tflite-runtime`)
 
 ## Python API
 
