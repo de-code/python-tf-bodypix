@@ -45,15 +45,19 @@ venv-create:
 	$(SYSTEM_PYTHON) -m venv $(VENV)
 
 
-dev-install:
+dev-install-build-dependencies:
 	$(PIP) install -r requirements.build.txt
+
+
+dev-install: dev-install-build-dependencies
 	$(PIP) install \
 		-r requirements.dev.txt \
 		-r requirements.txt
 
 
-dev-install-tflite:
+dev-install-tflite:  dev-install-build-dependencies
 	$(PIP) install \
+		-r requirements.dev.txt \
 		-r requirements.tflite.txt
 
 
