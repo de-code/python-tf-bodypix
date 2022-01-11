@@ -54,9 +54,20 @@ except ImportError as exc:
 LOGGER = logging.getLogger(__name__)
 
 
-DEFAULT_MODEL_PATH = (
+DEFAULT_MODEL_TF_PATH = (
     r'https://storage.googleapis.com/tfjs-models/savedmodel/'
     r'bodypix/mobilenet/float/050/model-stride16.json'
+)
+
+
+DEFAULT_MODEL_TFLITE_PATH = (
+    r'bodypix_tflite/models/mobilenet_075_stride16/model.tflite'
+)
+
+
+DEFAULT_MODEL_PATH = (
+    DEFAULT_MODEL_TF_PATH if tf is not None
+    else DEFAULT_MODEL_TFLITE_PATH
 )
 
 
@@ -299,7 +310,7 @@ class ConvertToTFLiteSubCommand(SubCommand):
         add_common_arguments(parser)
         parser.add_argument(
             "--model-path",
-            default=DEFAULT_MODEL_PATH,
+            default=DEFAULT_MODEL_TF_PATH,
             help="The path or URL to the bodypix model."
         )
         parser.add_argument(

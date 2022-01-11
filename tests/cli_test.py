@@ -3,7 +3,7 @@ from pathlib import Path
 
 from tf_bodypix.download import BodyPixModelPaths
 from tf_bodypix.model import ModelArchitectureNames
-from tf_bodypix.cli import main
+from tf_bodypix.cli import DEFAULT_MODEL_TFLITE_PATH, main
 
 
 LOGGER = logging.getLogger(__name__)
@@ -117,11 +117,10 @@ class TestMain:
         ])
 
     def test_should_be_able_to_use_existing_tflite_model(self, temp_dir: Path):
-        existing_model_file = 'bodypix_tflite/models/mobilenet_075_stride16/model.tflite'
         output_image_path = temp_dir / 'mask.jpg'
         main([
             'draw-mask',
-            '--model-path=%s' % existing_model_file,
+            '--model-path=%s' % DEFAULT_MODEL_TFLITE_PATH,
             '--model-architecture=%s' % ModelArchitectureNames.MOBILENET_V1,
             '--output-stride=16',
             '--source=%s' % EXAMPLE_IMAGE_URL,
