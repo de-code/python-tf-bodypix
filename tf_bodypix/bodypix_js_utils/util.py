@@ -13,7 +13,12 @@ except ImportError:
 
 import numpy as np
 
-from tf_bodypix.utils.image import resize_image_to, ImageSize
+from tf_bodypix.utils.image import (
+    ResizeMethod,
+    crop_and_resize_batch,
+    resize_image_to,
+    ImageSize
+)
 
 from .types import Keypoint, Pose, Vector2D
 
@@ -136,8 +141,10 @@ def get_images_batch(image: np.ndarray) -> np.ndarray:
     if len(image.shape) == 4:
         return image
     if len(image.shape) == 3:
-        return image[tf.newaxis, ...]
-    raise ValueError('invalid dimension, shape=%s' % image.shape)
+        if tf is not None:
+            return image[tf.newaxis, ...]
+        return np.expand_dims(image, axis=0)
+    raise ValueError('invalid dimension, shape=%s' % str(image.shape))
 
 
 # reverse of pad_and_resize_to
@@ -149,7 +156,7 @@ def remove_padding_and_resize_back(
     resize_method: Optional[str] = None
 ) -> np.ndarray:
     if not resize_method:
-        resize_method = tf.image.ResizeMethod.BILINEAR
+        resize_method = ResizeMethod.BILINEAR
     boxes = [[
         padding.top / (original_height + padding.top + padding.bottom - 1.0),
         padding.left / (original_width + padding.left + padding.right - 1.0),
@@ -162,7 +169,7 @@ def remove_padding_and_resize_back(
             / (original_width + padding.left + padding.right - 1.0)
         )
     ]]
-    return tf.image.crop_and_resize(
+    return crop_and_resize_batch(
         get_images_batch(resized_and_padded),
         boxes=boxes,
         box_indices=[0],
@@ -227,6 +234,7 @@ def scale_and_crop_to_input_tensor_shape(
     )
     if apply_sigmoid_activation:
         resized_and_padded = get_sigmoid(resized_and_padded)
+        LOGGER.debug('after sigmoid: %r', resized_and_padded.shape)
     return remove_padding_and_resize_back(
         resized_and_padded,
         input_height, input_width,

@@ -238,6 +238,7 @@ class BodyPixResultWrapper:
         logits: np.ndarray,
         resize_method: Optional[str] = None
     ) -> np.ndarray:
+        LOGGER.debug('logits: %r', logits.shape)
         return scale_and_crop_to_input_tensor_shape(
             logits,
             self.original_size.height,
