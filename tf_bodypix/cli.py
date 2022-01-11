@@ -458,8 +458,9 @@ class DrawMaskApp(AbstractWebcamFilterApp):
             LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
             alpha = self.args.mask_alpha
             try:
-                if mask_image.dtype == tf.int32:
-                    mask_image = tf.cast(mask, tf.float32)
+                if tf is not None:
+                    if mask_image.dtype == tf.int32:
+                        mask_image = tf.cast(mask, tf.float32)
             except TypeError:
                 pass
             output = np.clip(
