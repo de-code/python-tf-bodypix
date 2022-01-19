@@ -4,5 +4,5 @@ mypy==0.931; python_version >= "3.7"
 pylint==2.10.2
 pytest==6.2.5
 pytest-watch==4.2.0
-setuptools-scm==6.3.2
+setuptools-scm==6.4.1
 types-requests==2.27.7
