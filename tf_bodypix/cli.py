@@ -461,6 +461,13 @@ class DrawMaskApp(AbstractWebcamFilterApp):
                 if tf is not None:
                     if mask_image.dtype == tf.int32:
                         mask_image = tf.cast(mask, tf.float32)
+                else:
+                    mask_image = np.asarray(mask).astype(np.float32)
+                    LOGGER.debug(
+                        'mask_image: %r (%r, %r)',
+                        mask_image.shape, np.min(mask_image), np.max(mask_image)
+                    )
+                    image_array = np.asarray(image_array).astype(np.float32)
             except TypeError:
                 pass
             output = np.clip(
