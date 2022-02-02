@@ -102,7 +102,14 @@ class BodyPixArchitecture(ABC):
 def _get_imagenet_preprocessed_image_using_numpy(
     image_array: np.ndarray
 ) -> np.ndarray:
-    return (image_array / 127.5) - 1.
+    result = np.divide(image_array, 127.5, dtype=np.float32)
+    result = np.subtract(result, 1, out=result)
+    LOGGER.debug(
+        'imagenet preprocessed: %r (%r) -> %r (%r)',
+        image_array.shape, image_array.dtype,
+        result.shape, result.dtype
+    )
+    return result
 
 
 def _get_mobilenet_preprocessed_image(
@@ -379,8 +386,8 @@ class BodyPixModelWrapper:
         self, image: np.ndarray, model_input_size: ImageSize
     ) -> Tuple[np.ndarray, Padding]:
         LOGGER.debug(
-            'pad_and_resize_to: image.shape=%s, model_input_size=%s',
-            image.shape, model_input_size
+            'pad_and_resize_to: image.shape=%s (%r), model_input_size=%s',
+            image.shape, image.dtype, model_input_size
         )
         return pad_and_resize_to(
             image,
@@ -414,10 +421,14 @@ class BodyPixModelWrapper:
 
     def predict_single(self, image: np.ndarray) -> BodyPixResultWrapper:
         original_size = ImageSize(*image.shape[:2])
-        LOGGER.debug('original_size: %r', original_size)
+        LOGGER.debug('original_size: %r (%r)', original_size, image.dtype)
         model_input_size = self.get_bodypix_input_size(original_size)
         LOGGER.debug('model_input_size: %r', model_input_size)
         model_input_image, padding = self.get_padded_and_resized(image, model_input_size)
+        LOGGER.debug(
+            'model_input_image: %r (%r)', model_input_image.shape, model_input_image.dtype
+        )
+        LOGGER.debug('predict_fn: %r', self.predict_fn)
 
         tensor_map = self.predict_fn(model_input_image)
 
@@ -501,6 +512,10 @@ def load_tflite_model(model_path: str):
 
     def predict(image_data: np.ndarray):
         nonlocal input_shape
+        LOGGER.debug(
+            'tflite predict, original image_data.shape=%s (%s)',
+            image_data.shape, image_data.dtype
+        )
         image_data = to_number_of_dimensions(image_data, len(input_shape))
         LOGGER.debug('tflite predict, image_data.shape=%s (%s)', image_data.shape, image_data.dtype)
         height, width, *_ = image_data.shape
