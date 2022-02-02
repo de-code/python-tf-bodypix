@@ -136,6 +136,11 @@ list-models:
 		list-models
 
 
+list-tflite-models:
+	$(PYTHON) -m tf_bodypix \
+		list-tflite-models
+
+
 convert-example-draw-mask:
 	$(PYTHON) -m tf_bodypix \
 		draw-mask \

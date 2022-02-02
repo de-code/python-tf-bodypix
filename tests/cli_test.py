@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from tf_bodypix.download import BodyPixModelPaths
+from tf_bodypix.download import ALL_TENSORFLOW_LITE_BODYPIX_MODEL_PATHS, BodyPixModelPaths
 from tf_bodypix.model import ModelArchitectureNames
 from tf_bodypix.cli import DEFAULT_MODEL_TFLITE_PATH, main
 
@@ -91,6 +91,15 @@ class TestMain:
             if not key.startswith('_')
         ]
         main(['list-models'])
+        captured = capsys.readouterr()
+        output_urls = captured.out.splitlines()
+        LOGGER.debug('output_urls: %s', output_urls)
+        missing_urls = set(expected_urls) - set(output_urls)
+        assert not missing_urls
+
+    def test_should_list_all_default_tflite_models(self, capsys):
+        expected_urls = ALL_TENSORFLOW_LITE_BODYPIX_MODEL_PATHS
+        main(['list-tflite-models'])
         captured = capsys.readouterr()
         output_urls = captured.out.splitlines()
         LOGGER.debug('output_urls: %s', output_urls)

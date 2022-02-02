@@ -7,7 +7,7 @@ from contextlib import ExitStack
 from itertools import cycle
 from pathlib import Path
 from time import time, sleep
-from typing import ContextManager, Dict, List, Optional
+from typing import ContextManager, Dict, List, Optional, Sequence
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = "3"
 
@@ -28,7 +28,12 @@ from tf_bodypix.utils.image import (
     box_blur_image
 )
 from tf_bodypix.utils.s3 import iter_s3_file_urls
-from tf_bodypix.download import BodyPixModelPaths, TensorFlowLiteBodyPixModelPaths, download_model
+from tf_bodypix.download import (
+    ALL_TENSORFLOW_LITE_BODYPIX_MODEL_PATHS,
+    BodyPixModelPaths,
+    TensorFlowLiteBodyPixModelPaths,
+    download_model
+)
 from tf_bodypix.tflite import get_tflite_converter_for_model_path
 from tf_bodypix.model import (
     load_model,
@@ -288,13 +293,29 @@ class ListModelsSubCommand(SubCommand):
             help="The base URL for the storage containing the models"
         )
 
-    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
-        bodypix_model_json_files = [
+    def get_model_paths(self, storage_url: str) -> Sequence[str]:
+        return [
             file_url
-            for file_url in iter_s3_file_urls(args.storage_url)
+            for file_url in iter_s3_file_urls(storage_url)
             if re.match(r'.*/bodypix/.*/model.*\.json', file_url)
         ]
-        print('\n'.join(bodypix_model_json_files))
+
+    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
+        print('\n'.join(self.get_model_paths(storage_url=args.storage_url)))
+
+
+class ListTensorFlowLiteModelsSubCommand(SubCommand):
+    def __init__(self):
+        super().__init__("list-tflite-models", "Lists available tflite bodypix models")
+
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        add_common_arguments(parser)
+
+    def get_model_paths(self) -> Sequence[str]:
+        return ALL_TENSORFLOW_LITE_BODYPIX_MODEL_PATHS
+
+    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
+        print('\n'.join(self.get_model_paths()))
 
 
 class ConvertToTFLiteSubCommand(SubCommand):
@@ -621,6 +642,7 @@ class ReplaceBackgroundSubCommand(AbstractWebcamFilterSubCommand):
 
 SUB_COMMANDS: List[SubCommand] = [
     ListModelsSubCommand(),
+    ListTensorFlowLiteModelsSubCommand(),
     ConvertToTFLiteSubCommand(),
     DrawMaskSubCommand(),
     DrawPoseSubCommand(),

@@ -65,6 +65,13 @@ class TensorFlowLiteBodyPixModelPaths:
     )
 
 
+ALL_TENSORFLOW_LITE_BODYPIX_MODEL_PATHS = [
+    value
+    for key, value in TensorFlowLiteBodyPixModelPaths.__dict__.items()
+    if key.isupper() and isinstance(value, str)
+]
+
+
 class DownloadError(RuntimeError):
     pass
 

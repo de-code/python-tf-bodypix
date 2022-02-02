@@ -118,6 +118,12 @@ Those URLs can be passed as the `--model-path` arguments below, or to the `downl
 
 The CLI will download and cache the model from the provided path. If no `--model-path` is provided, it will use a default model (mobilenet).
 
+To list TensorFlow Lite models instead:
+
+```bash
+python -m tf_bodypix list-tflite-models
+```
+
 ### Inputs and Outputs
 
 Most commands will work with inputs (source) and outputs.
