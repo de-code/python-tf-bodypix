@@ -83,7 +83,64 @@ def _get_pil_image(image_array: np.ndarray) -> 'PIL.Image':
     return pil_image
 
 
-def _resize_image_to_using_pillow(
+# copied from:
+#   https://chao-ji.github.io/jekyll/update/2018/07/19/BilinearResize.html
+def _numpy_bilinear_resize_2d(  # pylint: disable=too-many-locals
+    image: np.ndarray,
+    height: int,
+    width: int
+) -> np.ndarray:
+    """
+    `image` is a 2-D numpy array
+    `height` and `width` are the desired spatial dimension of the new 2-D array.
+    """
+    img_height, img_width = image.shape
+
+    image = image.ravel()
+
+    x_ratio = float(img_width - 1) / (width - 1) if width > 1 else 0
+    y_ratio = float(img_height - 1) / (height - 1) if height > 1 else 0
+
+    y, x = np.divmod(np.arange(height * width), width)
+
+    x_l = np.floor(x_ratio * x).astype('int32')
+    y_l = np.floor(y_ratio * y).astype('int32')
+
+    x_h = np.ceil(x_ratio * x).astype('int32')
+    y_h = np.ceil(y_ratio * y).astype('int32')
+
+    x_weight = (x_ratio * x) - x_l
+    y_weight = (y_ratio * y) - y_l
+
+    a = image[y_l * img_width + x_l]
+    b = image[y_l * img_width + x_h]
+    c = image[y_h * img_width + x_l]
+    d = image[y_h * img_width + x_h]
+
+    resized = (
+        a * (1 - x_weight) * (1 - y_weight) +
+        b * x_weight * (1 - y_weight) +
+        c * y_weight * (1 - x_weight) +
+        d * x_weight * y_weight
+    )
+
+    return resized.reshape(height, width)
+
+
+def _numpy_bilinear_resize_3d(image: np.ndarray, height: int, width: int) -> np.ndarray:
+    _, _, dimensions = image.shape
+    return np.stack(
+        [
+            _numpy_bilinear_resize_2d(
+                image[:, :, dimension], height, width
+            )
+            for dimension in range(dimensions)
+        ],
+        axis=-1
+    )
+
+
+def _resize_image_to_using_numpy(
     image_array: np.ndarray,
     image_size: ImageSize,
     resize_method: Optional[str] = None
@@ -92,16 +149,18 @@ def _resize_image_to_using_pillow(
     if len(image_array.shape) == 4:
         assert image_array.shape[0] == 1
         image_array = image_array[0]
-    LOGGER.debug('resizing image: %r -> %r', image_array.shape, image_size)
-    pil_image = _get_pil_image(image_array)
-    resized_pil_image = pil_image.resize(
-        size=[image_size.width, image_size.height],
-        resample=PIL.Image.BILINEAR
+    LOGGER.debug(
+        'resizing image: %r (%r) -> %r', image_array.shape, image_array.dtype, image_size
     )
-    resized_image_array = np.asarray(resized_pil_image, dtype=np.float32)
-    if len(resized_image_array.shape) == 2:
-        resized_image_array = np.expand_dims(resized_image_array, axis=-1)
-    return resized_image_array
+    resize_image_array = (
+        _numpy_bilinear_resize_3d(
+            np.asarray(image_array), image_size.height, image_size.width
+        ).astype(image_array.dtype)
+    )
+    LOGGER.debug(
+        'resize_image_array image: %r (%r)', image_array.shape, resize_image_array.dtype
+    )
+    return resize_image_array
 
 
 def resize_image_to(
@@ -115,7 +174,7 @@ def resize_image_to(
 
     if tf is not None:
         return _resize_image_to_using_tf(image_array, image_size, resize_method)
-    return _resize_image_to_using_pillow(image_array, image_size, resize_method)
+    return _resize_image_to_using_numpy(image_array, image_size, resize_method)
 
 
 def crop_and_resize_batch(  # pylint: disable=too-many-locals
