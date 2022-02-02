@@ -2,6 +2,7 @@ import logging
 import json
 import os
 import re
+from urllib.parse import urlparse
 
 from hashlib import md5
 
@@ -50,6 +51,20 @@ class BodyPixModelPaths:
     )
 
 
+_TFLITE_DOWNLOAD_URL_PREFIX = r'https://www.dropbox.com/sh/d6tqb3gfrugs7ne/'
+
+
+class TensorFlowLiteBodyPixModelPaths:
+    MOBILENET_FLOAT_75_STRIDE_8_FLOAT16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AADBYGO2xj2v9Few4qBq62wZa/mobilenet-float-multiplier-075-stride8-float16.tflite?dl=1'
+    )
+    MOBILENET_FLOAT_75_STRIDE_16_FLOAT16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AAAGYNAOTTWBl9ZDhALv7rEOa/mobilenet-float-multiplier-075-stride16-float16.tflite?dl=1'
+    )
+
+
 class DownloadError(RuntimeError):
     pass
 
@@ -57,13 +72,11 @@ class DownloadError(RuntimeError):
 def download_model(model_path: str) -> str:
     if os.path.exists(model_path):
         return model_path
-    if not model_path.endswith('.json'):
-        raise ValueError('remote model path needs to end with .json')
-    model_base_path = os.path.dirname(model_path)
+    parsed_model_path = urlparse(model_path)
     local_name_part = re.sub(
         r'[^a-zA-Z0-9]+',
         r'-',
-        os.path.splitext(model_path)[0]
+        os.path.splitext(parsed_model_path.path)[0]
     )
     local_name = (
         md5(model_path.encode('utf-8')).hexdigest() + '-'
@@ -73,6 +86,18 @@ def download_model(model_path: str) -> str:
     cache_dir = get_default_cache_dir(
         cache_subdir=os.path.join('tf-bodypix', local_name)
     )
+    if parsed_model_path.path.endswith('.tflite'):
+        return download_file_to(
+            source_url=model_path,
+            local_path=os.path.join(
+                cache_dir,
+                os.path.basename(parsed_model_path.path)
+            ),
+            skip_if_exists=True
+        )
+    if not parsed_model_path.path.endswith('.json'):
+        raise ValueError('remote model path needs to end with .json')
+    model_base_path = os.path.dirname(model_path)
     local_model_json_path = download_file_to(
         source_url=model_path,
         local_path=os.path.join(cache_dir, 'model.json'),
