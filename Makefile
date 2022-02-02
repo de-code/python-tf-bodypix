@@ -267,6 +267,66 @@ webcam-v4l2-replace-background:
 		$(ARGS)
 
 
+convert-tfjs-models-to-tflite:
+	mkdir -p "./data/tflite-models"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/050/model-stride8.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/mobilenet-float-multiplier-050-stride8-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/050/model-stride16.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/mobilenet-float-multiplier-050-stride16-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/075/model-stride8.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/mobilenet-float-multiplier-075-stride8-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/075/model-stride16.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/mobilenet-float-multiplier-075-stride16-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/100/model-stride8.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/mobilenet-float-multiplier-100-stride8-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/100/model-stride16.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/mobilenet-float-multiplier-100-stride16-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/resnet50/float/model-stride16.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/resnet50-float-stride16-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/resnet50/float/model-stride32.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/resnet50-float-stride32-float16.tflite"
+
+
 docker-build:
 	docker build . -t $(IMAGE_NAME):$(IMAGE_TAG)
 

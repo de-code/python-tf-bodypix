@@ -55,6 +55,15 @@ _TFLITE_DOWNLOAD_URL_PREFIX = r'https://www.dropbox.com/sh/d6tqb3gfrugs7ne/'
 
 
 class TensorFlowLiteBodyPixModelPaths:
+    MOBILENET_FLOAT_50_STRIDE_8_FLOAT16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AADUtMGoDO6vzOfRLP0Dg7ira/mobilenet-float-multiplier-050-stride8-float16.tflite?dl=1'
+    )
+    MOBILENET_FLOAT_50_STRIDE_16_FLOAT16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AAAhnozSEO07xzgL495dW3h8a/mobilenet-float-multiplier-050-stride16-float16.tflite?dl=1'
+    )
+
     MOBILENET_FLOAT_75_STRIDE_8_FLOAT16 = (
         _TFLITE_DOWNLOAD_URL_PREFIX
         + 'AADBYGO2xj2v9Few4qBq62wZa/mobilenet-float-multiplier-075-stride8-float16.tflite?dl=1'
@@ -62,6 +71,24 @@ class TensorFlowLiteBodyPixModelPaths:
     MOBILENET_FLOAT_75_STRIDE_16_FLOAT16 = (
         _TFLITE_DOWNLOAD_URL_PREFIX
         + 'AAAGYNAOTTWBl9ZDhALv7rEOa/mobilenet-float-multiplier-075-stride16-float16.tflite?dl=1'
+    )
+
+    MOBILENET_FLOAT_100_STRIDE_8_FLOAT16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AADr8zOtPZz2cWlQEvKgIbdTa/mobilenet-float-multiplier-100-stride8-float16.tflite?dl=1'
+    )
+    MOBILENET_FLOAT_100_STRIDE_16_FLOAT16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AAAo-hkaCqx2pN99cCvDPcosa/mobilenet-float-multiplier-100-stride16-float16.tflite?dl=1'
+    )
+
+    RESNET50_FLOAT_STRIDE_16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AADvvgLyPXMPOeRyRY9WQ9Mva/resnet50-float-stride16-float16.tflite?dl=1'
+    )
+    MOBILENET_RESNET50_FLOAT_STRIDE_32 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AADGlTuMQQeL8vm6BuOwObKTa/resnet50-float-stride32-float16.tflite?dl=1'
     )
 
 
