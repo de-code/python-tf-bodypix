@@ -28,7 +28,7 @@ from tf_bodypix.utils.image import (
     box_blur_image
 )
 from tf_bodypix.utils.s3 import iter_s3_file_urls
-from tf_bodypix.download import download_model
+from tf_bodypix.download import BodyPixModelPaths, TensorFlowLiteBodyPixModelPaths, download_model
 from tf_bodypix.tflite import get_tflite_converter_for_model_path
 from tf_bodypix.model import (
     load_model,
@@ -54,15 +54,10 @@ except ImportError as exc:
 LOGGER = logging.getLogger(__name__)
 
 
-DEFAULT_MODEL_TF_PATH = (
-    r'https://storage.googleapis.com/tfjs-models/savedmodel/'
-    r'bodypix/mobilenet/float/050/model-stride16.json'
-)
+DEFAULT_MODEL_TF_PATH = BodyPixModelPaths.MOBILENET_FLOAT_50_STRIDE_16
 
 
-DEFAULT_MODEL_TFLITE_PATH = (
-    r'bodypix_tflite/models/mobilenet_075_stride16/model.tflite'
-)
+DEFAULT_MODEL_TFLITE_PATH = TensorFlowLiteBodyPixModelPaths.MOBILENET_FLOAT_75_STRIDE_16_FLOAT16
 
 
 DEFAULT_MODEL_PATH = (
