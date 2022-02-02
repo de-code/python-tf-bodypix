@@ -394,6 +394,7 @@ class AbstractWebcamFilterApp(ABC):
             image_array = next(self.image_iterator)
         except StopIteration:
             return False
+        LOGGER.debug('image_array: %r (%r)', image_array.shape, image_array.dtype)
         self.timer.on_step_start('model')
         output_image = self.get_output_image(image_array)
         self.timer.on_step_start('out')
