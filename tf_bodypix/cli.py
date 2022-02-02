@@ -447,7 +447,12 @@ class DrawMaskApp(AbstractWebcamFilterApp):
                 mask, part_names=self.args.parts, resize_method=resize_method
             ) * 255
         else:
-            mask_image = mask * 255
+            if LOGGER.isEnabledFor(logging.DEBUG):
+                LOGGER.debug(
+                    'mask: %r (%r, %r) (%s)',
+                    mask.shape, np.min(mask), np.max(mask), mask.dtype
+                )
+            mask_image = mask * 255.0
         if self.args.mask_alpha is not None:
             self.timer.on_step_start('overlay')
             LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
@@ -455,14 +460,14 @@ class DrawMaskApp(AbstractWebcamFilterApp):
             try:
                 if tf is not None:
                     if mask_image.dtype == tf.int32:
-                        mask_image = tf.cast(mask, tf.float32)
+                        mask_image = tf.cast(mask_image, tf.float32)
                 else:
-                    mask_image = np.asarray(mask).astype(np.float32)
-                    LOGGER.debug(
-                        'mask_image: %r (%r, %r)',
-                        mask_image.shape, np.min(mask_image), np.max(mask_image)
-                    )
                     image_array = np.asarray(image_array).astype(np.float32)
+                if LOGGER.isEnabledFor(logging.DEBUG):
+                    LOGGER.debug(
+                        'mask_image: %r (%r, %r) (%s)',
+                        mask_image.shape, np.min(mask_image), np.max(mask_image), mask_image.dtype
+                    )
             except TypeError:
                 pass
             output = np.clip(
