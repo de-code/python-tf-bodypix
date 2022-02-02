@@ -145,12 +145,16 @@ class ResNet50BodyPixPredictWrapper(BodyPixArchitecture):
         image = np.add(image, np.array(IMAGE_NET_MEAN))
         # Note: tf.keras.applications.resnet50.preprocess_input is rotating the image as well?
         if len(image.shape) == 3:
-            image = image[tf.newaxis, ...]
-        image = tf.cast(image, tf.float32)
+            if tf is not None:
+                image = image[tf.newaxis, ...]
+            else:
+                image = np.expand_dims(image, axis=0)
+        if tf is not None:
+            image = tf.constant(tf.cast(image, tf.float32))
+        else:
+            image = np.asarray(image).astype(np.float32)
         LOGGER.debug('image.shape: %s (%s)', image.shape, image.dtype)
-        predictions = self.predict_fn(
-            tf.constant(image)
-        )
+        predictions = self.predict_fn(image)
         return predictions
 
 
