@@ -74,22 +74,23 @@ def _pad_image_like_tensorflow(
 
     padded = np.copy(image)
     dims = padded.shape
+    dtype = image.dtype
 
     if padding.top != 0:
-        top_zero_row = np.zeros(shape=(padding.top, dims[1], dims[2]))
+        top_zero_row = np.zeros(shape=(padding.top, dims[1], dims[2]), dtype=dtype)
         padded = np.vstack([top_zero_row, padded])
 
     if padding.bottom != 0:
-        bottom_zero_row = np.zeros(shape=(padding.top, dims[1], dims[2]))
+        bottom_zero_row = np.zeros(shape=(padding.top, dims[1], dims[2]), dtype=dtype)
         padded = np.vstack([padded, bottom_zero_row])
 
     dims = padded.shape
     if padding.left != 0:
-        left_zero_column = np.zeros(shape=(dims[0], padding.left, dims[2]))
+        left_zero_column = np.zeros(shape=(dims[0], padding.left, dims[2]), dtype=dtype)
         padded = np.hstack([left_zero_column, padded])
 
     if padding.right != 0:
-        right_zero_column = np.zeros(shape=(dims[0], padding.right, dims[2]))
+        right_zero_column = np.zeros(shape=(dims[0], padding.right, dims[2]), dtype=dtype)
         padded = np.hstack([padded, right_zero_column])
 
     return padded
@@ -131,8 +132,16 @@ def pad_and_resize_to(
         resized = tf.image.resize([padded], [target_height, target_width])[0]
     else:
         padded = _pad_image_like_tensorflow(image, padding)
+        LOGGER.debug(
+            'padded: %r (%r) -> %r (%r)',
+            image.shape, image.dtype, padded.shape, padded.dtype
+        )
         resized = resize_image_to(
             padded, ImageSize(width=target_width, height=target_height)
+        )
+        LOGGER.debug(
+            'resized: %r (%r) -> %r (%r)',
+            padded.shape, padded.dtype, resized.shape, resized.dtype
         )
     return resized, padding
 
