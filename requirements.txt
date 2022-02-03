@@ -3,7 +3,7 @@ Pillow==8.4.0; python_version < "3.7"
 Pillow==9.0.0; python_version >= "3.7"
 pyfakewebcam==0.1.0
 tensorflow==2.6.2; python_version < "3.7"
-tensorflow==2.7.0; python_version >= "3.7"
+tensorflow==2.8.0; python_version >= "3.7"
 tensorflow-estimator==2.6.0; python_version < "3.7"
 tensorflow-estimator==2.7.0; python_version >= "3.7"
 tfjs-graph-converter==1.4.2
