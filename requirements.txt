@@ -1,6 +1,6 @@
 opencv-python==4.5.5.62 
 Pillow==8.4.0; python_version < "3.7"
-Pillow==9.0.0; python_version >= "3.7"
+Pillow==9.0.1; python_version >= "3.7"
 pyfakewebcam==0.1.0
 tensorflow==2.6.2; python_version < "3.7"
 tensorflow==2.7.0; python_version >= "3.7"
