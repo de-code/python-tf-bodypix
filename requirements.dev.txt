@@ -5,4 +5,4 @@ pylint==2.10.2
 pytest==7.0.1
 pytest-watch==4.2.0
 setuptools-scm==6.4.2
-types-requests==2.27.9
+types-requests==2.27.10
