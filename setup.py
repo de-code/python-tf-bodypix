@@ -12,6 +12,10 @@ with open('requirements.txt', 'r', encoding='utf-8') as f:
     REQUIRED_PACKAGES = f.readlines()
 
 
+with open('requirements.tflite.txt', 'r', encoding='utf-8') as f:
+    TFLITE_REQUIRED_PACKAGES = f.readlines()
+
+
 with open('README.md', 'r', encoding='utf-8') as f:
     LONG_DESCRIPTION = '\n'.join([
         line.rstrip()
@@ -30,6 +34,10 @@ DEFAULT_REQUIRED_PACKAGES, EXTRAS = get_required_and_extras(
     get_requirements_with_groups(REQUIRED_PACKAGES)
 )
 
+ALL_EXTRAS = {
+    **EXTRAS,
+    'tflite': TFLITE_REQUIRED_PACKAGES
+}
 
 packages = find_packages(exclude=["tests", "tests.*"])
 
@@ -42,7 +50,7 @@ setup(
     author="Daniel Ecer",
     url="https://github.com/de-code/python-tf-bodypix",
     install_requires=DEFAULT_REQUIRED_PACKAGES,
-    extras_require=EXTRAS,
+    extras_require=ALL_EXTRAS,
     packages=packages,
     include_package_data=True,
     description='Python implemention of the TensorFlow BodyPix model.',

@@ -6,9 +6,7 @@ from queue import Queue
 from threading import Thread
 from typing import ContextManager, Iterable, Iterator, Optional
 
-import tensorflow as tf
-
-from tf_bodypix.utils.image import resize_image_to, ImageSize, ImageArray
+from tf_bodypix.utils.image import load_image, ImageSize, ImageArray
 from tf_bodypix.utils.io import get_file, strip_url_suffix
 
 
@@ -52,12 +50,7 @@ def get_simple_image_source(
 ) -> Iterator[Iterable[ImageArray]]:
     local_image_path = get_file(path)
     LOGGER.debug('local_image_path: %r', local_image_path)
-    image = tf.keras.preprocessing.image.load_img(
-        local_image_path
-    )
-    image_array = tf.keras.preprocessing.image.img_to_array(image)
-    if image_size is not None:
-        image_array = resize_image_to(image_array, image_size)
+    image_array = load_image(local_image_path, image_size=image_size)
     yield [image_array]
 
 

@@ -31,10 +31,11 @@ when using this project as a library:
 | ---------- | -----------
 | tf         | [TensorFlow](https://pypi.org/project/tensorflow/) (required). But you may use your own build.
 | tfjs       | TensorFlow JS Model support, using [tfjs-graph-converter](https://pypi.org/project/tfjs-graph-converter/)
+| tflite     | [tflite-runtime](https://pypi.org/project/tflite-runtime/)
 | image      | Image loading via [Pillow](https://pypi.org/project/Pillow/), required by the CLI.
 | video      | Video support via [OpenCV](https://pypi.org/project/opencv-python/)
 | webcam     | Webcam support via [OpenCV](https://pypi.org/project/opencv-python/) and [pyfakewebcam](https://pypi.org/project/pyfakewebcam/)
-| all        | All of the libraries
+| all        | All of the libraries (except `tflite-runtime`)
 
 ## Python API
 
@@ -116,6 +117,12 @@ The result will be a list of all of the `bodypix` TensorFlow JS models available
 Those URLs can be passed as the `--model-path` arguments below, or to the `download_model` method of the Python API.
 
 The CLI will download and cache the model from the provided path. If no `--model-path` is provided, it will use a default model (mobilenet).
+
+To list TensorFlow Lite models instead:
+
+```bash
+python -m tf_bodypix list-tflite-models
+```
 
 ### Inputs and Outputs
 
@@ -317,7 +324,7 @@ python -m tf_bodypix \
 
 Background: [Brown Landscape Under Grey Sky](https://www.pexels.com/photo/brown-landscape-under-grey-sky-3244513/)
 
-## TensorFlow Lite support (experimental)
+## TensorFlow Lite Model support (experimental)
 
 The model path may also point to a TensorFlow Lite model (`.tflite` extension). Whether that actually improves performance may depend on the platform and available hardware.
 
@@ -330,7 +337,7 @@ python -m tf_bodypix \
     "https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/075/model-stride16.json" \
     --optimize \
     --quantization-type=float16 \
-    --output-model-file "./mobilenet-float16-stride16.tflite"
+    --output-model-file "./mobilenet-float-multiplier-075-stride16-float16.tflite"
 ```
 
 The above command is provided for convenience.
@@ -341,6 +348,12 @@ Relevant links:
 * [TensorFlow Lite converter](https://www.tensorflow.org/lite/convert/)
 * [TF Lite post_training_quantization](https://www.tensorflow.org/lite/performance/post_training_quantization)
 * [TF GitHub #40183](https://github.com/tensorflow/tensorflow/issues/40183).
+
+## TensorFlow Lite Runtime support (experimental)
+
+This project can also be used with [tflite-runtime](https://pypi.org/project/tflite-runtime/) instead of full TensorFlow (e.g. by using the `tflite` extra).
+However, [TensorFlow Lite converter](https://www.tensorflow.org/lite/convert/) would require full TensorFlow.
+In order to avoid it, one needs to use a TensorFlow Lite model (see previous section).
 
 ## Docker Usage
 

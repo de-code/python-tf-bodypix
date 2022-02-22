@@ -45,11 +45,23 @@ venv-create:
 	$(SYSTEM_PYTHON) -m venv $(VENV)
 
 
-dev-install:
+dev-install-build-dependencies:
 	$(PIP) install -r requirements.build.txt
+
+
+dev-install: dev-install-build-dependencies
 	$(PIP) install \
 		-r requirements.dev.txt \
 		-r requirements.txt
+
+
+dev-install-tflite:  dev-install-build-dependencies
+	$(PIP) install -r requirements.dev.txt
+	$(PIP) install --use-feature=in-tree-build .[tflite,image]
+
+
+dev-run-pip:
+	$(PIP) $(ARGS)
 
 
 dev-venv: venv-create dev-install
@@ -75,8 +87,18 @@ dev-pytest:
 	$(PYTHON) -m pytest -p no:cacheprovider $(ARGS)
 
 
+dev-pytest-tflite:
+	$(MAKE) dev-pytest \
+		ARGS='tests/cli_test.py -k test_should_be_able_to_use_existing_tflite_model'
+
+
 dev-watch:
 	$(PYTHON) -m pytest_watch -- -p no:cacheprovider -p no:warnings $(ARGS)
+
+
+dev-watch-tflite:
+	$(MAKE) dev-watch \
+		ARGS='tests/cli_test.py -k test_should_be_able_to_use_existing_tflite_model'
 
 
 dev-test: dev-lint dev-pytest
@@ -112,6 +134,11 @@ run:
 list-models:
 	$(PYTHON) -m tf_bodypix \
 		list-models
+
+
+list-tflite-models:
+	$(PYTHON) -m tf_bodypix \
+		list-tflite-models
 
 
 convert-example-draw-mask:
@@ -238,6 +265,66 @@ webcam-v4l2-replace-background:
 		--output=$(VIRTUAL_VIDEO_DEVICE) \
 		--threshold=$(MASK_THRESHOLD) \
 		$(ARGS)
+
+
+convert-tfjs-models-to-tflite:
+	mkdir -p "./data/tflite-models"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/050/model-stride8.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/mobilenet-float-multiplier-050-stride8-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/050/model-stride16.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/mobilenet-float-multiplier-050-stride16-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/075/model-stride8.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/mobilenet-float-multiplier-075-stride8-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/075/model-stride16.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/mobilenet-float-multiplier-075-stride16-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/100/model-stride8.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/mobilenet-float-multiplier-100-stride8-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/float/100/model-stride16.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/mobilenet-float-multiplier-100-stride16-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/resnet50/float/model-stride16.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/resnet50-float-stride16-float16.tflite"
+	$(PYTHON) -m tf_bodypix \
+			convert-to-tflite \
+			--model-path \
+			"https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/resnet50/float/model-stride32.json" \
+			--optimize \
+			--quantization-type=float16 \
+			--output-model-file "./data/tflite-models/resnet50-float-stride32-float16.tflite"
 
 
 docker-build:

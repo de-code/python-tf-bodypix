@@ -5,7 +5,13 @@ from collections import namedtuple
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-import tensorflow as tf
+
+try:
+    import tensorflow as tf
+    tflite = tf.lite
+except ImportError:
+    tf = None
+    import tflite_runtime.interpreter as tflite  # type: ignore
 
 try:
     import tfjs_graph_converter
@@ -45,9 +51,6 @@ PART_CHANNEL_INDEX_BY_NAME = {
     name: index
     for index, name in enumerate(PART_CHANNELS)
 }
-
-
-DEFAULT_RESIZE_METHOD = tf.image.ResizeMethod.BILINEAR
 
 
 ImageSize = namedtuple('ImageSize', ('height', 'width'))
@@ -96,6 +99,27 @@ class BodyPixArchitecture(ABC):
         pass
 
 
+def _get_imagenet_preprocessed_image_using_numpy(
+    image_array: np.ndarray
+) -> np.ndarray:
+    result = np.divide(image_array, 127.5, dtype=np.float32)
+    result = np.subtract(result, 1, out=result)
+    LOGGER.debug(
+        'imagenet preprocessed: %r (%r) -> %r (%r)',
+        image_array.shape, image_array.dtype,
+        result.shape, result.dtype
+    )
+    return result
+
+
+def _get_mobilenet_preprocessed_image(
+    image_array: np.ndarray
+) -> np.ndarray:
+    if tf is not None:
+        return tf.keras.applications.mobilenet.preprocess_input(image_array)
+    return _get_imagenet_preprocessed_image_using_numpy(image_array)
+
+
 class MobileNetBodyPixPredictWrapper(BodyPixArchitecture):
     def __init__(self, predict_fn: Callable[[np.ndarray], dict]):
         super().__init__(ModelArchitectureNames.MOBILENET_V1)
@@ -103,9 +127,12 @@ class MobileNetBodyPixPredictWrapper(BodyPixArchitecture):
 
     def __call__(self, image: np.ndarray) -> dict:
         if len(image.shape) == 3:
-            image = image[tf.newaxis, ...]
+            if tf is not None:
+                image = image[tf.newaxis, ...]
+            else:
+                image = np.expand_dims(image, axis=0)
         return self.predict_fn(
-            tf.keras.applications.mobilenet.preprocess_input(image)
+            _get_mobilenet_preprocessed_image(image)
         )
 
 
@@ -118,12 +145,16 @@ class ResNet50BodyPixPredictWrapper(BodyPixArchitecture):
         image = np.add(image, np.array(IMAGE_NET_MEAN))
         # Note: tf.keras.applications.resnet50.preprocess_input is rotating the image as well?
         if len(image.shape) == 3:
-            image = image[tf.newaxis, ...]
-        image = tf.cast(image, tf.float32)
+            if tf is not None:
+                image = image[tf.newaxis, ...]
+            else:
+                image = np.expand_dims(image, axis=0)
+        if tf is not None:
+            image = tf.constant(tf.cast(image, tf.float32))
+        else:
+            image = np.asarray(image).astype(np.float32)
         LOGGER.debug('image.shape: %s (%s)', image.shape, image.dtype)
-        predictions = self.predict_fn(
-            tf.constant(image)
-        )
+        predictions = self.predict_fn(image)
         return predictions
 
 
@@ -216,8 +247,9 @@ class BodyPixResultWrapper:
     def _get_scaled_scores(
         self,
         logits: np.ndarray,
-        resize_method: str = DEFAULT_RESIZE_METHOD
+        resize_method: Optional[str] = None
     ) -> np.ndarray:
+        LOGGER.debug('logits: %r', logits.shape)
         return scale_and_crop_to_input_tensor_shape(
             logits,
             self.original_size.height,
@@ -240,7 +272,7 @@ class BodyPixResultWrapper:
         mask: np.ndarray = None,
         part_names: List[str] = None,
         outside_mask_value: int = -1,
-        resize_method: str = DEFAULT_RESIZE_METHOD
+        resize_method: Optional[str] = None
     ) -> np.ndarray:
         scaled_part_heatmap_argmax = np.argmax(
             self.get_scaled_part_heatmap_scores(resize_method=resize_method),
@@ -268,7 +300,7 @@ class BodyPixResultWrapper:
     def get_mask(
         self,
         threshold: float,
-        resize_method: str = DEFAULT_RESIZE_METHOD,
+        resize_method: Optional[str] = None,
         **kwargs
     ) -> np.ndarray:
         return to_mask_tensor(
@@ -281,7 +313,7 @@ class BodyPixResultWrapper:
         self,
         mask: np.ndarray,
         part_names: List[str] = None,
-        resize_method: str = DEFAULT_RESIZE_METHOD
+        resize_method: Optional[str] = None
     ) -> np.ndarray:
         if is_all_part_names(part_names):
             return mask
@@ -301,7 +333,7 @@ class BodyPixResultWrapper:
         mask: np.ndarray,
         part_colors: List[T_Color] = None,
         part_names: List[str] = None,
-        resize_method: str = DEFAULT_RESIZE_METHOD
+        resize_method: Optional[str] = None
     ) -> np.ndarray:
         part_segmentation = self.get_scaled_part_segmentation(
             mask, part_names=part_names, resize_method=resize_method
@@ -358,8 +390,8 @@ class BodyPixModelWrapper:
         self, image: np.ndarray, model_input_size: ImageSize
     ) -> Tuple[np.ndarray, Padding]:
         LOGGER.debug(
-            'pad_and_resize_to: image.shape=%s, model_input_size=%s',
-            image.shape, model_input_size
+            'pad_and_resize_to: image.shape=%s (%r), model_input_size=%s',
+            image.shape, image.dtype, model_input_size
         )
         return pad_and_resize_to(
             image,
@@ -393,8 +425,14 @@ class BodyPixModelWrapper:
 
     def predict_single(self, image: np.ndarray) -> BodyPixResultWrapper:
         original_size = ImageSize(*image.shape[:2])
+        LOGGER.debug('original_size: %r (%r)', original_size, image.dtype)
         model_input_size = self.get_bodypix_input_size(original_size)
+        LOGGER.debug('model_input_size: %r', model_input_size)
         model_input_image, padding = self.get_padded_and_resized(image, model_input_size)
+        LOGGER.debug(
+            'model_input_image: %r (%r)', model_input_image.shape, model_input_image.dtype
+        )
+        LOGGER.debug('predict_fn: %r', self.predict_fn)
 
         tensor_map = self.predict_fn(model_input_image)
 
@@ -437,7 +475,7 @@ class BodyPixModelWrapper:
         )
 
 
-def get_structured_output_names(structured_outputs: List[tf.Tensor]) -> List[str]:
+def get_structured_output_names(structured_outputs: List['tf.Tensor']) -> List[str]:
     return [
         tensor.name.replace(':0', '')
         for tensor in structured_outputs
@@ -454,7 +492,7 @@ def to_number_of_dimensions(data: np.ndarray, dimension_count: int) -> np.ndarra
 
 def load_tflite_model(model_path: str):
     # Load TFLite model and allocate tensors.
-    interpreter = tf.lite.Interpreter(model_path=model_path)
+    interpreter = tflite.Interpreter(model_path=model_path)
     interpreter.allocate_tensors()
 
     input_details = interpreter.get_input_details()
@@ -478,6 +516,10 @@ def load_tflite_model(model_path: str):
 
     def predict(image_data: np.ndarray):
         nonlocal input_shape
+        LOGGER.debug(
+            'tflite predict, original image_data.shape=%s (%s)',
+            image_data.shape, image_data.dtype
+        )
         image_data = to_number_of_dimensions(image_data, len(input_shape))
         LOGGER.debug('tflite predict, image_data.shape=%s (%s)', image_data.shape, image_data.dtype)
         height, width, *_ = image_data.shape

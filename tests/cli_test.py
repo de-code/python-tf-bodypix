@@ -1,9 +1,9 @@
 import logging
 from pathlib import Path
 
-from tf_bodypix.download import BodyPixModelPaths
+from tf_bodypix.download import ALL_TENSORFLOW_LITE_BODYPIX_MODEL_PATHS, BodyPixModelPaths
 from tf_bodypix.model import ModelArchitectureNames
-from tf_bodypix.cli import main
+from tf_bodypix.cli import DEFAULT_MODEL_TFLITE_PATH, main
 
 
 LOGGER = logging.getLogger(__name__)
@@ -97,6 +97,15 @@ class TestMain:
         missing_urls = set(expected_urls) - set(output_urls)
         assert not missing_urls
 
+    def test_should_list_all_default_tflite_models(self, capsys):
+        expected_urls = ALL_TENSORFLOW_LITE_BODYPIX_MODEL_PATHS
+        main(['list-tflite-models'])
+        captured = capsys.readouterr()
+        output_urls = captured.out.splitlines()
+        LOGGER.debug('output_urls: %s', output_urls)
+        missing_urls = set(expected_urls) - set(output_urls)
+        assert not missing_urls
+
     def test_should_be_able_to_convert_to_tflite_and_use_model(self, temp_dir: Path):
         output_model_file = temp_dir / 'model.tflite'
         main([
@@ -110,6 +119,17 @@ class TestMain:
         main([
             'draw-mask',
             '--model-path=%s' % output_model_file,
+            '--model-architecture=%s' % ModelArchitectureNames.MOBILENET_V1,
+            '--output-stride=16',
+            '--source=%s' % EXAMPLE_IMAGE_URL,
+            '--output=%s' % output_image_path
+        ])
+
+    def test_should_be_able_to_use_existing_tflite_model(self, temp_dir: Path):
+        output_image_path = temp_dir / 'mask.jpg'
+        main([
+            'draw-mask',
+            '--model-path=%s' % DEFAULT_MODEL_TFLITE_PATH,
             '--model-architecture=%s' % ModelArchitectureNames.MOBILENET_V1,
             '--output-stride=16',
             '--source=%s' % EXAMPLE_IMAGE_URL,

@@ -7,14 +7,17 @@ from contextlib import ExitStack
 from itertools import cycle
 from pathlib import Path
 from time import time, sleep
-from typing import ContextManager, Dict, List
+from typing import ContextManager, Dict, List, Optional, Sequence
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = "3"
 
 # pylint: disable=wrong-import-position
 # flake8: noqa: E402
 
-import tensorflow as tf
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
 import numpy as np
 
 from tf_bodypix.utils.timer import LoggingTimer
@@ -25,13 +28,17 @@ from tf_bodypix.utils.image import (
     box_blur_image
 )
 from tf_bodypix.utils.s3 import iter_s3_file_urls
-from tf_bodypix.download import download_model
+from tf_bodypix.download import (
+    ALL_TENSORFLOW_LITE_BODYPIX_MODEL_PATHS,
+    BodyPixModelPaths,
+    TensorFlowLiteBodyPixModelPaths,
+    download_model
+)
 from tf_bodypix.tflite import get_tflite_converter_for_model_path
 from tf_bodypix.model import (
     load_model,
     VALID_MODEL_ARCHITECTURE_NAMES,
     PART_CHANNELS,
-    DEFAULT_RESIZE_METHOD,
     BodyPixModelWrapper,
     BodyPixResultWrapper
 )
@@ -52,9 +59,15 @@ except ImportError as exc:
 LOGGER = logging.getLogger(__name__)
 
 
+DEFAULT_MODEL_TF_PATH = BodyPixModelPaths.MOBILENET_FLOAT_50_STRIDE_16
+
+
+DEFAULT_MODEL_TFLITE_PATH = TensorFlowLiteBodyPixModelPaths.MOBILENET_FLOAT_75_STRIDE_16_FLOAT16
+
+
 DEFAULT_MODEL_PATH = (
-    r'https://storage.googleapis.com/tfjs-models/savedmodel/'
-    r'bodypix/mobilenet/float/050/model-stride16.json'
+    DEFAULT_MODEL_TF_PATH if tf is not None
+    else DEFAULT_MODEL_TFLITE_PATH
 )
 
 
@@ -251,7 +264,7 @@ def get_mask(
     masks: List[np.ndarray],
     timer: LoggingTimer,
     args: argparse.Namespace,
-    resize_method: str = DEFAULT_RESIZE_METHOD
+    resize_method: Optional[str] = None
 ) -> np.ndarray:
     mask = bodypix_result.get_mask(args.threshold, dtype=np.float32, resize_method=resize_method)
     if args.mask_blur:
@@ -280,13 +293,29 @@ class ListModelsSubCommand(SubCommand):
             help="The base URL for the storage containing the models"
         )
 
-    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
-        bodypix_model_json_files = [
+    def get_model_paths(self, storage_url: str) -> Sequence[str]:
+        return [
             file_url
-            for file_url in iter_s3_file_urls(args.storage_url)
+            for file_url in iter_s3_file_urls(storage_url)
             if re.match(r'.*/bodypix/.*/model.*\.json', file_url)
         ]
-        print('\n'.join(bodypix_model_json_files))
+
+    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
+        print('\n'.join(self.get_model_paths(storage_url=args.storage_url)))
+
+
+class ListTensorFlowLiteModelsSubCommand(SubCommand):
+    def __init__(self):
+        super().__init__("list-tflite-models", "Lists available tflite bodypix models")
+
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        add_common_arguments(parser)
+
+    def get_model_paths(self) -> Sequence[str]:
+        return ALL_TENSORFLOW_LITE_BODYPIX_MODEL_PATHS
+
+    def run(self, args: argparse.Namespace):  # pylint: disable=unused-argument
+        print('\n'.join(self.get_model_paths()))
 
 
 class ConvertToTFLiteSubCommand(SubCommand):
@@ -297,7 +326,7 @@ class ConvertToTFLiteSubCommand(SubCommand):
         add_common_arguments(parser)
         parser.add_argument(
             "--model-path",
-            default=DEFAULT_MODEL_PATH,
+            default=DEFAULT_MODEL_TF_PATH,
             help="The path or URL to the bodypix model."
         )
         parser.add_argument(
@@ -386,6 +415,7 @@ class AbstractWebcamFilterApp(ABC):
             image_array = next(self.image_iterator)
         except StopIteration:
             return False
+        LOGGER.debug('image_array: %r (%r)', image_array.shape, image_array.dtype)
         self.timer.on_step_start('model')
         output_image = self.get_output_image(image_array)
         self.timer.on_step_start('out')
@@ -424,7 +454,7 @@ class AbstractWebcamFilterSubCommand(SubCommand):
 
 class DrawMaskApp(AbstractWebcamFilterApp):
     def get_output_image(self, image_array: np.ndarray) -> np.ndarray:
-        resize_method = DEFAULT_RESIZE_METHOD
+        resize_method = None
         result = self.get_bodypix_result(image_array)
         self.timer.on_step_start('get_mask')
         mask = self.get_mask(result, resize_method=resize_method)
@@ -439,14 +469,27 @@ class DrawMaskApp(AbstractWebcamFilterApp):
                 mask, part_names=self.args.parts, resize_method=resize_method
             ) * 255
         else:
-            mask_image = mask * 255
+            if LOGGER.isEnabledFor(logging.DEBUG):
+                LOGGER.debug(
+                    'mask: %r (%r, %r) (%s)',
+                    mask.shape, np.min(mask), np.max(mask), mask.dtype
+                )
+            mask_image = mask * 255.0
         if self.args.mask_alpha is not None:
             self.timer.on_step_start('overlay')
             LOGGER.debug('mask.shape: %s (%s)', mask.shape, mask.dtype)
             alpha = self.args.mask_alpha
             try:
-                if mask_image.dtype == tf.int32:
-                    mask_image = tf.cast(mask, tf.float32)
+                if tf is not None:
+                    if mask_image.dtype == tf.int32:
+                        mask_image = tf.cast(mask_image, tf.float32)
+                else:
+                    image_array = np.asarray(image_array).astype(np.float32)
+                if LOGGER.isEnabledFor(logging.DEBUG):
+                    LOGGER.debug(
+                        'mask_image: %r (%r, %r) (%s)',
+                        mask_image.shape, np.min(mask_image), np.max(mask_image), mask_image.dtype
+                    )
             except TypeError:
                 pass
             output = np.clip(
@@ -599,6 +642,7 @@ class ReplaceBackgroundSubCommand(AbstractWebcamFilterSubCommand):
 
 SUB_COMMANDS: List[SubCommand] = [
     ListModelsSubCommand(),
+    ListTensorFlowLiteModelsSubCommand(),
     ConvertToTFLiteSubCommand(),
     DrawMaskSubCommand(),
     DrawPoseSubCommand(),

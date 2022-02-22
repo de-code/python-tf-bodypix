@@ -1,11 +1,11 @@
-import os
 import logging
 from contextlib import contextmanager
 from functools import partial
 from typing import Callable, ContextManager, Iterator
 
 import numpy as np
-import tensorflow as tf
+
+from tf_bodypix.utils.image import write_image_to
 
 # pylint: disable=import-outside-toplevel
 
@@ -14,12 +14,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 T_OutputSink = Callable[[np.ndarray], None]
-
-
-def write_image_to(image_array: np.ndarray, path: str):
-    LOGGER.info('writing image to: %r', path)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    tf.keras.preprocessing.image.save_img(path, image_array)
 
 
 def get_v4l2_output_sink(device_name: str) -> ContextManager[T_OutputSink]:

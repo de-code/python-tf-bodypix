@@ -2,6 +2,7 @@ import logging
 import json
 import os
 import re
+from urllib.parse import urlparse
 
 from hashlib import md5
 
@@ -50,6 +51,54 @@ class BodyPixModelPaths:
     )
 
 
+_TFLITE_DOWNLOAD_URL_PREFIX = r'https://www.dropbox.com/sh/d6tqb3gfrugs7ne/'
+
+
+class TensorFlowLiteBodyPixModelPaths:
+    MOBILENET_FLOAT_50_STRIDE_8_FLOAT16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AADUtMGoDO6vzOfRLP0Dg7ira/mobilenet-float-multiplier-050-stride8-float16.tflite?dl=1'
+    )
+    MOBILENET_FLOAT_50_STRIDE_16_FLOAT16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AAAhnozSEO07xzgL495dW3h8a/mobilenet-float-multiplier-050-stride16-float16.tflite?dl=1'
+    )
+
+    MOBILENET_FLOAT_75_STRIDE_8_FLOAT16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AADBYGO2xj2v9Few4qBq62wZa/mobilenet-float-multiplier-075-stride8-float16.tflite?dl=1'
+    )
+    MOBILENET_FLOAT_75_STRIDE_16_FLOAT16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AAAGYNAOTTWBl9ZDhALv7rEOa/mobilenet-float-multiplier-075-stride16-float16.tflite?dl=1'
+    )
+
+    MOBILENET_FLOAT_100_STRIDE_8_FLOAT16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AADr8zOtPZz2cWlQEvKgIbdTa/mobilenet-float-multiplier-100-stride8-float16.tflite?dl=1'
+    )
+    MOBILENET_FLOAT_100_STRIDE_16_FLOAT16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AAAo-hkaCqx2pN99cCvDPcosa/mobilenet-float-multiplier-100-stride16-float16.tflite?dl=1'
+    )
+
+    RESNET50_FLOAT_STRIDE_16 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AADvvgLyPXMPOeRyRY9WQ9Mva/resnet50-float-stride16-float16.tflite?dl=1'
+    )
+    MOBILENET_RESNET50_FLOAT_STRIDE_32 = (
+        _TFLITE_DOWNLOAD_URL_PREFIX
+        + 'AADGlTuMQQeL8vm6BuOwObKTa/resnet50-float-stride32-float16.tflite?dl=1'
+    )
+
+
+ALL_TENSORFLOW_LITE_BODYPIX_MODEL_PATHS = [
+    value
+    for key, value in TensorFlowLiteBodyPixModelPaths.__dict__.items()
+    if key.isupper() and isinstance(value, str)
+]
+
+
 class DownloadError(RuntimeError):
     pass
 
@@ -57,13 +106,11 @@ class DownloadError(RuntimeError):
 def download_model(model_path: str) -> str:
     if os.path.exists(model_path):
         return model_path
-    if not model_path.endswith('.json'):
-        raise ValueError('remote model path needs to end with .json')
-    model_base_path = os.path.dirname(model_path)
+    parsed_model_path = urlparse(model_path)
     local_name_part = re.sub(
         r'[^a-zA-Z0-9]+',
         r'-',
-        os.path.splitext(model_path)[0]
+        os.path.splitext(parsed_model_path.path)[0]
     )
     local_name = (
         md5(model_path.encode('utf-8')).hexdigest() + '-'
@@ -73,6 +120,18 @@ def download_model(model_path: str) -> str:
     cache_dir = get_default_cache_dir(
         cache_subdir=os.path.join('tf-bodypix', local_name)
     )
+    if parsed_model_path.path.endswith('.tflite'):
+        return download_file_to(
+            source_url=model_path,
+            local_path=os.path.join(
+                cache_dir,
+                os.path.basename(parsed_model_path.path)
+            ),
+            skip_if_exists=True
+        )
+    if not parsed_model_path.path.endswith('.json'):
+        raise ValueError('remote model path needs to end with .json')
+    model_base_path = os.path.dirname(model_path)
     local_model_json_path = download_file_to(
         source_url=model_path,
         local_path=os.path.join(cache_dir, 'model.json'),
