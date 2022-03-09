@@ -1,4 +1,4 @@
-opencv-python==4.5.5.62
+opencv-python==4.5.5.64
 Pillow==8.4.0; python_version < "3.7"
 Pillow==9.0.1; python_version >= "3.7"
 pyfakewebcam==0.1.0
