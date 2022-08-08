@@ -1,6 +1,5 @@
 flake8==4.0.1
-mypy==0.921; python_version < "3.7"
-mypy==0.950; python_version >= "3.7"
+mypy==0.950
 pylint==2.10.2
 pytest==7.0.1
 pytest-watch==4.2.0
