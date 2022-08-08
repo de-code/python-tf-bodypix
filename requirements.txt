@@ -3,5 +3,5 @@ Pillow==9.2.0
 pyfakewebcam==0.1.0
 tensorflow==2.9.1
 tensorflow-estimator==2.9.0
-tfjs-graph-converter==1.6.0
+tfjs-graph-converter==1.6.1
 requests>=2.26.0
