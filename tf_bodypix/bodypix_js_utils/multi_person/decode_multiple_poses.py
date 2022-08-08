@@ -43,14 +43,14 @@ def getInstanceScore(
     instanceKeypoints: Dict[int, Keypoint]
 ) -> float:
     LOGGER.debug('instanceKeypoints: %s', instanceKeypoints)
-    notOverlappedKeypointScores = sum([
+    notOverlappedKeypointScores = sum((
         keypoint.score
         for keypointId, keypoint in instanceKeypoints.items()
         if not withinNmsRadiusOfCorrespondingPoint(
             existingPoses, squaredNmsRadius,
             keypoint.position, keypointId
         )
-    ])
+    ))
 
     return notOverlappedKeypointScores / len(instanceKeypoints)
 
