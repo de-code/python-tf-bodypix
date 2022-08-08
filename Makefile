@@ -57,7 +57,7 @@ dev-install: dev-install-build-dependencies
 
 dev-install-tflite:  dev-install-build-dependencies
 	$(PIP) install -r requirements.dev.txt
-	$(PIP) install --use-feature=in-tree-build .[tflite,image]
+	$(PIP) install .[tflite,image]
 
 
 dev-run-pip:
