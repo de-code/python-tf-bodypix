@@ -10,6 +10,10 @@ Goals of this project is:
 * Python library, making it easy to integrate the BodyPix model
 * CLI with limited functionality, mostly for demonstration purpose
 
+## Prerequisits
+
+* Python 3.7+
+
 ## Install
 
 Install with all dependencies:
