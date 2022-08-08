@@ -11,7 +11,7 @@ except ImportError:
     tf = None
 
 try:
-    from cv2 import cv2
+    import cv2
 except ImportError:
     cv2 = None
 
