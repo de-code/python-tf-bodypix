@@ -4,7 +4,7 @@ import os
 from pyfakewebcam import FakeWebcam
 
 import numpy as np
-from cv2 import cv2
+import cv2
 
 
 # pylint: disable=protected-access
