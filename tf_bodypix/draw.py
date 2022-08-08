@@ -1,7 +1,7 @@
 import logging
 from typing import List, Iterable, Tuple, Optional
 
-from cv2 import cv2
+import cv2
 import numpy as np
 
 from tf_bodypix.utils.image import ImageArray
