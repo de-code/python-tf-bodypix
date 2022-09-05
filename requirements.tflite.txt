@@ -1,1 +1,1 @@
-tflite-runtime==2.9.1
+tflite-runtime==2.10.0
