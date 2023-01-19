@@ -2,7 +2,7 @@ import logging
 from collections import deque
 from contextlib import contextmanager
 from time import monotonic, sleep
-from typing import Callable, ContextManager, Deque, Iterable, Iterator, Union
+from typing import Callable, ContextManager, Deque, Iterable, Iterator, Optional, Union
 
 import cv2
 import numpy as np
@@ -23,7 +23,7 @@ DEFAULT_WEBCAM_FOURCC = 'MJPG'
 def iter_read_raw_video_images(
     video_capture: cv2.VideoCapture,
     repeat: bool = False,
-    is_stopped: Callable[[], bool] = None
+    is_stopped: Optional[Callable[[], bool]] = None
 ) -> Iterable[ImageArray]:
     while is_stopped is None or not is_stopped():
         grabbed, image_array = video_capture.read()
@@ -41,7 +41,7 @@ def iter_read_raw_video_images(
 
 def iter_resize_video_images(
     video_images: Iterable[ImageArray],
-    image_size: ImageSize = None,
+    image_size: Optional[ImageSize] = None,
     interpolation: int = cv2.INTER_LINEAR
 ) -> Iterable[ImageArray]:
     is_first = True
@@ -70,7 +70,7 @@ def iter_convert_video_images_to_rgb(
 
 def iter_delay_video_images_to_fps(
     video_images: Iterable[ImageArray],
-    fps: float = None
+    fps: Optional[float] = None
 ) -> Iterable[np.ndarray]:
     if not fps or fps <= 0:
         LOGGER.info('no fps requested, providing images from source (without delay)')
@@ -120,10 +120,10 @@ def iter_delay_video_images_to_fps(
 
 def iter_read_video_images(
     video_capture: cv2.VideoCapture,
-    image_size: ImageSize = None,
+    image_size: Optional[ImageSize] = None,
     interpolation: int = cv2.INTER_LINEAR,
     repeat: bool = True,
-    fps: float = None
+    fps: Optional[float] = None
 ) -> Iterable[np.ndarray]:
     video_images: Iterable[np.ndarray]
     video_images = iter_read_raw_video_images(video_capture, repeat=repeat)
@@ -138,11 +138,11 @@ def iter_read_video_images(
 @contextmanager
 def get_video_image_source(  # pylint: disable=too-many-locals
     path: Union[str, int],
-    image_size: ImageSize = None,
+    image_size: Optional[ImageSize] = None,
     download: bool = True,
-    fps: float = None,
-    fourcc: str = None,
-    buffer_size: int = None,
+    fps: Optional[float] = None,
+    fourcc: Optional[str] = None,
+    buffer_size: Optional[int] = None,
     **_
 ) -> Iterator[Iterable[ImageArray]]:
     local_path: Union[str, int]
@@ -190,7 +190,7 @@ def get_video_image_source(  # pylint: disable=too-many-locals
 
 def get_webcam_image_source(
     path: Union[str, int],
-    fourcc: str = None,
+    fourcc: Optional[str] = None,
     buffer_size: int = 1,
     **kwargs
 ) -> ContextManager[Iterable[ImageArray]]:

@@ -27,7 +27,7 @@ class LoggingTimer:
         current_time = time()
         self.interval_start_time = current_time
 
-    def _set_current_step_name(self, step_name: str, current_time: float = None):
+    def _set_current_step_name(self, step_name: str, current_time: Optional[float] = None):
         if step_name == self.current_step_name:
             return
         if current_time is None:
@@ -43,7 +43,7 @@ class LoggingTimer:
             self.current_step_name = step_name
         self.current_step_start_time = current_time
 
-    def on_frame_start(self, initial_step_name: str = None):
+    def on_frame_start(self, initial_step_name: Optional[str] = None):
         self.frame_start_time = time()
         self.current_step_name = initial_step_name
         self.current_step_start_time = self.frame_start_time

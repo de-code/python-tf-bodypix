@@ -655,7 +655,7 @@ SUB_COMMAND_BY_NAME: Dict[str, SubCommand] = {
 }
 
 
-def parse_args(argv: List[str] = None) -> argparse.Namespace:
+def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         'TensorFlow BodyPix (TF BodyPix)',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -678,7 +678,7 @@ def run(args: argparse.Namespace):
     sub_command.run(args)
 
 
-def main(argv: List[str] = None):
+def main(argv: Optional[List[str]] = None):
     args = parse_args(argv)
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
