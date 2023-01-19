@@ -229,7 +229,7 @@ def rgb_to_bgr(image: np.ndarray) -> np.ndarray:
 
 def _load_image_using_tf(
     local_image_path: str,
-    image_size: ImageSize = None
+    image_size: Optional[ImageSize] = None
 ) -> np.ndarray:
     image = tf.keras.preprocessing.image.load_img(
         local_image_path
@@ -242,7 +242,7 @@ def _load_image_using_tf(
 
 def _load_image_using_pillow(
     local_image_path: str,
-    image_size: ImageSize = None
+    image_size: Optional[ImageSize] = None
 ) -> np.ndarray:
     with PIL.Image.open(local_image_path) as image:
         image_array = np.asarray(image)
@@ -253,7 +253,7 @@ def _load_image_using_pillow(
 
 def load_image(
     local_image_path: str,
-    image_size: ImageSize = None
+    image_size: Optional[ImageSize] = None
 ) -> np.ndarray:
     if tf is not None:
         return _load_image_using_tf(local_image_path, image_size=image_size)

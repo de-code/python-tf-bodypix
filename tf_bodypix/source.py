@@ -45,7 +45,7 @@ def get_webcam_image_source(webcam_number: int, **kwargs) -> T_ImageSource:
 @contextmanager
 def get_simple_image_source(
     path: str,
-    image_size: ImageSize = None,
+    image_size: Optional[ImageSize] = None,
     **_
 ) -> Iterator[Iterable[ImageArray]]:
     local_image_path = get_file(path)

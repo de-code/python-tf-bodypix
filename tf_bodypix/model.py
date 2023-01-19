@@ -198,7 +198,7 @@ def is_all_part_names(part_names: Optional[List[str]]) -> bool:
 
 def get_filtered_part_segmentation(
     part_segmentation: np.ndarray,
-    part_names: List[str] = None
+    part_names: Optional[List[str]] = None
 ):
     if is_all_part_names(part_names):
         return part_segmentation
@@ -269,8 +269,8 @@ class BodyPixResultWrapper:
 
     def get_scaled_part_segmentation(
         self,
-        mask: np.ndarray = None,
-        part_names: List[str] = None,
+        mask: Optional[np.ndarray] = None,
+        part_names: Optional[List[str]] = None,
         outside_mask_value: int = -1,
         resize_method: Optional[str] = None
     ) -> np.ndarray:
@@ -312,7 +312,7 @@ class BodyPixResultWrapper:
     def get_part_mask(
         self,
         mask: np.ndarray,
-        part_names: List[str] = None,
+        part_names: Optional[List[str]] = None,
         resize_method: Optional[str] = None
     ) -> np.ndarray:
         if is_all_part_names(part_names):
@@ -331,8 +331,8 @@ class BodyPixResultWrapper:
     def get_colored_part_mask(
         self,
         mask: np.ndarray,
-        part_colors: List[T_Color] = None,
-        part_names: List[str] = None,
+        part_colors: Optional[List[T_Color]] = None,
+        part_names: Optional[List[str]] = None,
         resize_method: Optional[str] = None
     ) -> np.ndarray:
         part_segmentation = self.get_scaled_part_segmentation(
@@ -597,8 +597,8 @@ def get_architecture_from_model_path(model_path: str) -> str:
 
 def load_model(
     model_path: str,
-    output_stride: int = None,
-    architecture_name: str = None,
+    output_stride: Optional[int] = None,
+    architecture_name: Optional[str] = None,
     **kwargs
 ):
     if not output_stride:
