@@ -1,8 +1,10 @@
-def get_requirement_groups(requirement):
+def get_requirement_groups(requirement):  # pylint: disable=too-many-return-statements
     requirement_lower = requirement.lower()
     if 'tensorflow' in requirement_lower:
         return ['tf']
     if 'tfjs' in requirement_lower:
+        return ['tfjs']
+    if 'numpy' in requirement_lower:
         return ['tfjs']
     if 'pillow' in requirement_lower:
         return ['image']
