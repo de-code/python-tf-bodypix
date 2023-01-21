@@ -55,7 +55,7 @@ jobs:
         include:
         - python-version: '3.8'
           push-package: true
-        - os: windows-latest
+        - os: windows-2019
           python-version: '3.8'
         - os: macos-latest
           python-version: '3.8'
