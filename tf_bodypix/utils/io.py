@@ -31,11 +31,12 @@ def download_file_to(
     source_url: str,
     local_path: str,
     user_agent: str = DEFAULT_USER_AGENT,
-    skip_if_exists: bool = True
+    skip_if_exists: bool = True,
+    timeout: float = 60 * 60  # default to 1h
 ):
     if skip_if_exists and os.path.exists(local_path):
         return local_path
-    response = requests.get(source_url, headers={
+    response = requests.get(source_url, timeout=timeout, headers={
         'User-Agent': user_agent
     })
     response.raise_for_status()
