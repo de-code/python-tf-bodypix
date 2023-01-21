@@ -46,17 +46,20 @@ venv-create:
 
 
 dev-install-build-dependencies:
-	$(PIP) install -r requirements.build.txt
+	$(PIP) install --requirement=requirements.build.txt
 
 
 dev-install: dev-install-build-dependencies
 	$(PIP) install \
-		-r requirements.dev.txt \
-		-r requirements.txt
+		--constraint=constraints.txt \
+		--requirement=requirements.dev.txt \
+		--requirement=requirements.txt
 
 
 dev-install-tflite:  dev-install-build-dependencies
-	$(PIP) install -r requirements.dev.txt
+	$(PIP) install \
+		--constraint=constraints.txt \
+		--requirement=requirements.dev.txt
 	$(PIP) install .[tflite,image]
 
 
