@@ -1,5 +1,5 @@
 numpy<1.24
-opencv-python==4.7.0.68
+opencv-python==4.7.0.72
 Pillow==9.4.0
 pyfakewebcam==0.1.0
 tensorflow==2.11.0
