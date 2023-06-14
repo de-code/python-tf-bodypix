@@ -343,7 +343,7 @@ class BodyPixResultWrapper:
             part_colors=part_colors
         )
 
-    def get_poses(self) -> List[Pose]:
+    def get_poses(self, maxPoseDetections=10) -> List[Pose]:
         assert self.heatmap_logits is not None
         assert self.short_offsets is not None
         assert self.displacement_fwd is not None
@@ -354,7 +354,7 @@ class BodyPixResultWrapper:
             displacementsFwdBuffer=np.asarray(self.displacement_fwd[0]),
             displacementsBwdBuffer=np.asarray(self.displacement_bwd[0]),
             outputStride=self.output_stride,
-            maxPoseDetections=2
+            maxPoseDetections=maxPoseDetections
         )
         scaled_poses = scaleAndFlipPoses(
             poses,
